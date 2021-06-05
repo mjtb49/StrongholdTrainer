@@ -9,10 +9,9 @@ import net.fabricmc.api.ModInitializer;
 
 public class StrongholdTrainer implements ModInitializer  {
 
-    static RendererGroup<Cuboid> cuboidRendererGroup;
+    static RendererGroup<Cuboid> cuboidRendererGroup = new RendererGroup<>(7, RendererGroup.RenderOption.RENDER_FRONT);
 
     static public void submitRoom(Cuboid cuboid) {
-        cuboidRendererGroup = new RendererGroup<>(1, RendererGroup.RenderOption.RENDER_FRONT);
         cuboidRendererGroup.addRenderer(cuboid);
     }
 

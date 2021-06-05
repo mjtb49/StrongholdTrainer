@@ -11,6 +11,7 @@
     "MixinMinecraftServer",
     "MixinStrongholdFeature",
     "MixinStrongholdFeatureStart",
+    "MixinStrongholdPiece"
     "MixinStrongholdGenerator",
     "MixinStrongholdGeneratorCorridor",
     "MixinStrongholdGeneratorFiveWayCrossing",

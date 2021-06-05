@@ -1,5 +1,6 @@
 package io.github.mjtb49.strongholdtrainer.mixin;
 
+import io.github.mjtb49.strongholdtrainer.api.OffsetAccessor;
 import io.github.mjtb49.strongholdtrainer.api.MixinStrongholdGeneratorStartAccessor;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructureManager;
@@ -11,25 +12,32 @@ import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.feature.DefaultFeatureConfig;
 import net.minecraft.world.gen.feature.StrongholdFeature;
 import net.minecraft.world.gen.feature.StructureFeature;
+import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-
+import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
+
 
 @Mixin(StrongholdFeature.Start.class)
 public class MixinStrongholdFeatureStart extends StructureStart<DefaultFeatureConfig> {
 
-    @Shadow @Final
-    private long field_24559;
+    @Shadow @Final private long field_24559;
+    @Unique
+    private int yOffset;
 
     public MixinStrongholdFeatureStart(StructureFeature<DefaultFeatureConfig> feature, int chunkX, int chunkZ, BlockBox box, int references, long seed, long field_24559) {
         super(feature, chunkX, chunkZ, box, references, seed);
     }
 
     /**
-     * @author mjtb49
+     * @author SuperCoder79
+     * @reason Redirect doesn't work and I can't figure out why
      */
     @Overwrite
     public void init(ChunkGenerator chunkGenerator, StructureManager structureManager, int i, int j, Biome biome, DefaultFeatureConfig defaultFeatureConfig) {
@@ -52,11 +60,39 @@ public class MixinStrongholdFeatureStart extends StructureStart<DefaultFeatureCo
             while(!list.isEmpty()) {
                 int l = this.random.nextInt(list.size());
                 StructurePiece structurePiece = (StructurePiece)list.remove(l);
+
                 ((MixinStrongholdGeneratorStartAccessor) start).registerPiece(structurePiece);
                 structurePiece.placeJigsaw(start, this.children, this.random);
             }
 
             this.setBoundingBoxFromChildren();
+
+
+            // **
+            int k = i - j;
+            int l = this.boundingBox.getBlockCountY() + 1;
+            if (l < k) {
+                l += random.nextInt(k - l);
+            }
+
+            int m = l - this.boundingBox.maxY;
+            this.boundingBox.offset(0, m, 0);
+            Iterator iterator = this.children.iterator();
+
+            while(iterator.hasNext()) {
+                StructurePiece structurePiece = (StructurePiece) iterator.next();
+                structurePiece.translate(0, m, 0);
+            }
+
+            this.yOffset = m;
+            // **
+        } while(this.children.isEmpty() || start.field_15283 == null);
+
+    }
+
+    @Override
+    public int getYOffset() {
+        return this.yOffset;
             this.method_14978(chunkGenerator.getSeaLevel(), this.random, 10);
         } while(this.children.isEmpty() || start.field_15283 == null);
 
