@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "stronghold-trainer",
+  "version": "${version}",
+  "name": "Stronghold Trainer",
+  "description": "A mod to aid speedrunners in practicing stronghold exploration",
+  "authors": [
+    "Matthew_Bolan"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/stronghold-trainer/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "io.github.mjtb49.strongholdtrainer.StrongholdTrainer"
+    ]
+  },
+  "mixins": [
+    "stronghold-trainer.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.11.3",
+    "minecraft": "1.16.1"
+  }
+}

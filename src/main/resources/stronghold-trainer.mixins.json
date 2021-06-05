@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "io.github.mjtb49.strongholdtrainer.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "MixinClientPlayNetworkHandler",
+    "MixinCommandManager",
+    "MixinDummyProfiler",
+    "MixinGameRenderer",
+    "MixinStrongholdFeature"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
