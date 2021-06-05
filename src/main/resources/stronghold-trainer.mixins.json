@@ -8,6 +8,7 @@
     "MixinCommandManager",
     "MixinDummyProfiler",
     "MixinGameRenderer",
+    "MixinMinecraftServer",
     "MixinStrongholdFeature"
   ],
   "client": [

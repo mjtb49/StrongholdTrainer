@@ -10,11 +10,21 @@ archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
+repositories {
+    maven {
+        name = "JitPack"
+        url = "https://jitpack.io"
+    }
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:1.16.1"
     mappings "net.fabricmc:yarn:1.16.1+build.21:v2"
     modImplementation "net.fabricmc:fabric-loader:0.11.3"
 
+    modRuntime ("com.github.SuperCoder7979:databreaker:0.2.6") {
+        exclude module: "fabric-loader"
+    }
     //Fabric api
     //modImplementation "net.fabricmc.fabric-api:fabric-api:0.18.0+build.387-1.16.1"
 }
