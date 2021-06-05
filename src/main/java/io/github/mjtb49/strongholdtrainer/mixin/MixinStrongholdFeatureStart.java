@@ -1,6 +1,7 @@
 package io.github.mjtb49.strongholdtrainer.mixin;
 
 import io.github.mjtb49.strongholdtrainer.api.OffsetAccessor;
+import io.github.mjtb49.strongholdtrainer.api.MixinStrongholdGeneratorStartAccessor;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructureManager;
 import net.minecraft.structure.StructurePiece;
@@ -14,18 +15,23 @@ import net.minecraft.world.gen.feature.StructureFeature;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+
 @Mixin(StrongholdFeature.Start.class)
-public abstract class MixinStrongholdFeatureStart extends StructureStart implements OffsetAccessor {
+public class MixinStrongholdFeatureStart extends StructureStart<DefaultFeatureConfig> {
+
     @Shadow @Final private long field_24559;
     @Unique
     private int yOffset;
 
-    public MixinStrongholdFeatureStart(StructureFeature feature, int chunkX, int chunkZ, BlockBox box, int references, long seed) {
+    public MixinStrongholdFeatureStart(StructureFeature<DefaultFeatureConfig> feature, int chunkX, int chunkZ, BlockBox box, int references, long seed, long field_24559) {
         super(feature, chunkX, chunkZ, box, references, seed);
     }
 
@@ -44,6 +50,9 @@ public abstract class MixinStrongholdFeatureStart extends StructureStart impleme
             this.random.setCarverSeed(this.field_24559 + (long)(var7++), i, j);
             StrongholdGenerator.init();
             start = new StrongholdGenerator.Start(this.random, (i << 4) + 2, (j << 4) + 2);
+
+            ((MixinStrongholdGeneratorStartAccessor) start).registerPiece(start);
+
             this.children.add(start);
             start.placeJigsaw(start, this.children, this.random);
             List list = start.field_15282;
@@ -51,10 +60,13 @@ public abstract class MixinStrongholdFeatureStart extends StructureStart impleme
             while(!list.isEmpty()) {
                 int l = this.random.nextInt(list.size());
                 StructurePiece structurePiece = (StructurePiece)list.remove(l);
+
+                ((MixinStrongholdGeneratorStartAccessor) start).registerPiece(structurePiece);
                 structurePiece.placeJigsaw(start, this.children, this.random);
             }
 
             this.setBoundingBoxFromChildren();
+
 
             // **
             int k = i - j;
@@ -81,5 +93,9 @@ public abstract class MixinStrongholdFeatureStart extends StructureStart impleme
     @Override
     public int getYOffset() {
         return this.yOffset;
+            this.method_14978(chunkGenerator.getSeaLevel(), this.random, 10);
+        } while(this.children.isEmpty() || start.field_15283 == null);
+
+        ((MixinStrongholdGeneratorStartAccessor) start).printContents();
     }
 }

@@ -20,7 +20,7 @@ public class Cuboid extends Renderer {
     }
 
     public Cuboid(BlockPos start, BlockPos end, Color color) {
-        this(start, new Vec3i(end.getX() - start.getX(), end.getY() - start.getY(), end.getZ() - start.getZ()), color);
+        this(start, new Vec3i(end.getX() - start.getX() + 1, end.getY() - start.getY() + 1, end.getZ() - start.getZ() + 1), color);
     }
 
     public Cuboid(BlockBox box, Color color) {

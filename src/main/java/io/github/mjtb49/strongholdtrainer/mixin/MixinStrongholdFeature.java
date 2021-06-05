@@ -19,7 +19,7 @@ public class MixinStrongholdFeature {
      */
     @Overwrite
     public boolean shouldStartAt(ChunkGenerator chunkGenerator, BiomeSource biomeSource, long l, ChunkRandom chunkRandom, int i, int j, Biome biome, ChunkPos chunkPos, DefaultFeatureConfig defaultFeatureConfig) {
-        return (i % 16 == 0) && (j % 16 == 0);
+        return (i % 1239 == 0) && (j % 2222 == 0);
     }
 
 }

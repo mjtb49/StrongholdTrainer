@@ -12,6 +12,10 @@
     "MixinStrongholdFeature",
     "MixinStrongholdFeatureStart",
     "MixinStrongholdPiece"
+    "MixinStrongholdGenerator",
+    "MixinStrongholdGeneratorCorridor",
+    "MixinStrongholdGeneratorFiveWayCrossing",
+    "MixinStrongholdGeneratorStart"
   ],
   "client": [
   ],
