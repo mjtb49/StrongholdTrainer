@@ -9,7 +9,12 @@
     "MixinDummyProfiler",
     "MixinGameRenderer",
     "MixinMinecraftServer",
-    "MixinStrongholdFeature"
+    "MixinStrongholdFeature",
+    "MixinStrongholdFeatureStart",
+    "MixinStrongholdGenerator",
+    "MixinStrongholdGeneratorCorridor",
+    "MixinStrongholdGeneratorFiveWayCrossing",
+    "MixinStrongholdGeneratorStart"
   ],
   "client": [
   ],

@@ -17,12 +17,16 @@ repositories {
     }
 }
 
+minecraft {
+    accessWidener = file("src/main/resources/strongholdtrainer.aw")
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:1.16.1"
     mappings "net.fabricmc:yarn:1.16.1+build.21:v2"
     modImplementation "net.fabricmc:fabric-loader:0.11.3"
 
-    modRuntime ("com.github.SuperCoder7979:databreaker:0.2.6") {
+    modRuntime ("com.github.SuperCoder7979:databreaker:0.2.5") {
         exclude module: "fabric-loader"
     }
     //Fabric api

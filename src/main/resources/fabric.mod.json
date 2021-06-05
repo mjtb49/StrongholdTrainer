@@ -16,6 +16,7 @@
       "io.github.mjtb49.strongholdtrainer.StrongholdTrainer"
     ]
   },
+  "accessWidener" : "strongholdtrainer.aw",
   "mixins": [
     "stronghold-trainer.mixins.json"
   ],

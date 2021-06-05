@@ -23,8 +23,8 @@ public class StrongholdTrainer implements ModInitializer  {
             RenderSystem.multMatrix(matrixStack.peek().getModel());
             GlStateManager.disableTexture();
             GlStateManager.disableDepthTest();
-
-            cuboidRendererGroup.render();
+            if (cuboidRendererGroup != null)
+                cuboidRendererGroup.render();
 
             RenderSystem.popMatrix();
 
