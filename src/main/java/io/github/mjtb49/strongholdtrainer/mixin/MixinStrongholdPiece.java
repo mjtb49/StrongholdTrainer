@@ -28,14 +28,6 @@ public abstract class MixinStrongholdPiece extends StructurePiece implements Ent
         super(type, length);
     }
 
-//    @Inject(method = "generateEntrance", at = @At("HEAD"))
-//    private void retainEntrances(WorldAccess world, Random random, BlockBox box, StrongholdGenerator.Piece.EntranceType type, int x, int y, int z, CallbackInfo ci) {
-//        this.entrances.add(new BlockBox(
-//                new BlockPos(this.applyXTransform(x, z), this.applyYTransform(y), this.applyZTransform(x, z)),
-//                new BlockPos(this.applyXTransform(x + 3, z), this.applyYTransform(y + 3), this.applyZTransform(x + 3, z + 1))
-//        ));
-//    }
-
     @Inject(method = "method_14874", at = @At("HEAD"))
     private void retainForwards(StrongholdGenerator.Start start, List<StructurePiece> list, Random random, int i, int j, CallbackInfoReturnable<StructurePiece> cir) {
         Direction direction = this.getFacing();
