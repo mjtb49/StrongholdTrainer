@@ -1,7 +1,7 @@
 package io.github.mjtb49.strongholdtrainer.mixin;
 
-import io.github.mjtb49.strongholdtrainer.api.OffsetAccessor;
-import io.github.mjtb49.strongholdtrainer.api.MixinStrongholdGeneratorStartAccessor;
+import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
+import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructureManager;
 import net.minecraft.structure.StructurePiece;
@@ -13,32 +13,25 @@ import net.minecraft.world.gen.feature.DefaultFeatureConfig;
 import net.minecraft.world.gen.feature.StrongholdFeature;
 import net.minecraft.world.gen.feature.StructureFeature;
 import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 
 @Mixin(StrongholdFeature.Start.class)
-public abstract class MixinStrongholdFeatureStart extends StructureStart implements OffsetAccessor  {
+public abstract class MixinStrongholdFeatureStart extends StructureStart implements StartAccessor {
 
     @Shadow @Final private long field_24559;
     @Unique
     private int yOffset;
 
+    @Unique
+    private StrongholdGenerator.Start start;
+
     public MixinStrongholdFeatureStart(StructureFeature<DefaultFeatureConfig> feature, int chunkX, int chunkZ, BlockBox box, int references, long seed, long field_24559) {
         super(feature, chunkX, chunkZ, box, references, seed);
     }
 
-    /**
-     * @author SuperCoder79
-     * @reason Redirect doesn't work and I can't figure out why
-     */
     /**
      * @author SuperCoder79
      * @reason Redirect doesn't work and I can't figure out why
@@ -55,7 +48,7 @@ public abstract class MixinStrongholdFeatureStart extends StructureStart impleme
             StrongholdGenerator.init();
             start = new StrongholdGenerator.Start(this.random, (i << 4) + 2, (j << 4) + 2);
 
-            ((MixinStrongholdGeneratorStartAccessor) start).registerPiece(start);
+            ((StrongholdTreeAccessor) start).registerPiece(start);
 
             this.children.add(start);
             start.placeJigsaw(start, this.children, this.random);
@@ -64,7 +57,7 @@ public abstract class MixinStrongholdFeatureStart extends StructureStart impleme
             while(!list.isEmpty()) {
                 int l = this.random.nextInt(list.size());
                 StructurePiece structurePiece = (StructurePiece)list.remove(l);
-                ((MixinStrongholdGeneratorStartAccessor) start).registerPiece(structurePiece);
+                ((StrongholdTreeAccessor) start).registerPiece(structurePiece);
                 structurePiece.placeJigsaw(start, this.children, this.random);
             }
 
@@ -89,12 +82,18 @@ public abstract class MixinStrongholdFeatureStart extends StructureStart impleme
             this.yOffset = m;
             // **
         } while(this.children.isEmpty() || start.field_15283 == null);
+        this.start = start;
 
-        ((MixinStrongholdGeneratorStartAccessor) start).printContents();
+        ((StrongholdTreeAccessor) start).printContents();
     }
 
     @Override
     public int getYOffset() {
         return this.yOffset;
+    }
+
+    @Override
+    public StrongholdGenerator.Start getStart() {
+        return this.start;
     }
 }

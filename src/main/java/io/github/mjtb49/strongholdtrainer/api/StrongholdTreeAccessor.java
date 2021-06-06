@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public interface MixinStrongholdGeneratorStartAccessor {
+public interface StrongholdTreeAccessor {
     void addPiece(StructurePiece piece);
     void registerPiece(StructurePiece piece);
     ArrayList<StructurePiece> getPieces();

@@ -1,6 +1,6 @@
 package io.github.mjtb49.strongholdtrainer.mixin;
 
-import io.github.mjtb49.strongholdtrainer.api.MixinStrongholdGeneratorStartAccessor;
+import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructurePieceType;
@@ -44,27 +44,27 @@ public abstract class MixinStrongholdGeneratorFiveWayCrossing extends Stronghold
         if (this.lowerLeftExists) {
             this.method_14870((StrongholdGenerator.Start)structurePiece, list, random, i, 1);
         } else {
-            ((MixinStrongholdGeneratorStartAccessor) structurePiece).addPiece(null);
+            ((StrongholdTreeAccessor) structurePiece).addPiece(null);
         }
 
         if (this.upperLeftExists) {
             this.method_14870((StrongholdGenerator.Start)structurePiece, list, random, j, 7);
         } else {
-            ((MixinStrongholdGeneratorStartAccessor) structurePiece).addPiece(null);
+            ((StrongholdTreeAccessor) structurePiece).addPiece(null);
         }
 
         if (this.lowerRightExists) {
             this.method_14873((StrongholdGenerator.Start)structurePiece, list, random, i, 1);
         } else {
-            ((MixinStrongholdGeneratorStartAccessor) structurePiece).addPiece(null);
+            ((StrongholdTreeAccessor) structurePiece).addPiece(null);
         }
 
         if (this.upperRightExists) {
             this.method_14873((StrongholdGenerator.Start)structurePiece, list, random, j, 7);
         } else {
-            ((MixinStrongholdGeneratorStartAccessor) structurePiece).addPiece(null);
+            ((StrongholdTreeAccessor) structurePiece).addPiece(null);
         }
 
-        ((MixinStrongholdGeneratorStartAccessor) structurePiece).correctOrder5Way();
+        ((StrongholdTreeAccessor) structurePiece).correctOrder5Way();
     }
 }

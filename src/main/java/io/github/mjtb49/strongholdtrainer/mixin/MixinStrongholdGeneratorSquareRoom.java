@@ -1,6 +1,6 @@
 package io.github.mjtb49.strongholdtrainer.mixin;
 
-import io.github.mjtb49.strongholdtrainer.api.MixinStrongholdGeneratorStartAccessor;
+import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,6 +16,6 @@ public class MixinStrongholdGeneratorSquareRoom {
 
     @Inject(method = "placeJigsaw", at = @At("TAIL"))
     public void placeJigsaw(StructurePiece structurePiece, List<StructurePiece> list, Random random, CallbackInfo ci) {
-        ((MixinStrongholdGeneratorStartAccessor) structurePiece).correctOrderSquareAndCorridor();
+        ((StrongholdTreeAccessor) structurePiece).correctOrderSquareAndCorridor();
     }
 }

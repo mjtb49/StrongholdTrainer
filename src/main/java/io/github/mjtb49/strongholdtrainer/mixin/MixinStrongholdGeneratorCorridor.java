@@ -1,6 +1,6 @@
 package io.github.mjtb49.strongholdtrainer.mixin;
 
-import io.github.mjtb49.strongholdtrainer.api.MixinStrongholdGeneratorStartAccessor;
+import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructurePieceType;
@@ -33,16 +33,16 @@ public abstract class MixinStrongholdGeneratorCorridor extends StrongholdGenerat
         if (this.leftExitExists) {
             this.method_14870((StrongholdGenerator.Start)structurePiece, list, random, 1, 2);
         } else {
-            ((MixinStrongholdGeneratorStartAccessor) structurePiece).addPiece(null);
+            ((StrongholdTreeAccessor) structurePiece).addPiece(null);
         }
 
         if (this.rightExitExists) {
             this.method_14873((StrongholdGenerator.Start)structurePiece, list, random, 1, 2);
         } else {
-            ((MixinStrongholdGeneratorStartAccessor) structurePiece).addPiece(null);
+            ((StrongholdTreeAccessor) structurePiece).addPiece(null);
         }
 
-        ((MixinStrongholdGeneratorStartAccessor) structurePiece).correctOrderSquareAndCorridor();
+        ((StrongholdTreeAccessor) structurePiece).correctOrderSquareAndCorridor();
     }
 
 }

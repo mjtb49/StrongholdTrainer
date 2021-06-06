@@ -1,6 +1,6 @@
 package io.github.mjtb49.strongholdtrainer.mixin;
 
-import io.github.mjtb49.strongholdtrainer.api.MixinStrongholdGeneratorStartAccessor;
+import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.util.math.Direction;
@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import java.util.*;
 
 @Mixin(StrongholdGenerator.Start.class)
-public class MixinStrongholdGeneratorStart implements MixinStrongholdGeneratorStartAccessor {
+public class MixinStrongholdGeneratorStart implements StrongholdTreeAccessor {
     private Map<StructurePiece, List<StructurePiece>> tree = new HashMap<>();
     private ArrayList<StructurePiece> pieces = new ArrayList<>();
 

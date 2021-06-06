@@ -2,13 +2,17 @@ package io.github.mjtb49.strongholdtrainer.mixin;
 
 import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import io.github.mjtb49.strongholdtrainer.api.EntranceAccessor;
-import io.github.mjtb49.strongholdtrainer.api.OffsetAccessor;
+import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
+import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import io.github.mjtb49.strongholdtrainer.render.Color;
 import io.github.mjtb49.strongholdtrainer.render.Cuboid;
+import io.github.mjtb49.strongholdtrainer.util.EntryNode;
+import io.github.mjtb49.strongholdtrainer.util.StrongholdSearcher;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructureStart;
 import net.minecraft.util.math.BlockBox;
@@ -34,18 +38,34 @@ public class MixinMinecraftServer {
             StructureStart<?> start = world.getStructureAccessor().method_28388(player.getBlockPos(), true, StructureFeature.STRONGHOLD);
 
             if (start != StructureStart.DEFAULT) {
+                StrongholdGenerator.Start strongholdStart = ((StartAccessor)start).getStart();
+
                 for (StructurePiece piece : start.getChildren()) {
-                    int yOffset = ((OffsetAccessor)start).getYOffset();
+                    int yOffset = ((StartAccessor)start).getYOffset();
 
                     if (piece.getBoundingBox().contains(player.getBlockPos())) {
                         Cuboid cuboid = new Cuboid(piece.getBoundingBox(), Color.PURPLE);
 
                         StrongholdTrainer.submitRoom(cuboid);
+                        // TODO: good idea to cache this, doesn't seem to hurt perf too much
+                        StructurePiece searchResult = StrongholdSearcher.search(((StrongholdTreeAccessor)strongholdStart).getTree(), piece);
 
-                        for (BlockBox entrance : ((EntranceAccessor) piece).getEntrances()) {
+                        for (EntryNode node : ((EntranceAccessor) piece).getEntrances()) {
+                            BlockBox entrance = node.box;
+
                             BlockBox newBox = new BlockBox(entrance.minX, entrance.minY + yOffset, entrance.minZ, entrance.maxX - 1, entrance.maxY + yOffset - 1, entrance.maxZ - 1);
 
-                            StrongholdTrainer.submitRoom(new Cuboid(newBox, Color.ORANGE));
+                            Color color = node.type == EntryNode.Type.FORWARDS ? Color.ORANGE : Color.YELLOW;
+
+                            if (searchResult == null) {
+                                if (node.type == EntryNode.Type.BACKWARDS) {
+                                    color = Color.BLUE;
+                                }
+                            } else if (node.type == EntryNode.Type.FORWARDS && node.pointer != null && searchResult == node.pointer) {
+                                color = Color.BLUE;
+                            }
+
+                            StrongholdTrainer.submitRoom(new Cuboid(newBox, color));
                         }
                     }
                 }
