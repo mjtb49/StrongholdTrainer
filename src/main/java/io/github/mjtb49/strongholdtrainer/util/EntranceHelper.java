@@ -12,7 +12,7 @@ public final class EntranceHelper {
             case NORTH:
                 entrances.add(new EntryNode(new BlockBox(
                         new BlockPos(boundingBox.minX + i, boundingBox.minY + j, boundingBox.minZ - 1),
-                        new BlockPos(boundingBox.minX + i + 3, boundingBox.minY + j + 3, boundingBox.minZ - 1 - 1)
+                        new BlockPos(boundingBox.minX + i + 3, boundingBox.minY + j + 3, boundingBox.minZ - 1 + 1)
                 ), type));
                 break;
             case SOUTH:
@@ -24,13 +24,13 @@ public final class EntranceHelper {
             case WEST:
                 entrances.add(new EntryNode(new BlockBox(
                         new BlockPos(boundingBox.minX - 1, boundingBox.minY + j, boundingBox.minZ + i),
-                        new BlockPos(boundingBox.minX - 1 - 1, boundingBox.minY + j + 3, boundingBox.minZ + i + 3)
+                        new BlockPos(boundingBox.minX - 1 + 1, boundingBox.minY + j + 3, boundingBox.minZ + i + 3)
                 ), type));
                 break;
             case EAST:
                 entrances.add(new EntryNode(new BlockBox(
                         new BlockPos(boundingBox.maxX + 1, boundingBox.minY + j, boundingBox.minZ + i),
-                        new BlockPos(boundingBox.maxX + 1 - 1, boundingBox.minY + j + 3, boundingBox.minZ + i + 3)
+                        new BlockPos(boundingBox.maxX + 1 + 1, boundingBox.minY + j + 3, boundingBox.minZ + i + 3)
                 ), type));
                 break;
         }
@@ -41,13 +41,13 @@ public final class EntranceHelper {
             case NORTH:
                 entrances.add(new EntryNode(new BlockBox(
                         new BlockPos(boundingBox.minX - 1, boundingBox.minY + i, boundingBox.minZ + j),
-                        new BlockPos(boundingBox.minX - 1 - 1, boundingBox.minY + i + 3, boundingBox.minZ + j + 3)
+                        new BlockPos(boundingBox.minX - 1 + 1, boundingBox.minY + i + 3, boundingBox.minZ + j + 3)
                 ), type));
                 break;
             case SOUTH:
                 entrances.add(new EntryNode(new BlockBox(
                         new BlockPos(boundingBox.minX - 1, boundingBox.minY + i, boundingBox.minZ + j),
-                        new BlockPos(boundingBox.minX - 1 - 1, boundingBox.minY + i + 3, boundingBox.minZ + j + 3)
+                        new BlockPos(boundingBox.minX - 1 + 1, boundingBox.minY + i + 3, boundingBox.minZ + j + 3)
                 ), type));
                 break;
             case WEST:
@@ -59,7 +59,7 @@ public final class EntranceHelper {
             case EAST:
                 entrances.add(new EntryNode(new BlockBox(
                         new BlockPos(boundingBox.minX + j, boundingBox.minY + i, boundingBox.minZ - 1),
-                        new BlockPos(boundingBox.minX + j + 3, boundingBox.minY + i + 3, boundingBox.minZ - 1 - 1)
+                        new BlockPos(boundingBox.minX + j + 3, boundingBox.minY + i + 3, boundingBox.minZ - 1 + 1)
                 ), type));
                 break;
         }
@@ -82,7 +82,7 @@ public final class EntranceHelper {
             case WEST:
                 entrances.add(new EntryNode(new BlockBox(
                         new BlockPos(boundingBox.minX + j, boundingBox.minY + i, boundingBox.maxZ + 1),
-                        new BlockPos(boundingBox.minX + j + 3, boundingBox.minY + i + 3, boundingBox.maxZ + 1 + 1)
+                        new BlockPos(boundingBox.minX + j + 3, boundingBox.minY + i + 3, boundingBox.maxZ + 1 - 1)
                 ), type));
                 break;
             case EAST:
