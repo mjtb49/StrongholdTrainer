@@ -65,5 +65,6 @@ public abstract class MixinStrongholdGeneratorFiveWayCrossing extends Stronghold
             ((MixinStrongholdGeneratorStartAccessor) structurePiece).addPiece(null);
         }
 
+        ((MixinStrongholdGeneratorStartAccessor) structurePiece).correctOrder5Way();
     }
 }

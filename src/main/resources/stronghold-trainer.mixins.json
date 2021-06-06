@@ -11,11 +11,12 @@
     "MixinMinecraftServer",
     "MixinStrongholdFeature",
     "MixinStrongholdFeatureStart",
-    "MixinStrongholdPiece",
     "MixinStrongholdGenerator",
     "MixinStrongholdGeneratorCorridor",
     "MixinStrongholdGeneratorFiveWayCrossing",
-    "MixinStrongholdGeneratorStart"
+    "MixinStrongholdGeneratorSquareRoom",
+    "MixinStrongholdGeneratorStart",
+    "MixinStrongholdPiece"
   ],
   "client": [
   ],

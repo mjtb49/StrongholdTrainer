@@ -64,6 +64,7 @@ public abstract class MixinStrongholdFeatureStart extends StructureStart impleme
             while(!list.isEmpty()) {
                 int l = this.random.nextInt(list.size());
                 StructurePiece structurePiece = (StructurePiece)list.remove(l);
+                ((MixinStrongholdGeneratorStartAccessor) start).registerPiece(structurePiece);
                 structurePiece.placeJigsaw(start, this.children, this.random);
             }
 
@@ -89,6 +90,7 @@ public abstract class MixinStrongholdFeatureStart extends StructureStart impleme
             // **
         } while(this.children.isEmpty() || start.field_15283 == null);
 
+        ((MixinStrongholdGeneratorStartAccessor) start).printContents();
     }
 
     @Override

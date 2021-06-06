@@ -12,4 +12,6 @@ public interface MixinStrongholdGeneratorStartAccessor {
     ArrayList<StructurePiece> getPieces();
     Map<StructurePiece, List<StructurePiece>> getTree();
     void printContents();
+    void correctOrder5Way();
+    void correctOrderSquareAndCorridor();
 }

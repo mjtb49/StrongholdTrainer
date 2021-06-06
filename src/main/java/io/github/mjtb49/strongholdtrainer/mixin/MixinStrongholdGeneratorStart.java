@@ -3,6 +3,7 @@ package io.github.mjtb49.strongholdtrainer.mixin;
 import io.github.mjtb49.strongholdtrainer.api.MixinStrongholdGeneratorStartAccessor;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
+import net.minecraft.util.math.Direction;
 import org.spongepowered.asm.mixin.Mixin;
 
 import java.util.*;
@@ -18,7 +19,53 @@ public class MixinStrongholdGeneratorStart implements MixinStrongholdGeneratorSt
 
     public void registerPiece(StructurePiece piece) {
         pieces.add(piece);
-        tree.put(piece, new ArrayList<StructurePiece>());
+        tree.put(piece, new ArrayList<>());
+    }
+
+    public void correctOrder5Way() {
+        StructurePiece piece = pieces.get(pieces.size() - 1);
+        List<StructurePiece> list = tree.get(piece);
+        if (list.size() == 5 && piece instanceof StrongholdGenerator.FiveWayCrossing) {
+            Direction direction = piece.getFacing();
+            if (direction != null) {
+                switch (direction) {
+                    case NORTH:
+                        Collections.swap(list, 1, 2);
+                        Collections.swap(list, 3, 4);
+                        break;
+                    case SOUTH:
+                        Collections.swap(list, 1, 3);
+                        Collections.swap(list, 2, 4);
+                        break;
+                    case WEST:
+                        Collections.swap(list, 1, 4);
+                        Collections.swap(list, 2, 3);
+                        break;
+                    default:
+                }
+            } else {
+                System.err.println("Attempted to correct other room as if 5 Way");
+            }
+        }
+    }
+
+    public void correctOrderSquareAndCorridor() {
+        StructurePiece piece = pieces.get(pieces.size() - 1);
+        List<StructurePiece> list = tree.get(piece);
+        if (list.size() == 3 && (piece instanceof StrongholdGenerator.SquareRoom || piece instanceof StrongholdGenerator.Corridor)) {
+            Direction direction = piece.getFacing();
+            if (direction != null) {
+                switch (direction) {
+                    case WEST:
+                    case SOUTH:
+                        Collections.swap(list, 1, 2);
+                        break;
+                    default:
+                }
+            }
+        } else {
+            System.err.println("Attempted to correct other room as if square or corridor");
+        }
     }
 
     @Override

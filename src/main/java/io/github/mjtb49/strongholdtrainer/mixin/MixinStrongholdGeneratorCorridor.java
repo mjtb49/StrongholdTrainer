@@ -29,6 +29,7 @@ public abstract class MixinStrongholdGeneratorCorridor extends StrongholdGenerat
     @Overwrite
     public void placeJigsaw(StructurePiece structurePiece, List<StructurePiece> list, Random random) {
         this.method_14874((StrongholdGenerator.Start)structurePiece, list, random, 1, 1);
+
         if (this.leftExitExists) {
             this.method_14870((StrongholdGenerator.Start)structurePiece, list, random, 1, 2);
         } else {
@@ -40,6 +41,8 @@ public abstract class MixinStrongholdGeneratorCorridor extends StrongholdGenerat
         } else {
             ((MixinStrongholdGeneratorStartAccessor) structurePiece).addPiece(null);
         }
+
+        ((MixinStrongholdGeneratorStartAccessor) structurePiece).correctOrderSquareAndCorridor();
     }
 
 }
