@@ -25,7 +25,7 @@ import java.util.Random;
 
 
 @Mixin(StrongholdFeature.Start.class)
-public class MixinStrongholdFeatureStart extends StructureStart<DefaultFeatureConfig> {
+public abstract class MixinStrongholdFeatureStart extends StructureStart implements OffsetAccessor  {
 
     @Shadow @Final private long field_24559;
     @Unique
@@ -35,6 +35,10 @@ public class MixinStrongholdFeatureStart extends StructureStart<DefaultFeatureCo
         super(feature, chunkX, chunkZ, box, references, seed);
     }
 
+    /**
+     * @author SuperCoder79
+     * @reason Redirect doesn't work and I can't figure out why
+     */
     /**
      * @author SuperCoder79
      * @reason Redirect doesn't work and I can't figure out why
@@ -60,13 +64,10 @@ public class MixinStrongholdFeatureStart extends StructureStart<DefaultFeatureCo
             while(!list.isEmpty()) {
                 int l = this.random.nextInt(list.size());
                 StructurePiece structurePiece = (StructurePiece)list.remove(l);
-
-                ((MixinStrongholdGeneratorStartAccessor) start).registerPiece(structurePiece);
                 structurePiece.placeJigsaw(start, this.children, this.random);
             }
 
             this.setBoundingBoxFromChildren();
-
 
             // **
             int k = i - j;
@@ -93,9 +94,5 @@ public class MixinStrongholdFeatureStart extends StructureStart<DefaultFeatureCo
     @Override
     public int getYOffset() {
         return this.yOffset;
-            this.method_14978(chunkGenerator.getSeaLevel(), this.random, 10);
-        } while(this.children.isEmpty() || start.field_15283 == null);
-
-        ((MixinStrongholdGeneratorStartAccessor) start).printContents();
     }
 }
