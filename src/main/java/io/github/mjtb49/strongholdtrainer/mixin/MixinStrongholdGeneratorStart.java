@@ -43,9 +43,9 @@ public class MixinStrongholdGeneratorStart implements StrongholdTreeAccessor {
                         break;
                     default:
                 }
-            } else {
-                System.err.println("Attempted to correct other room as if 5 Way");
             }
+        } else {
+            System.err.println("Attempted to correct other room as if 5 Way");
         }
     }
 
