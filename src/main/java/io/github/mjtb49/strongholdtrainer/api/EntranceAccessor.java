@@ -1,9 +1,9 @@
 package io.github.mjtb49.strongholdtrainer.api;
 
-import net.minecraft.util.math.BlockBox;
+import io.github.mjtb49.strongholdtrainer.util.EntryNode;
 
 import java.util.List;
 
 public interface EntranceAccessor {
-    List<BlockBox> getEntrances();
+    List<EntryNode> getEntrances();
 }

@@ -1,6 +1,6 @@
 package io.github.mjtb49.strongholdtrainer.mixin;
 
-import io.github.mjtb49.strongholdtrainer.api.MixinStrongholdGeneratorStartAccessor;
+import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.util.math.Direction;
@@ -19,6 +19,6 @@ public class MixinStrongholdGenerator {
     @Inject(method = "method_14854", at = @At("RETURN"))
     private static void method_14854(StrongholdGenerator.Start start, List<StructurePiece> list, Random random, int i, int j, int k, @Nullable Direction direction, int l, CallbackInfoReturnable<StructurePiece> cir) {
         StructurePiece retVal = cir.getReturnValue();
-        ((MixinStrongholdGeneratorStartAccessor) start).addPiece(retVal);
+        ((StrongholdTreeAccessor) start).addPiece(retVal);
     }
 }
