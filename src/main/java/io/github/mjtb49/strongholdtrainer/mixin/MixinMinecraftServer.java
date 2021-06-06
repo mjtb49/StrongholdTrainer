@@ -43,7 +43,7 @@ public class MixinMinecraftServer {
                         StrongholdTrainer.submitRoom(cuboid);
 
                         for (BlockBox entrance : ((EntranceAccessor) piece).getEntrances()) {
-                            BlockBox newBox = new BlockBox(entrance.minX, entrance.minY + yOffset, entrance.minZ, entrance.maxX, entrance.maxY + yOffset, entrance.maxZ);
+                            BlockBox newBox = new BlockBox(entrance.minX, entrance.minY + yOffset, entrance.minZ, entrance.maxX - 1, entrance.maxY + yOffset - 1, entrance.maxZ - 1);
 
                             StrongholdTrainer.submitRoom(new Cuboid(newBox, Color.ORANGE));
                         }
