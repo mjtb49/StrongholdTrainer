@@ -26,6 +26,7 @@ public class StrongholdTrainer implements ModInitializer  {
 
             if (cuboidRendererGroup != null)
                 cuboidRendererGroup.render();
+            TextRenderer.render();
 
             RenderSystem.popMatrix();
 
