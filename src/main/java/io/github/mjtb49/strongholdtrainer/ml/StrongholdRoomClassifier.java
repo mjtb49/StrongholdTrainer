@@ -7,8 +7,6 @@ import org.deeplearning4j.nn.modelimport.keras.KerasModelImport;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.io.ClassPathResource;
 
-import java.sql.Struct;
-
 public class StrongholdRoomClassifier {
     private static MultiLayerNetwork model;
 
@@ -33,7 +31,7 @@ public class StrongholdRoomClassifier {
                 output[index] = 1.0;
                 return output;
             }
-            index ++;
+            index++;
         }
 
         return model.output(RoomHelper.getMLInputFromRoom(start,piece)).toDoubleVector();
