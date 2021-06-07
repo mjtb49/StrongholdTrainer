@@ -19,7 +19,7 @@ public class Cube extends Cuboid {
 
     @Override
     public BlockPos getPos() {
-        return this.start;
+        return new BlockPos(this.start);
     }
 
 }
