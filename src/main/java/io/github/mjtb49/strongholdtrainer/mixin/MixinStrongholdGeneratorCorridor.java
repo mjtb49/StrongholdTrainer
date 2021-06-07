@@ -25,6 +25,7 @@ public abstract class MixinStrongholdGeneratorCorridor extends StrongholdGenerat
 
     /**
      * @author mjtb49
+     * @reason gotta fix the tree in the right order.
      */
     @Overwrite
     public void placeJigsaw(StructurePiece structurePiece, List<StructurePiece> list, Random random) {

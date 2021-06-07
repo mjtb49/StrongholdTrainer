@@ -29,8 +29,8 @@ public class NewStrongholdCommand {
         dispatcher.register(
                 literal("newStronghold").executes(c -> {
 
-                    int x = (int) c.getSource().getEntity().getX() / 16 / GAP;
-                    int z = (int) c.getSource().getEntity().getZ() / 16 / GAP;
+                    int x = (int) (c.getSource().getEntity().getX() + GAP * 8) / 16 / GAP;
+                    int z = (int) (c.getSource().getEntity().getZ() + GAP * 8) / 16 / GAP;
 
                     if (x * GAP * 16 + GAP * 16 > 30000000)
                         x -= (60000000 / (GAP * 16) - 1);

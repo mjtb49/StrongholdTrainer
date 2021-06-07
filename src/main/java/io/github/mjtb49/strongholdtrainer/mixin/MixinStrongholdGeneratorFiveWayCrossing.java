@@ -29,6 +29,7 @@ public abstract class MixinStrongholdGeneratorFiveWayCrossing extends Stronghold
 
     /**
      * @author mjtb49
+     * gotta fix the tree in the right order
      */
     @Overwrite
     public void placeJigsaw(StructurePiece structurePiece, List<StructurePiece> list, Random random) {
