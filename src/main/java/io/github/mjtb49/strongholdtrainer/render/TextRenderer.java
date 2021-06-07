@@ -28,7 +28,7 @@ public class TextRenderer {
 
                 DebugRenderer.drawString(entry.text, pos.x, pos.y, pos.z, -1, entry.size, true, 0, true);
             }
-        }
+		}
     }
 
     private static class Entry {
