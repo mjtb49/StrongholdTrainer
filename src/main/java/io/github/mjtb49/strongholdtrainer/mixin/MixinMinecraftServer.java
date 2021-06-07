@@ -41,6 +41,7 @@ public class MixinMinecraftServer {
     private StructurePiece mlChosen = null;
     private final Map<StructurePiece, Double> percents = new HashMap<>();
     DecimalFormat df = new DecimalFormat("0.00");
+    private final List<StructureStart<?>> visitedNull = new ArrayList<>();
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void inject(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
@@ -51,6 +52,13 @@ public class MixinMinecraftServer {
 
             if (start != StructureStart.DEFAULT) {
                 StrongholdGenerator.Start strongholdStart = ((StartAccessor)start).getStart();
+                if (strongholdStart == null) {
+                    if (!this.visitedNull.contains(start)) {
+                        this.visitedNull.add(start);
+                        MinecraftClient.getInstance().player.sendMessage(new LiteralText("Please visit a new stronghold!").formatted(Formatting.RED), false);
+                    }
+                    continue;
+                }
 
                 for (StructurePiece piece : start.getChildren()) {
                     int yOffset = ((StartAccessor)start).getYOffset();
