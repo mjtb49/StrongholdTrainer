@@ -1,32 +1,46 @@
 package io.github.mjtb49.strongholdtrainer.render;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.debug.DebugRenderer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TextRenderer {
-    private static final Map<Vec3d, String> TEXTS = new ConcurrentHashMap<>();
+    private static final List<Entry> TEXTS = Collections.synchronizedList(new ArrayList<>());
 
     public static void clear() {
         TEXTS.clear();
     }
 
     public static void add(Vec3d pos, String text) {
-        TEXTS.put(pos, text);
+        TEXTS.add(new Entry(pos, text, 0.05f));
+    }
+
+    public static void add(Vec3d pos, String text, float size) {
+        TEXTS.add(new Entry(pos, text, 0.01f));
     }
 
     public static void render() {
-        for (Map.Entry<Vec3d, String> entry : TEXTS.entrySet()) {
-            Vec3d pos = entry.getKey();
+        for (Entry entry : TEXTS) {
+            Vec3d pos = entry.pos;
 
-            DebugRenderer.drawString(entry.getValue(), pos.x, pos.y, pos.z, -1, 0.05f, true, 0, true);
+            DebugRenderer.drawString(entry.text, pos.x, pos.y, pos.z, -1, entry.size, true, 0, true);
         }
+    }
 
+    private static class Entry {
+        private final Vec3d pos;
+        private final String text;
+        private final float size;
+
+        private Entry(Vec3d pos, String text, float size) {
+            this.pos = pos;
+            this.text = text;
+            this.size = size;
+        }
     }
 }
