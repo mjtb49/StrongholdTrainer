@@ -2,6 +2,7 @@ package io.github.mjtb49.strongholdtrainer;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
 import io.github.mjtb49.strongholdtrainer.render.*;
 import net.fabricmc.api.ModInitializer;
 
@@ -15,6 +16,7 @@ public class StrongholdTrainer implements ModInitializer  {
 
     @Override
     public void onInitialize() {
+        StrongholdRoomClassifier.init();
         RenderQueue.get().add("hand", matrixStack -> {
             RenderSystem.pushMatrix();
             RenderSystem.multMatrix(matrixStack.peek().getModel());
