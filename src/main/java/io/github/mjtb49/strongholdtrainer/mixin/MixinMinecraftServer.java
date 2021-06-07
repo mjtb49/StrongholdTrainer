@@ -95,6 +95,11 @@ public class MixinMinecraftServer {
                         StructurePiece searchResult = StrongholdSearcher.search(((StrongholdTreeAccessor)strongholdStart).getTree(), piece);
 
                         TextRenderer.clear();
+
+                        TextRenderer.add(cuboid.getVec(), "Depth: " + piece.getLength(), 0.02f);
+                        TextRenderer.add(cuboid.getVec().add(0, -0.2, 0), "Direction: " + piece.getFacing(), 0.02f);
+                        TextRenderer.add(cuboid.getVec().add(0, -0.4, 0), "Type: " + piece.getClass().getSimpleName(), 0.02f);
+
                         for (EntryNode node : ((EntranceAccessor) piece).getEntrances()) {
                             // Means we've reached a dead end- don't render forwards entries
                             if (node.pointer == null && node.type == EntryNode.Type.FORWARDS) {
