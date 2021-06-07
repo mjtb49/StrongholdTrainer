@@ -12,9 +12,11 @@ import java.util.*;
 public class MixinStrongholdGeneratorStart implements StrongholdTreeAccessor {
     private Map<StructurePiece, List<StructurePiece>> tree = new HashMap<>();
     private ArrayList<StructurePiece> pieces = new ArrayList<>();
+    Map<StructurePiece, StructurePiece> parents = new HashMap<>();
 
     public void addPiece(StructurePiece piece) {
         tree.get(pieces.get(pieces.size() - 1)).add(piece);
+        parents.put(piece, pieces.get(pieces.size() - 1));
     }
 
     public void registerPiece(StructurePiece piece) {
@@ -76,6 +78,12 @@ public class MixinStrongholdGeneratorStart implements StrongholdTreeAccessor {
     @Override
     public Map<StructurePiece, List<StructurePiece>> getTree() {
         return tree;
+    }
+
+
+    @Override
+    public Map<StructurePiece, StructurePiece> getParents() {
+        return parents;
     }
 
     /// @author XeroOl

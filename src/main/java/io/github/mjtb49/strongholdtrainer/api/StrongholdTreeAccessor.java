@@ -11,6 +11,7 @@ public interface StrongholdTreeAccessor {
     void registerPiece(StructurePiece piece);
     ArrayList<StructurePiece> getPieces();
     Map<StructurePiece, List<StructurePiece>> getTree();
+    Map<StructurePiece, StructurePiece> getParents();
     void printContents();
     void correctOrder5Way();
     void correctOrderSquareAndCorridor();

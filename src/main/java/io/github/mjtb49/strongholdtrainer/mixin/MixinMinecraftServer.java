@@ -4,10 +4,12 @@ import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import io.github.mjtb49.strongholdtrainer.api.EntranceAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
+import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
 import io.github.mjtb49.strongholdtrainer.render.Color;
 import io.github.mjtb49.strongholdtrainer.render.Cuboid;
 import io.github.mjtb49.strongholdtrainer.util.EntryNode;
 import io.github.mjtb49.strongholdtrainer.util.StrongholdSearcher;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -15,6 +17,8 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructureStart;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.world.gen.feature.StructureFeature;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,12 +27,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.function.BooleanSupplier;
 
 @Mixin(MinecraftServer.class)
 public class MixinMinecraftServer {
 
     @Shadow private PlayerManager playerManager;
+    private StructurePiece lastpiece = null;
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void inject(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
@@ -44,6 +51,14 @@ public class MixinMinecraftServer {
                     int yOffset = ((StartAccessor)start).getYOffset();
 
                     if (piece.getBoundingBox().contains(player.getBlockPos())) {
+                        if (lastpiece != piece) {
+                            lastpiece = piece;
+                            double[] policy = StrongholdRoomClassifier.getPredictions(((StartAccessor) start).getStart(), (StrongholdGenerator.Piece) piece);
+                            DecimalFormat df = new DecimalFormat("0.00");
+                            StringBuilder s = new StringBuilder();
+                            Arrays.stream(policy).forEach(e -> s.append(df.format(e)).append(" "));
+                            MinecraftClient.getInstance().player.sendMessage(new LiteralText(s.toString()).formatted(Formatting.YELLOW), false);
+                        }
                         Cuboid cuboid = new Cuboid(piece.getBoundingBox(), Color.PURPLE);
 
                         StrongholdTrainer.submitRoom(cuboid);
