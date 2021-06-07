@@ -55,7 +55,7 @@ public class MixinMinecraftServer {
                 if (strongholdStart == null) {
                     if (!this.visitedNull.contains(start)) {
                         this.visitedNull.add(start);
-                        MinecraftClient.getInstance().player.sendMessage(new LiteralText("Please visit a new stronghold!").formatted(Formatting.RED), false);
+                        player.sendMessage(new LiteralText("Please visit a new stronghold!").formatted(Formatting.RED), false);
                     }
                     continue;
                 }
@@ -68,9 +68,9 @@ public class MixinMinecraftServer {
                             lastpiece = piece;
                             double[] policy = StrongholdRoomClassifier.getPredictions(((StartAccessor) start).getStart(), (StrongholdGenerator.Piece) piece);
 
-                            StringBuilder s = new StringBuilder();
-                            Arrays.stream(policy).forEach(e -> s.append(df.format(e)).append(" "));
-                            MinecraftClient.getInstance().player.sendMessage(new LiteralText(s.toString()).formatted(Formatting.YELLOW), false);
+                            //StringBuilder s = new StringBuilder();
+                            //Arrays.stream(policy).forEach(e -> s.append(df.format(e)).append(" "));
+                            //player.sendMessage(new LiteralText(s.toString()).formatted(Formatting.YELLOW), false);
 
                             List<StructurePiece> pieces = ((StrongholdTreeAccessor)((StartAccessor) start).getStart()).getTree().getOrDefault(piece, new ArrayList<>());
 

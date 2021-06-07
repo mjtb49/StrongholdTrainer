@@ -13,13 +13,15 @@ import org.spongepowered.asm.mixin.Overwrite;
 @Mixin(StrongholdFeature.class)
 public class MixinStrongholdFeature {
 
+    public final int GAP = 128;
+
     /**
      * @author mjtb49
      * @reason convenience
      */
     @Overwrite
     public boolean shouldStartAt(ChunkGenerator chunkGenerator, BiomeSource biomeSource, long l, ChunkRandom chunkRandom, int i, int j, Biome biome, ChunkPos chunkPos, DefaultFeatureConfig defaultFeatureConfig) {
-        return (i % 1239 == 0) && (j % 2222 == 0);
+        return (i % GAP == 0) && (j % GAP == 0);
     }
 
 }

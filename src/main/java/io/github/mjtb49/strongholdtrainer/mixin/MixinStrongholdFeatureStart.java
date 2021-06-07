@@ -39,7 +39,6 @@ public abstract class MixinStrongholdFeatureStart extends StructureStart impleme
     @Overwrite
     public void init(ChunkGenerator chunkGenerator, StructureManager structureManager, int i, int j, Biome biome, DefaultFeatureConfig defaultFeatureConfig) {
         int var7 = 0;
-
         StrongholdGenerator.Start start;
         do {
             this.children.clear();
@@ -64,7 +63,7 @@ public abstract class MixinStrongholdFeatureStart extends StructureStart impleme
             this.setBoundingBoxFromChildren();
 
             // **
-            int k = i - j;
+            int k = chunkGenerator.getSeaLevel() - 10;
             int l = this.boundingBox.getBlockCountY() + 1;
             if (l < k) {
                 l += random.nextInt(k - l);
@@ -84,7 +83,7 @@ public abstract class MixinStrongholdFeatureStart extends StructureStart impleme
         } while(this.children.isEmpty() || start.field_15283 == null);
         this.start = start;
 
-        ((StrongholdTreeAccessor) start).printContents();
+        //((StrongholdTreeAccessor) start).printContents();
     }
 
     @Override

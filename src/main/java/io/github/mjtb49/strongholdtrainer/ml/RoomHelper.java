@@ -58,12 +58,7 @@ public class RoomHelper {
         StructurePiece parent = ((StrongholdTreeAccessor) start).getParents().get(piece);
         Direction direction = piece.getFacing();
 
-        int depth = 0;
-        StructurePiece currentPiece = piece;
-        while (parents.get(currentPiece) != null) {
-            depth++;
-            currentPiece = parents.get(currentPiece);
-        }
+        int depth = piece.getLength();
 
         int[][] data = new int[][] {{depth}};
         data[0] = ArrayUtils.addAll(data[0], getArrayFromPiece(parent));
@@ -94,12 +89,7 @@ public class RoomHelper {
         List<StructurePiece> children = ((StrongholdTreeAccessor) start).getTree().get(piece);
         StructurePiece parent = ((StrongholdTreeAccessor) start).getParents().get(piece);
 
-        int depth = 0;
-        StructurePiece currentPiece = piece;
-        while (parents.get(currentPiece) != null) {
-            depth++;
-            currentPiece = parents.get(currentPiece);
-        }
+        int depth = piece.getLength();
 
         int[][] data = new int[][] {{depth}};
         data[0] = ArrayUtils.addAll(data[0], getArrayFromPiece(parent));
