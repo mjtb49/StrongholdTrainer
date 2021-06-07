@@ -96,9 +96,9 @@ public class MixinMinecraftServer {
 
                         TextRenderer.clear();
 
-                        TextRenderer.add(cuboid.getVec(), "Depth: " + piece.getLength(), 0.02f);
-                        TextRenderer.add(cuboid.getVec().add(0, -0.2, 0), "Direction: " + piece.getFacing(), 0.02f);
-                        TextRenderer.add(cuboid.getVec().add(0, -0.4, 0), "Type: " + piece.getClass().getSimpleName(), 0.02f);
+                        TextRenderer.add(cuboid.getVec(), "Depth: " + piece.getLength(), 0.01f);
+                        TextRenderer.add(cuboid.getVec().add(0, -0.2, 0), "Direction: " + piece.getFacing(), 0.01f);
+                        TextRenderer.add(cuboid.getVec().add(0, -0.4, 0), "Type: " + piece.getClass().getSimpleName(), 0.01f);
 
                         for (EntryNode node : ((EntranceAccessor) piece).getEntrances()) {
                             // Means we've reached a dead end- don't render forwards entries
