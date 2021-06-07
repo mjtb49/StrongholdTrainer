@@ -137,7 +137,7 @@ public class MixinMinecraftServer {
 
                             if (node.type == EntryNode.Type.BACKWARDS) {
                                 // TODO: remove when we've implemented this
-                                TextRenderer.add(door.getVec(), "backtracking not supported");
+                                TextRenderer.add(door.getVec(), "not supported", 0.025f);
                             }
                         }
                     }
