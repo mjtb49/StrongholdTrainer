@@ -1,13 +1,11 @@
 package io.github.mjtb49.strongholdtrainer.render;
 
-import net.minecraft.util.math.BlockBox;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.*;
 
 public class Cuboid extends Renderer {
 
-    public BlockPos start;
-    public Vec3i size;
+    public Vec3d start;
+    public Vec3d size;
 
     private Line[] edges = new Line[12];
 
@@ -27,21 +25,33 @@ public class Cuboid extends Renderer {
         this(new BlockPos(box.minX, box.minY, box.minZ), new BlockPos(box.maxX, box.maxY, box.maxZ), color);
     }
 
+    public Cuboid(Box box, Color color) {
+        this(new Vec3d(box.minX, box.minY, box.minZ), new Vec3d(box.maxX, box.maxY, box.maxZ), color, true);
+    }
+
+    public Cuboid(Vec3d start, Vec3d end, Color color, /* Java sees these two methods as the same otherwise */ boolean pleaseCompile) {
+        this(start, new Vec3d(end.getX() - start.getX(), end.getY() - start.getY(), end.getZ() - start.getZ()), color);
+    }
+
     public Cuboid(BlockPos start, Vec3i size, Color color) {
+        this(Vec3d.of(start), Vec3d.of(size), color);
+    }
+
+    public Cuboid(Vec3d start, Vec3d size, Color color) {
         this.start = start;
         this.size = size;
-        this.edges[0] = new Line(toVec3d(this.start), toVec3d(this.start.add(this.size.getX(), 0, 0)), color);
-        this.edges[1] = new Line(toVec3d(this.start), toVec3d(this.start.add(0, this.size.getY(), 0)), color);
-        this.edges[2] = new Line(toVec3d(this.start), toVec3d(this.start.add(0, 0, this.size.getZ())), color);
-        this.edges[3] = new Line(toVec3d(this.start.add(this.size.getX(), 0, this.size.getZ())), toVec3d(this.start.add(this.size.getX(), 0, 0)), color);
-        this.edges[4] = new Line(toVec3d(this.start.add(this.size.getX(), 0, this.size.getZ())), toVec3d(this.start.add(this.size.getX(), this.size.getY(), this.size.getZ())), color);
-        this.edges[5] = new Line(toVec3d(this.start.add(this.size.getX(), 0, this.size.getZ())), toVec3d(this.start.add(0, 0, this.size.getZ())), color);
-        this.edges[6] = new Line(toVec3d(this.start.add(this.size.getX(), this.size.getY(), 0)), toVec3d(this.start.add(this.size.getX(), 0, 0)), color);
-        this.edges[7] = new Line(toVec3d(this.start.add(this.size.getX(), this.size.getY(), 0)), toVec3d(this.start.add(0, this.size.getY(), 0)), color);
-        this.edges[8] = new Line(toVec3d(this.start.add(this.size.getX(), this.size.getY(), 0)), toVec3d(this.start.add(this.size.getX(), this.size.getY(), this.size.getZ())), color);
-        this.edges[9] = new Line(toVec3d(this.start.add(0, this.size.getY(), this.size.getZ())), toVec3d(this.start.add(0, 0, this.size.getZ())), color);
-        this.edges[10] = new Line(toVec3d(this.start.add(0, this.size.getY(), this.size.getZ())), toVec3d(this.start.add(0, this.size.getY(), 0)), color);
-        this.edges[11] = new Line(toVec3d(this.start.add(0, this.size.getY(), this.size.getZ())), toVec3d(this.start.add(this.size.getX(), this.size.getY(), this.size.getZ())), color);
+        this.edges[0] = new Line(this.start, this.start.add(this.size.getX(), 0, 0), color);
+        this.edges[1] = new Line(this.start, this.start.add(0, this.size.getY(), 0), color);
+        this.edges[2] = new Line(this.start, this.start.add(0, 0, this.size.getZ()), color);
+        this.edges[3] = new Line(this.start.add(this.size.getX(), 0, this.size.getZ()), this.start.add(this.size.getX(), 0, 0), color);
+        this.edges[4] = new Line(this.start.add(this.size.getX(), 0, this.size.getZ()), this.start.add(this.size.getX(), this.size.getY(), this.size.getZ()), color);
+        this.edges[5] = new Line(this.start.add(this.size.getX(), 0, this.size.getZ()), this.start.add(0, 0, this.size.getZ()), color);
+        this.edges[6] = new Line(this.start.add(this.size.getX(), this.size.getY(), 0), this.start.add(this.size.getX(), 0, 0), color);
+        this.edges[7] = new Line(this.start.add(this.size.getX(), this.size.getY(), 0), this.start.add(0, this.size.getY(), 0), color);
+        this.edges[8] = new Line(this.start.add(this.size.getX(), this.size.getY(), 0), this.start.add(this.size.getX(), this.size.getY(), this.size.getZ()), color);
+        this.edges[9] = new Line(this.start.add(0, this.size.getY(), this.size.getZ()), this.start.add(0, 0, this.size.getZ()), color);
+        this.edges[10] = new Line(this.start.add(0, this.size.getY(), this.size.getZ()), this.start.add(0, this.size.getY(), 0), color);
+        this.edges[11] = new Line(this.start.add(0, this.size.getY(), this.size.getZ()), this.start.add(this.size.getX(), this.size.getY(), this.size.getZ()), color);
     }
 
     @Override
@@ -56,7 +66,10 @@ public class Cuboid extends Renderer {
 
     @Override
     public BlockPos getPos() {
-        return this.start.add(this.size.getX() / 2, this.size.getY() / 2, this.size.getZ() / 2);
+        return new BlockPos(this.start.add(this.size.getX() / 2, this.size.getY() / 2, this.size.getZ() / 2));
     }
 
+    public Vec3d getVec() {
+        return this.start.add(this.size.getX() / 2, this.size.getY() / 2, this.size.getZ() / 2);
+    }
 }

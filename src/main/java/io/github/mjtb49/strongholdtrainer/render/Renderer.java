@@ -15,7 +15,4 @@ public abstract class Renderer {
     protected Vec3d toVec3d(BlockPos pos) {
         return new Vec3d(pos.getX(), pos.getY(), pos.getZ());
     }
-
-
-
 }
