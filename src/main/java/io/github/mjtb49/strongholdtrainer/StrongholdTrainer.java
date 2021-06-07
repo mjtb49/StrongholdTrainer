@@ -16,7 +16,7 @@ public class StrongholdTrainer implements ModInitializer  {
 
     @Override
     public void onInitialize() {
-        StrongholdRoomClassifier.init();
+        StrongholdRoomClassifier.init("model102.keras");
         RenderQueue.get().add("hand", matrixStack -> {
             RenderSystem.pushMatrix();
             RenderSystem.multMatrix(matrixStack.peek().getModel());

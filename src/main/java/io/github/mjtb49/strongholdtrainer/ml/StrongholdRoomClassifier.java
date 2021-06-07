@@ -12,9 +12,9 @@ import java.sql.Struct;
 public class StrongholdRoomClassifier {
     private static MultiLayerNetwork model;
 
-    public static void init() {
+    public static void init(String modelPath) {
         try {
-            String simpleMlp = new ClassPathResource("model102.keras").getFile().getPath();
+            String simpleMlp = new ClassPathResource(modelPath).getFile().getPath();
             model = KerasModelImport.importKerasSequentialModelAndWeights(simpleMlp);
         } catch (Exception e) {
             //TODO better exception handling here
