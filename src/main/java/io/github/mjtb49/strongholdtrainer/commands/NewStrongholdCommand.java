@@ -37,8 +37,10 @@ public class NewStrongholdCommand {
                     int x = (int) (c.getSource().getPlayer().getX() + GAP * 8) / 16 / GAP;
                     int z = (int) (c.getSource().getPlayer().getZ() + GAP * 8) / 16 / GAP;
 
-                    if (x * GAP * 16 + GAP * 16 > 30000000)
+                    if (x * GAP * 16 + GAP * 16 > 30000000) {
                         x -= (60000000 / (GAP * 16) - 1);
+                        z += 1;
+                    }
                     if (z * GAP * 16 + GAP * 16 > 30000000)
                         z -= (60000000 / (GAP * 16) - 1);
 
@@ -49,7 +51,7 @@ public class NewStrongholdCommand {
                     Optional<? extends StructureStart<?>> start = c.getSource().getWorld().getStructureAccessor().getStructuresWithChildren(ChunkSectionPos.from(x * GAP, 0, z * GAP), StructureFeature.STRONGHOLD).findFirst();
                     if (start.isPresent()) {
                         StrongholdGenerator.Start strongholdStart = ((StartAccessor) start.get()).getStart();
-                        double yFinal = strongholdStart.getBoundingBox().getCenter().getY() - 2.5;
+                        double yFinal = strongholdStart.getBoundingBox().getCenter().getY() - 4;
 
                         float yaw = 0;
                         switch (Objects.requireNonNull((strongholdStart.getFacing()))) {
