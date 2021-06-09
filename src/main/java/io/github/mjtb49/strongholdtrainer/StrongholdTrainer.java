@@ -53,6 +53,11 @@ public class StrongholdTrainer implements ModInitializer  {
 
     public static void clearAll() {
         cuboidRendererGroup.clear();
+        playerTracerGroup.clear();
+    }
+
+    public static void clearPlayerTracer() {
+        playerTracerGroup.clear();
     }
 
 }

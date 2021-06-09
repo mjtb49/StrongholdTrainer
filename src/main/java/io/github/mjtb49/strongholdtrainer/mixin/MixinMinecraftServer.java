@@ -60,8 +60,11 @@ public class MixinMinecraftServer {
                 ticksInStronghold++;
                 if (!player.isSpectator() && !player.isCreative()) {
                     if (lastPlayerPosition != null)
-                        StrongholdTrainer.submitPlayerLine(new Line(lastPlayerPosition, player.getPos(), Color.PINK));
+                        if (lastPlayerPosition.distanceTo(player.getPos()) < 10)
+                            StrongholdTrainer.submitPlayerLine(new Line(lastPlayerPosition, player.getPos(), Color.PINK));
                     lastPlayerPosition = player.getPos();
+                } else {
+                    lastPlayerPosition = null;
                 }
             }
 
