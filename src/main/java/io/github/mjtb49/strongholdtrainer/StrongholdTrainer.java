@@ -6,10 +6,18 @@ import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
 import io.github.mjtb49.strongholdtrainer.render.*;
 import net.fabricmc.api.ModInitializer;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class StrongholdTrainer implements ModInitializer  {
 
     static RendererGroup<Cuboid> cuboidRendererGroup = new RendererGroup<>(7, RendererGroup.RenderOption.RENDER_FRONT);
     static RendererGroup<Line> playerTracerGroup = new RendererGroup<>(20 * 60 * 5, RendererGroup.RenderOption.RENDER_BACK);
+
+    private static Map<String, Boolean> options = new HashMap<String, Boolean>(){{
+        put("trace",true);
+        put("hints",true);
+    }};
 
     static public void submitRoom(Cuboid cuboid) {
         cuboidRendererGroup.addRenderer(cuboid);
@@ -17,8 +25,6 @@ public class StrongholdTrainer implements ModInitializer  {
     static public void submitPlayerLine(Line line) {
         playerTracerGroup.addRenderer(line);
     }
-
-    private static boolean renderHints = true;
 
     @Override
     public void onInitialize() {
@@ -30,10 +36,11 @@ public class StrongholdTrainer implements ModInitializer  {
             GlStateManager.disableDepthTest();
             RenderSystem.defaultBlendFunc();
 
-            if (cuboidRendererGroup != null && renderHints) {
+            if (cuboidRendererGroup != null && options.get("hints")) {
                 cuboidRendererGroup.render();
                 GlStateManager.enableBlend();
-                playerTracerGroup.render();
+                if (options.get("trace"))
+                    playerTracerGroup.render();
                 GlStateManager.disableBlend();
                 TextRenderer.render();
             }
@@ -43,12 +50,12 @@ public class StrongholdTrainer implements ModInitializer  {
         });
     }
 
-    public static void setRenderHints(boolean renderHints) {
-       StrongholdTrainer.renderHints = renderHints;
+    public static void setOption(String optionID, boolean option) {
+       options.put(optionID, option);
     }
 
-    public static boolean getRenderHints() {
-        return renderHints;
+    public static boolean getOption(String optionID) {
+        return options.get(optionID);
     }
 
     public static void clearAll() {

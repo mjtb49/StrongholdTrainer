@@ -11,19 +11,19 @@ import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-public class HintsCommand {
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+public class OptionCommand {
+    public static void register(String optionID, CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-                literal("hints").then(
-                        argument("renderHints", bool()).executes(
+                literal(optionID).then(
+                        argument(optionID, bool()).executes(
                                 c -> {
-                                    StrongholdTrainer.setOption("hints", getBool(c, "renderHints"));
+                                    StrongholdTrainer.setOption(optionID, getBool(c, optionID));
                                     return 1;
                                 }
                         )
                 ).executes(
                         c -> {
-                            StrongholdTrainer.setOption("hints", !StrongholdTrainer.getOption("hints"));
+                            StrongholdTrainer.setOption(optionID, !StrongholdTrainer.getOption(optionID));
                             return 1;
                         }
                 )

@@ -58,7 +58,7 @@ public class MixinMinecraftServer {
 
             if (ticksInStronghold >= 0) {
                 ticksInStronghold++;
-                if (!player.isSpectator() && !player.isCreative()) {
+                if (!player.isSpectator() && !player.isCreative() && StrongholdTrainer.getOption("trace")) {
                     if (lastPlayerPosition != null)
                         if (lastPlayerPosition.distanceTo(player.getPos()) < 10)
                             StrongholdTrainer.submitPlayerLine(new Line(lastPlayerPosition.add(0,0.01,0), player.getPos().add(0,0.01,0), Color.PINK));
@@ -86,12 +86,13 @@ public class MixinMinecraftServer {
                     if (piece.getBoundingBox().contains(player.getBlockPos())) {
                         if (lastpiece != piece) {
 
-                            if (lastpiece instanceof StrongholdGenerator.Start && !lastpiece.getBoundingBox().contains(player.getBlockPos())) {
+                            if (lastpiece instanceof StrongholdGenerator.Start && ticksInStronghold < 0 && !((StartAccessor)start).hasBeenRouted() && !lastpiece.getBoundingBox().contains(player.getBlockPos())) {
                                 ticksInStronghold = 1;
                             }
 
                             if (piece instanceof StrongholdGenerator.PortalRoom && ticksInStronghold >= 0) {
                                 player.sendMessage(new LiteralText("Time of " + ticksInStronghold / 20.0 + " seconds").formatted(Formatting.DARK_GREEN), false);
+                                ((StartAccessor)start).setHasBeenRouted(true);
                                 ticksInStronghold = -1;
                             }
 

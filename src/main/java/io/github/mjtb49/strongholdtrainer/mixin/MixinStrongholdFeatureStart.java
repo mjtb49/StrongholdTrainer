@@ -25,6 +25,8 @@ public abstract class MixinStrongholdFeatureStart extends StructureStart impleme
     @Unique
     private int yOffset;
 
+    private boolean hasBeenRouted = false;
+
     @Unique
     private StrongholdGenerator.Start start;
 
@@ -94,5 +96,15 @@ public abstract class MixinStrongholdFeatureStart extends StructureStart impleme
     @Override
     public StrongholdGenerator.Start getStart() {
         return this.start;
+    }
+
+    @Override
+    public boolean hasBeenRouted() {
+        return hasBeenRouted;
+    }
+
+    @Override
+    public void setHasBeenRouted(boolean hasBeenRouted) {
+        this.hasBeenRouted = hasBeenRouted;
     }
 }
