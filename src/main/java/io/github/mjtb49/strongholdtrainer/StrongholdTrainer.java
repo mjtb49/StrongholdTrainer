@@ -9,7 +9,7 @@ import net.fabricmc.api.ModInitializer;
 public class StrongholdTrainer implements ModInitializer  {
 
     static RendererGroup<Cuboid> cuboidRendererGroup = new RendererGroup<>(7, RendererGroup.RenderOption.RENDER_FRONT);
-    static RendererGroup<Line> playerTracerGroup = new RendererGroup<>(20 * 60 * 5, RendererGroup.RenderOption.RENDER_FRONT);
+    static RendererGroup<Line> playerTracerGroup = new RendererGroup<>(20 * 60 * 5, RendererGroup.RenderOption.RENDER_BACK);
 
     static public void submitRoom(Cuboid cuboid) {
         cuboidRendererGroup.addRenderer(cuboid);
@@ -32,9 +32,9 @@ public class StrongholdTrainer implements ModInitializer  {
 
             if (cuboidRendererGroup != null && renderHints) {
                 cuboidRendererGroup.render();
-                GlStateManager.enableDepthTest();
+                GlStateManager.enableBlend();
                 playerTracerGroup.render();
-                GlStateManager.disableDepthTest();
+                GlStateManager.disableBlend();
                 TextRenderer.render();
             }
 

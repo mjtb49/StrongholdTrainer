@@ -61,7 +61,7 @@ public class MixinMinecraftServer {
                 if (!player.isSpectator() && !player.isCreative()) {
                     if (lastPlayerPosition != null)
                         if (lastPlayerPosition.distanceTo(player.getPos()) < 10)
-                            StrongholdTrainer.submitPlayerLine(new Line(lastPlayerPosition, player.getPos(), Color.PINK));
+                            StrongholdTrainer.submitPlayerLine(new Line(lastPlayerPosition.add(0,0.01,0), player.getPos().add(0,0.01,0), Color.PINK));
                     lastPlayerPosition = player.getPos();
                 } else {
                     lastPlayerPosition = null;
