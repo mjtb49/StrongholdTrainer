@@ -5,8 +5,11 @@ import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.util.math.Direction;
 import org.apache.commons.lang3.ArrayUtils;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
+import org.tensorflow.Tensor;
+import org.tensorflow.ndarray.LongNdArray;
+import org.tensorflow.ndarray.NdArrays;
+import org.tensorflow.ndarray.Shape;
+import org.tensorflow.types.TInt64;
 
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +53,10 @@ public class RoomHelper {
     //    lists += dir_to_vector[direction]
     //    data.write(str(lists) + '\n')
     //    labels.write(str([label]) + '\n')
-    protected static INDArray getMLInputFromRoom(StrongholdGenerator.Start start, StrongholdGenerator.Piece piece) {
+
+
+    // Note: Possibly some unsafe tensor things happening here.
+    protected static Tensor getMLInputFromRoom(StrongholdGenerator.Start start, StrongholdGenerator.Piece piece) {
         //TODO looks like start is null here sometimes
         Map<StructurePiece, StructurePiece> parents = ((StrongholdTreeAccessor) start).getParents();
 
@@ -70,7 +76,15 @@ public class RoomHelper {
                 data[0] = ArrayUtils.addAll(data[0], getArrayFromPiece(null));
         }
         data[0] = ArrayUtils.addAll(data[0], DIR_TO_VECTOR.get(direction));
-        return Nd4j.createFromArray(data);
+        // Model input has a dtype of int64
+        LongNdArray input = NdArrays.ofLongs(Shape.of(1, data[0].length));
+        long[][] toInt64 = new long[1][data[0].length];
+        for(int i = 0; i < toInt64[0].length; ++i){
+            toInt64[0][i] = data[0][i];
+        }
+        input.set(NdArrays.vectorOf(toInt64[0]), 0);
+        return TInt64.tensorOf(input);
+
     }
 
     //for _ in range(5 - len(children)):
@@ -82,7 +96,7 @@ public class RoomHelper {
     //        lists += room_to_vector[child]
     //    data.write(str(lists) + '\n')
     //    labels.write(str([label]) + '\n')
-    protected static INDArray getMLInputFromRoomNoDir(StrongholdGenerator.Start start, StrongholdGenerator.Piece piece) {
+    /*protected static INDArray getMLInputFromRoomNoDir(StrongholdGenerator.Start start, StrongholdGenerator.Piece piece) {
 
         Map<StructurePiece, StructurePiece> parents = ((StrongholdTreeAccessor) start).getParents();
 
@@ -101,7 +115,7 @@ public class RoomHelper {
                 data[0] = ArrayUtils.addAll(data[0], getArrayFromPiece(null));
         }
         return Nd4j.createFromArray(data);
-    }
+    }*/
 
     static private int[] getArrayFromPiece(StructurePiece piece) {
         if (piece == null)
