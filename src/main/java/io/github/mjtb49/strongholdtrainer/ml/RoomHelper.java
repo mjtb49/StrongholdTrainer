@@ -43,18 +43,6 @@ public class RoomHelper {
     }};
 
 
-    //for _ in range(5 - len(children)):
-    //        children.append('None')
-    //
-    //    lists = [depth]
-    //    lists += room_to_vector[last] + room_to_vector[current]
-    //    for child in children:
-    //        lists += room_to_vector[child]
-    //    lists += dir_to_vector[direction]
-    //    data.write(str(lists) + '\n')
-    //    labels.write(str([label]) + '\n')
-
-
     // Note: Possibly some unsafe tensor things happening here.
     protected static Tensor getMLInputFromRoom(StrongholdGenerator.Start start, StrongholdGenerator.Piece piece) {
         //TODO looks like start is null here sometimes
@@ -76,27 +64,11 @@ public class RoomHelper {
                 data[0] = ArrayUtils.addAll(data[0], getArrayFromPiece(null));
         }
         data[0] = ArrayUtils.addAll(data[0], DIR_TO_VECTOR.get(direction));
-        // Model input has a dtype of int64
-        LongNdArray input = NdArrays.ofLongs(Shape.of(1, data[0].length));
-        long[][] toInt64 = new long[1][data[0].length];
-        for(int i = 0; i < toInt64[0].length; ++i){
-            toInt64[0][i] = data[0][i];
-        }
-        input.set(NdArrays.vectorOf(toInt64[0]), 0);
-        return TInt64.tensorOf(input);
+        return intArrayToInputTensor(data);
 
     }
 
-    //for _ in range(5 - len(children)):
-    //        children.append('None')
-    //
-    //    lists = [depth]
-    //    lists += room_to_vector[last] + room_to_vector[current]
-    //    for child in children:
-    //        lists += room_to_vector[child]
-    //    data.write(str(lists) + '\n')
-    //    labels.write(str([label]) + '\n')
-    /*protected static INDArray getMLInputFromRoomNoDir(StrongholdGenerator.Start start, StrongholdGenerator.Piece piece) {
+    protected static Tensor getMLInputFromRoomNoDir(StrongholdGenerator.Start start, StrongholdGenerator.Piece piece) {
 
         Map<StructurePiece, StructurePiece> parents = ((StrongholdTreeAccessor) start).getParents();
 
@@ -114,13 +86,23 @@ public class RoomHelper {
             else
                 data[0] = ArrayUtils.addAll(data[0], getArrayFromPiece(null));
         }
-        return Nd4j.createFromArray(data);
-    }*/
+        return intArrayToInputTensor(data);
+    }
 
     static private int[] getArrayFromPiece(StructurePiece piece) {
         if (piece == null)
             return ROOM_TO_VECTOR.get("None");
         else
             return ROOM_TO_VECTOR.get(piece.getClass().getSimpleName());
+    }
+
+    static protected Tensor intArrayToInputTensor(int[][] data){
+        LongNdArray input = NdArrays.ofLongs(Shape.of(1, data[0].length));
+        long[][] toInt64 = new long[1][data[0].length];
+        for(int i = 0; i < toInt64[0].length; ++i){
+            toInt64[0][i] = data[0][i];
+        }
+        input.set(NdArrays.vectorOf(toInt64[0]), 0);
+        return TInt64.tensorOf(input);
     }
 }
