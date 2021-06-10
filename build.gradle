@@ -47,10 +47,7 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude "fabric.mod.json"
     }
-
-    from(sourceSets.main.resources.srcDirs) {
-        include "model102/"
-    }
+    
 }
 
 // ensure that the encoding is set to UTF-8, no matter what the system default is
