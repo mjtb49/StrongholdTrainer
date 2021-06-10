@@ -31,9 +31,7 @@ dependencies {
         exclude module: "fabric-loader"
     }
 
-    implementation "org.deeplearning4j:deeplearning4j-core:1.0.0-beta6"
-    implementation "org.nd4j:nd4j-native-platform:1.0.0-beta6"
-    //compile group: 'org.tensorflow', name: 'tensorflow-core-platform', version: '0.3.1'
+    compile group: 'org.tensorflow', name: 'tensorflow-core-platform', version: '0.3.1'
     //Fabric api
     //modImplementation "net.fabricmc.fabric-api:fabric-api:0.18.0+build.387-1.16.1"
 }
@@ -48,6 +46,10 @@ processResources {
 
     from(sourceSets.main.resources.srcDirs) {
         exclude "fabric.mod.json"
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        include "model102/"
     }
 }
 
