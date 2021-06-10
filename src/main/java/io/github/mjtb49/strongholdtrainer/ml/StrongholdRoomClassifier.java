@@ -9,6 +9,7 @@ import org.tensorflow.Tensor;
 import org.tensorflow.ndarray.Shape;
 import org.tensorflow.types.TFloat32;
 
+import java.io.File;
 import java.util.Arrays;
 
 public class StrongholdRoomClassifier {
@@ -17,19 +18,19 @@ public class StrongholdRoomClassifier {
 
     public static void init(String modelPath) {
         try {
-            // This classpath load is cursed and needs to be fixed.
-            // TODO: Un-hardcode the path
-            bundle = SavedModelBundle.load(Thread.currentThread().getContextClassLoader().getResource("model102/").getPath().substring(1), "serve");
+            File modelFolder = new File(Thread.currentThread().getContextClassLoader().getResource(modelPath).getPath());
+            bundle = SavedModelBundle.load(modelFolder.getPath(), "serve");
         } catch (Exception e) {
             //TODO better exception handling here
             System.err.println(e.getMessage());
-            System.err.println("LOL");
+            System.err.println("Unable to load model " + modelPath);
         }
     }
 
 
     public static double[] getPredictions(StrongholdGenerator.Start start, StrongholdGenerator.Piece piece) {
         //hack fix since the model hasn't been trained on rooms where the portal room is adjacent
+        // TODO: Make sure the model works properly when converted
         int index = 0;
         for (StructurePiece piece1 : ((StrongholdTreeAccessor) start).getTree().get(piece)) {
             if (piece1 instanceof StrongholdGenerator.PortalRoom) {
@@ -48,10 +49,13 @@ public class StrongholdRoomClassifier {
                     .feed("serving_default_input_1:0", input)
                     .fetch("StatefulPartitionedCall:0")
                     .run().get(0)){
-                if(out instanceof TFloat32 && out.shape() == Shape.of(1,5)){
+                System.out.println(out.shape());
+                if(out instanceof TFloat32 && out.shape().isCompatibleWith(Shape.of(1,5))){
                     for(int i = 0; i < 5; ++i){
                         predictions[i] = ((TFloat32) out).getFloat(0,i);
                     }
+                } else {
+                    System.out.println("Output from model is not formatted correctly. The output needs to be a [1,5] float32 tensor.");
                 }
             }
         }
