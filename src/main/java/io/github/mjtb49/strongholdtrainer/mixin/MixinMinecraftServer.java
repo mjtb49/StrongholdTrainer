@@ -11,7 +11,6 @@ import io.github.mjtb49.strongholdtrainer.render.Line;
 import io.github.mjtb49.strongholdtrainer.render.TextRenderer;
 import io.github.mjtb49.strongholdtrainer.util.EntryNode;
 import io.github.mjtb49.strongholdtrainer.util.StrongholdSearcher;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.ServerNetworkIo;
@@ -54,24 +53,17 @@ public class MixinMinecraftServer {
     private void inject(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
 
         for (ServerPlayerEntity player : this.playerManager.getPlayerList()) {
-            ServerWorld world = player.getServerWorld();
 
-            if (ticksInStronghold >= 0) {
-                ticksInStronghold++;
-                if (!player.isSpectator() && !player.isCreative() && StrongholdTrainer.getOption("trace")) {
-                    if (lastPlayerPosition != null)
-                        if (lastPlayerPosition.distanceTo(player.getPos()) < 10)
-                            StrongholdTrainer.submitPlayerLine(new Line(lastPlayerPosition.add(0,0.01,0), player.getPos().add(0,0.01,0), Color.PINK));
-                    lastPlayerPosition = player.getPos();
-                } else {
-                    lastPlayerPosition = null;
-                }
-            }
+            tracePlayer(player);
+
+            ServerWorld world = player.getServerWorld();
 
             StructureStart<?> start = world.getStructureAccessor().method_28388(player.getBlockPos(), true, StructureFeature.STRONGHOLD);
 
             if (start != StructureStart.DEFAULT) {
+
                 StrongholdGenerator.Start strongholdStart = ((StartAccessor)start).getStart();
+
                 if (strongholdStart == null) {
                     if (!this.visitedNull.contains(start)) {
                         this.visitedNull.add(start);
@@ -81,115 +73,146 @@ public class MixinMinecraftServer {
                 }
 
                 for (StructurePiece piece : start.getChildren()) {
-                    int yOffset = ((StartAccessor)start).getYOffset();
-
                     if (piece.getBoundingBox().contains(player.getBlockPos())) {
                         if (lastpiece != piece) {
-
-                            if (lastpiece instanceof StrongholdGenerator.Start && ticksInStronghold < 0 && !((StartAccessor)start).hasBeenRouted() && !lastpiece.getBoundingBox().contains(player.getBlockPos())) {
-                                ticksInStronghold = 1;
-                            }
-
-                            if (piece instanceof StrongholdGenerator.PortalRoom && ticksInStronghold >= 0) {
-                                player.sendMessage(new LiteralText("Time of " + ticksInStronghold / 20.0 + " seconds").formatted(Formatting.DARK_GREEN), false);
-                                ((StartAccessor)start).setHasBeenRouted(true);
-                                ticksInStronghold = -1;
-                            }
-
+                            onRoomUpdate(start, piece, player);
+                            drawRoomsAndDoors(start, strongholdStart, piece,player);
                             lastpiece = piece;
-                            double[] policy = StrongholdRoomClassifier.getPredictions(((StartAccessor) start).getStart(), (StrongholdGenerator.Piece) piece);
-
-                            //StringBuilder s = new StringBuilder();
-                            //Arrays.stream(policy).forEach(e -> s.append(df.format(e)).append(" "));
-                            //player.sendMessage(new LiteralText(s.toString()).formatted(Formatting.YELLOW), false);
-
-                            List<StructurePiece> pieces = ((StrongholdTreeAccessor)((StartAccessor) start).getStart()).getTree().getOrDefault(piece, new ArrayList<>());
-
-                            this.percents.clear();
-                            int idx = -1;
-                            double min = Double.NEGATIVE_INFINITY;
-                            for (int i = 0; i < policy.length; i++) {
-                                double p = policy[i];
-
-                                if (i < pieces.size()) {
-                                    this.percents.put(pieces.get(i), p);
-                                }
-
-                                if (p > min) {
-                                    idx = i;
-                                    min = p;
-                                }
-                            }
-
-                            if (idx < pieces.size()) {
-                                this.mlChosen = pieces.get(idx);
-                            } else {
-                                this.mlChosen = null;
-                            }
-                        }
-                        Cuboid cuboid = new Cuboid(piece.getBoundingBox(), Color.PURPLE);
-
-                        StrongholdTrainer.submitRoom(cuboid);
-                        // TODO: good idea to cache this, doesn't seem to hurt perf too much
-                        StructurePiece searchResult = StrongholdSearcher.search(((StrongholdTreeAccessor)strongholdStart).getTree(), piece);
-
-                        TextRenderer.clear();
-
-                        TextRenderer.add(cuboid.getVec(), "Depth: " + piece.getLength(), 0.01f);
-                        TextRenderer.add(cuboid.getVec().add(0, -0.2, 0), "Direction: " + piece.getFacing(), 0.01f);
-                        TextRenderer.add(cuboid.getVec().add(0, -0.4, 0), "Type: " + piece.getClass().getSimpleName(), 0.01f);
-
-                        for (EntryNode node : ((EntranceAccessor) piece).getEntrances()) {
-                            // Means we've reached a dead end- don't render forwards entries
-                            if (node.pointer == null && node.type == EntryNode.Type.FORWARDS) {
-                                continue;
-                            }
-
-                            BlockBox entrance = node.box;
-
-                            BlockBox newBox = new BlockBox(entrance.minX, entrance.minY + yOffset, entrance.minZ, entrance.maxX - 1, entrance.maxY + yOffset - 1, entrance.maxZ - 1);
-
-                            Color color = node.type == EntryNode.Type.FORWARDS ? Color.WHITE : Color.YELLOW;
-
-                            boolean isBlue = false;
-                            if (searchResult == null) {
-                                if (node.type == EntryNode.Type.BACKWARDS) {
-                                    color = Color.BLUE;
-                                    isBlue = true;
-                                }
-                            } else if (node.type == EntryNode.Type.FORWARDS && searchResult == node.pointer) {
-                                color = Color.BLUE;
-                                isBlue = true;
-                            }
-
-                            if (node.pointer != null && node.pointer == this.mlChosen) {
-                                if (isBlue) {
-
-                                    StrongholdTrainer.submitRoom(new Cuboid(Box.from(newBox).expand(0.05), Color.GREEN));
-                                } else {
-                                    color = Color.GREEN;
-                                }
-                            }
-
-                            Cuboid door = new Cuboid(newBox, color);
-                            StrongholdTrainer.submitRoom(door);
-
-                            if (node.pointer != null) {
-                                String text = df.format(this.percents.getOrDefault(node.pointer, 0.0) * 100) + "%";
-                                TextRenderer.add(door.getVec(), text);
-                            }
-
-                            if (node.type == EntryNode.Type.BACKWARDS) {
-                                // TODO: remove when we've implemented this
-                                TextRenderer.add(door.getVec(), "not supported", 0.01f);
-                            }
                         }
                     }
                 }
+
             }
             //if (start != StructureStart.DEFAULT) {
             //    System.out.println("In stronghold");
             //}
+        }
+    }
+
+    private void drawRoomsAndDoors(StructureStart<?> start, StrongholdGenerator.Start strongholdStart, StructurePiece piece, ServerPlayerEntity player) {
+        int yOffset = ((StartAccessor)start).getYOffset();
+
+        Cuboid cuboid = new Cuboid(piece.getBoundingBox(), Color.PURPLE);
+
+        StrongholdTrainer.submitRoom(cuboid);
+        // TODO: good idea to cache this, doesn't seem to hurt perf too much
+        StructurePiece searchResult = StrongholdSearcher.search(((StrongholdTreeAccessor)strongholdStart).getTree(), piece);
+
+        TextRenderer.clear();
+
+        TextRenderer.add(cuboid.getVec(), "Depth: " + piece.getLength(), 0.01f);
+        TextRenderer.add(cuboid.getVec().add(0, -0.2, 0), "Direction: " + piece.getFacing(), 0.01f);
+        TextRenderer.add(cuboid.getVec().add(0, -0.4, 0), "Type: " + piece.getClass().getSimpleName(), 0.01f);
+
+        for (EntryNode node : ((EntranceAccessor) piece).getEntrances()) {
+            // Means we've reached a dead end- don't render forwards entries
+            if (node.pointer == null && node.type == EntryNode.Type.FORWARDS) {
+                continue;
+            }
+
+            BlockBox entrance = node.box;
+
+            BlockBox newBox = new BlockBox(entrance.minX, entrance.minY + yOffset, entrance.minZ, entrance.maxX - 1, entrance.maxY + yOffset - 1, entrance.maxZ - 1);
+
+            Color color = node.type == EntryNode.Type.FORWARDS ? Color.WHITE : Color.YELLOW;
+
+            boolean isBlue = false;
+            if (searchResult == null) {
+                if (node.type == EntryNode.Type.BACKWARDS) {
+                    color = Color.BLUE;
+                    isBlue = true;
+                }
+            } else if (node.type == EntryNode.Type.FORWARDS && searchResult == node.pointer) {
+                color = Color.BLUE;
+                isBlue = true;
+            }
+
+            if (node.pointer != null && node.pointer == this.mlChosen) {
+                if (isBlue) {
+
+                    StrongholdTrainer.submitRoom(new Cuboid(Box.from(newBox).expand(0.05), Color.GREEN));
+                } else {
+                    color = Color.GREEN;
+                }
+            }
+
+            Cuboid door = new Cuboid(newBox, color);
+            StrongholdTrainer.submitRoom(door);
+
+            if (node.pointer != null) {
+                String text = df.format(this.percents.getOrDefault(node.pointer, 0.0) * 100) + "%";
+                TextRenderer.add(door.getVec(), text);
+            }
+
+            if (node.type == EntryNode.Type.BACKWARDS) {
+                // TODO: remove when we've implemented this
+                TextRenderer.add(door.getVec(), "not supported", 0.01f);
+            }
+        }
+    }
+
+    private void onRoomUpdate(StructureStart<?> start, StructurePiece piece, ServerPlayerEntity player) {
+        if (lastpiece != piece) {
+            updateTimer(start, piece, player);
+            updateMLChoice(start, piece, player);
+        }
+    }
+
+    private void updateTimer(StructureStart<?> start, StructurePiece piece, ServerPlayerEntity player) {
+        if (lastpiece instanceof StrongholdGenerator.Start && ticksInStronghold < 0 && !((StartAccessor)start).hasBeenRouted() && !lastpiece.getBoundingBox().contains(player.getBlockPos())) {
+            ticksInStronghold = 1;
+        }
+
+        if (piece instanceof StrongholdGenerator.PortalRoom && ticksInStronghold >= 0) {
+            player.sendMessage(new LiteralText("Time of " + ticksInStronghold / 20.0 + " seconds").formatted(Formatting.DARK_GREEN), false);
+            ((StartAccessor)start).setHasBeenRouted(true);
+            ticksInStronghold = -1;
+        }
+    }
+
+    private void updateMLChoice(StructureStart<?> start, StructurePiece piece, ServerPlayerEntity player) {
+        double[] policy = StrongholdRoomClassifier.getPredictions(((StartAccessor) start).getStart(), (StrongholdGenerator.Piece) piece);
+
+        //StringBuilder s = new StringBuilder();
+        //Arrays.stream(policy).forEach(e -> s.append(df.format(e)).append(" "));
+        //player.sendMessage(new LiteralText(s.toString()).formatted(Formatting.YELLOW), false);
+
+        List<StructurePiece> pieces = ((StrongholdTreeAccessor)((StartAccessor) start).getStart()).getTree().getOrDefault(piece, new ArrayList<>());
+
+        this.percents.clear();
+        int idx = -1;
+        double min = Double.NEGATIVE_INFINITY;
+        for (int i = 0; i < policy.length; i++) {
+            double p = policy[i];
+
+            if (i < pieces.size()) {
+                this.percents.put(pieces.get(i), p);
+            }
+
+            if (p > min) {
+                idx = i;
+                min = p;
+            }
+        }
+
+        if (idx < pieces.size()) {
+            this.mlChosen = pieces.get(idx);
+        } else {
+            this.mlChosen = null;
+        }
+    }
+
+    private void tracePlayer(ServerPlayerEntity player) {
+        if (ticksInStronghold >= 0) {
+            ticksInStronghold++;
+            if (!player.isSpectator() && !player.isCreative() && StrongholdTrainer.getOption("trace")) {
+                if (lastPlayerPosition != null)
+                    if (lastPlayerPosition.distanceTo(player.getPos()) < 10)
+                        StrongholdTrainer.submitPlayerLine(new Line(lastPlayerPosition.add(0,0.01,0), player.getPos().add(0,0.01,0), Color.PINK));
+                lastPlayerPosition = player.getPos();
+            } else {
+                lastPlayerPosition = null;
+            }
         }
     }
 }
