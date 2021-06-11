@@ -76,7 +76,7 @@ public class MixinMinecraftServer {
                     if (piece.getBoundingBox().contains(player.getBlockPos())) {
                         if (lastpiece != piece) {
                             onRoomUpdate(start, piece, player);
-                            drawRoomsAndDoors(start, strongholdStart, piece,player);
+                            drawRoomsAndDoors(start, strongholdStart, piece, player);
                             lastpiece = piece;
                         }
                     }
