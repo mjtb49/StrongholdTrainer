@@ -55,7 +55,7 @@ public class STInfoCommand {
     };
 
     private static final Text[] statsInfo = new Text[]{
-            new LiteralText("\nStatistics\n").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.YELLOW),
+            new LiteralText("\nStatistics & Timing\n").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.YELLOW),
             new LiteralText("TODO: write-up on stats")
     };
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher){
