@@ -20,6 +20,7 @@ public class StrongholdTrainer implements ModInitializer  {
         put("trace",true);
         put("hints",true);
         put("isReviewing",false);
+        put("doorLabels", false);
     }};
     public static boolean ML_DISABLED = false;
     static public void submitRoom(Cuboid cuboid) {

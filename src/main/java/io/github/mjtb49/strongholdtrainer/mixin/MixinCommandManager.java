@@ -32,6 +32,7 @@ public abstract class MixinCommandManager {
         OptionCommand.register("hints", dispatcher);
         OptionCommand.register("trace", dispatcher);
         ModelCommand.register(dispatcher);
+        OptionCommand.register("doorLabels", dispatcher);
         STInfoCommand.register(dispatcher);
     }
 }
