@@ -31,9 +31,10 @@ public class StrongholdRoomClassifier {
             // Experimental - This code extracts the model.zip containing the model to the config directory reserved for the mode
             /* TODO(critical): Write extensive validation code to prevent zipslip and other possible zip-based attacks (https://snyk.io/research/zip-slip-vulnerability). */
             File modelFolder;
-            if(/*FabricLoader.getInstance().isDevelopmentEnvironment()*/ false){
+            if(FabricLoader.getInstance().isDevelopmentEnvironment()){
                 System.out.println("Detected a development environment, using ClassLoader");
                 modelFolder = new File(Thread.currentThread().getContextClassLoader().getResource(modelPath).getPath());
+                bundle = SavedModelBundle.load(modelFolder.getPath().toString(), "serve");
             } else {
                 // This is dependent on the model being stored there
                 // TODO: Add initialization if the directory is empty
@@ -48,8 +49,10 @@ public class StrongholdRoomClassifier {
                     URLConnection connection = Thread.currentThread().getContextClassLoader().getResource("model.zip").openConnection();
                     unzipModel(new ZipInputStream(connection.getInputStream()));
                 }
+                String path = modelFolder.toPath().resolve("model/").toAbsolutePath().toString();
+                bundle = SavedModelBundle.load(path, "serve");
             }
-            bundle = SavedModelBundle.load(modelFolder.toPath().resolve("model/").toAbsolutePath().toString(), "serve");
+
         } catch (Exception e) {
             //TODO better exception handling here
             e.printStackTrace();
