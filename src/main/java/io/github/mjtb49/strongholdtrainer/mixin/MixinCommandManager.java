@@ -5,6 +5,7 @@ import io.github.mjtb49.strongholdtrainer.commands.ModelCommand;
 import io.github.mjtb49.strongholdtrainer.commands.NewStrongholdCommand;
 import io.github.mjtb49.strongholdtrainer.commands.NextMistakeCommand;
 import io.github.mjtb49.strongholdtrainer.commands.OptionCommand;
+import io.github.mjtb49.strongholdtrainer.commands.STInfoCommand;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import org.spongepowered.asm.mixin.Final;
@@ -31,5 +32,6 @@ public abstract class MixinCommandManager {
         OptionCommand.register("hints", dispatcher);
         OptionCommand.register("trace", dispatcher);
         ModelCommand.register(dispatcher);
+        STInfoCommand.register(dispatcher);
     }
 }
