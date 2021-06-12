@@ -1,7 +1,6 @@
 package io.github.mjtb49.strongholdtrainer.ml;
 
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import org.tensorflow.SavedModelBundle;
@@ -10,53 +9,20 @@ import org.tensorflow.Tensor;
 import org.tensorflow.ndarray.Shape;
 import org.tensorflow.types.TFloat32;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URLConnection;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 
 public class StrongholdRoomClassifier {
     private static SavedModelBundle bundle;
 
 
-    public static void init(String modelPath) {
+    public static void init(String zippedModelPath, String modelPath) {
         try {
-            // Experimental - This code extracts the model.zip containing the model to the config directory reserved for the mode
-            /* TODO(critical): Write extensive validation code to prevent zipslip and other possible zip-based attacks (https://snyk.io/research/zip-slip-vulnerability). */
-            File modelFolder;
-            if(FabricLoader.getInstance().isDevelopmentEnvironment()){
-                System.out.println("Detected a development environment, using ClassLoader");
-                modelFolder = new File(Thread.currentThread().getContextClassLoader().getResource(modelPath).getPath());
-                bundle = SavedModelBundle.load(modelFolder.getPath().toString(), "serve");
-            } else {
-                // This is dependent on the model being stored there
-                // TODO: Add initialization if the directory is empty
-
-                modelFolder = new File(String.valueOf(FabricLoader.getInstance().getConfigDir().resolve("stronghold-trainer")));
-                System.out.println("Detected a production environment, extracting model to " + modelFolder.getPath());
-
-                if(!modelFolder.mkdirs()){
-                    System.out.println("Unable to initialize config directory.");
-                }
-                if(modelFolder.isDirectory() && modelFolder.listFiles().length == 0){
-                    URLConnection connection = Thread.currentThread().getContextClassLoader().getResource("model.zip").openConnection();
-                    unzipModel(new ZipInputStream(connection.getInputStream()));
-                }
-                String path = modelFolder.toPath().resolve("model/").toAbsolutePath().toString();
-                bundle = SavedModelBundle.load(path, "serve");
-            }
-
+            SavedModelLoader loader = new SavedModelLoader(zippedModelPath, modelPath, Thread.currentThread().getContextClassLoader(), false);
+            bundle = loader.loadModel();
         } catch (Exception e) {
             //TODO better exception handling here
             e.printStackTrace();
-            System.err.println( e.getMessage());
+            System.err.println(e.getMessage());
             System.err.println("Unable to load model " + modelPath);
         }
     }
@@ -98,35 +64,5 @@ public class StrongholdRoomClassifier {
         return predictions;
     }
 
-    /**
-     * Unzip our model to the config directory
-     */
-    public static void unzipModel(ZipFile f) throws IOException {
-        // TODO: Is config the best palce to put this?
-        Path targetDirectory = Paths.get(FabricLoader.getInstance().getConfigDir() + "/stronghold-trainer/");
-        System.out.println("Unzipping model to " + targetDirectory);
-        Enumeration<? extends ZipEntry> entries = f.entries();
-        while(entries.hasMoreElements()){
-            ZipEntry currentEntry = entries.nextElement();
-            if(currentEntry.isDirectory()){
-                Files.createDirectories(targetDirectory.resolve(currentEntry.getName()));
-            } else{
-                Files.copy(f.getInputStream(currentEntry), targetDirectory.resolve(currentEntry.getName()));
-            }
-        }
-    }
 
-    public static void unzipModel(ZipInputStream f) throws IOException {
-        // TODO: Is config the best palce to put this?
-        Path targetDirectory = Paths.get(FabricLoader.getInstance().getConfigDir() + "/stronghold-trainer/");
-        System.out.println("Unzipping model to " + targetDirectory);
-        ZipEntry e;
-        while((e = f.getNextEntry()) != null){
-            if(e.isDirectory()){
-                Files.createDirectories(targetDirectory.resolve(e.getName()));
-            } else{
-                Files.copy(f, targetDirectory.resolve(e.getName()));
-            }
-        }
-    }
 }

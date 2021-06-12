@@ -33,7 +33,7 @@ public class StrongholdTrainer implements ModInitializer  {
 
     @Override
     public void onInitialize() {
-        StrongholdRoomClassifier.init("model/");
+        StrongholdRoomClassifier.init("model.zip", "model/");
         RenderQueue.get().add("hand", matrixStack -> {
             RenderSystem.pushMatrix();
             RenderSystem.multMatrix(matrixStack.peek().getModel());
