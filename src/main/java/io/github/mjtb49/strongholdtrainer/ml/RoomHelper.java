@@ -2,7 +2,6 @@ package io.github.mjtb49.strongholdtrainer.ml;
 
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.structure.NetherFortressGenerator;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructurePieceType;
@@ -51,7 +50,7 @@ public class RoomHelper {
 
 
     // Note: Possibly some unsafe tensor things happening here.
-    protected static Tensor getMLInputFromRoom(StrongholdGenerator.Start start, StrongholdGenerator.Piece piece) {
+    public static Tensor getMLInputFromRoom(StrongholdGenerator.Start start, StrongholdGenerator.Piece piece) {
         //TODO looks like start is null here sometimes
         Map<StructurePiece, StructurePiece> parents = ((StrongholdTreeAccessor) start).getParents();
 
@@ -69,7 +68,7 @@ public class RoomHelper {
                 data[0] = ArrayUtils.addAll(data[0], getArrayFromPiece(children.get(i)));
             }
             else {
-                System.out.println(Arrays.deepToString(data));
+//                System.out.println(Arrays.deepToString(data));
                 data[0] = ArrayUtils.addAll(data[0], getArrayFromPiece(null));
             }
         }
