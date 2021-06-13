@@ -34,7 +34,8 @@ public class StrongholdTrainer implements ModInitializer  {
 
     @Override
     public void onInitialize() {
-        if(!(System.getProperty("os.arch").contains("64") && !System.getProperty("os.arch").contains("arm"))){
+        System.out.println(System.getProperty("os.arch"));
+        if(!(System.getProperty("os.arch").contains("64") || !System.getProperty("os.arch").contains("arm"))){
             System.out.println(System.getProperty("os.arch") + " not supported. Disabling ML operations.");
             ML_DISABLED = true;
         }
