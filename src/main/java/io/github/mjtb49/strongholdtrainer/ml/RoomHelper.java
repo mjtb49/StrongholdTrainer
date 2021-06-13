@@ -1,17 +1,9 @@
 package io.github.mjtb49.strongholdtrainer.ml;
 
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
-import net.minecraft.structure.StructurePieceType;
-import net.minecraft.util.math.BlockBox;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.ServerWorldAccess;
-import net.minecraft.world.gen.StructureAccessor;
-import net.minecraft.world.gen.chunk.ChunkGenerator;
 import org.apache.commons.lang3.ArrayUtils;
 import org.tensorflow.Tensor;
 import org.tensorflow.ndarray.LongNdArray;
@@ -19,8 +11,14 @@ import org.tensorflow.ndarray.NdArrays;
 import org.tensorflow.ndarray.Shape;
 import org.tensorflow.types.TInt64;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+/**
+ * A utility class for getting ML input from stronghold data.
+ */
 public class RoomHelper {
 
     static final Map<Direction, int[]> DIR_TO_VECTOR = new HashMap<Direction, int[]>() {{
@@ -32,24 +30,30 @@ public class RoomHelper {
 
 
     static final Map<Class<? extends StructurePiece>, int[]> ROOM_TO_VECTOR = new HashMap<Class<? extends StructurePiece>, int[]>() {{
-        put(StrongholdGenerator.Corridor.class,  new int[] {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
-        put(StrongholdGenerator.PrisonHall.class,  new int[] {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
-        put(StrongholdGenerator.LeftTurn.class,  new int[] {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
-        put(StrongholdGenerator.RightTurn.class,  new int[] {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
-        put(StrongholdGenerator.SquareRoom.class,  new int[] {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0});
-        put(StrongholdGenerator.Stairs.class,  new int[] {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0});
-        put(StrongholdGenerator.SpiralStaircase.class,  new int[] {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0});
-        put(StrongholdGenerator.FiveWayCrossing.class,  new int[] {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0});
-        put(StrongholdGenerator.ChestCorridor.class,  new int[] {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0});
-        put(StrongholdGenerator.Library.class,  new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0});
-        put(StrongholdGenerator.PortalRoom.class,  new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0});
-        put(StrongholdGenerator.SmallCorridor.class,  new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0});
-        put(StrongholdGenerator.Start.class,  new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0});
-        put(NoneStructurePiece.class,  new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}); // Cursed, prob. a more elegant solution
+        put(StrongholdGenerator.Corridor.class, new int[]{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+        put(StrongholdGenerator.PrisonHall.class, new int[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+        put(StrongholdGenerator.LeftTurn.class, new int[]{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+        put(StrongholdGenerator.RightTurn.class, new int[]{0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+        put(StrongholdGenerator.SquareRoom.class, new int[]{0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+        put(StrongholdGenerator.Stairs.class, new int[]{0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0});
+        put(StrongholdGenerator.SpiralStaircase.class, new int[]{0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0});
+        put(StrongholdGenerator.FiveWayCrossing.class, new int[]{0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0});
+        put(StrongholdGenerator.ChestCorridor.class, new int[]{0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0});
+        put(StrongholdGenerator.Library.class, new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0});
+        put(StrongholdGenerator.PortalRoom.class, new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0});
+        put(StrongholdGenerator.SmallCorridor.class, new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0});
+        put(StrongholdGenerator.Start.class, new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0});
+        put(null, new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1});
     }};
 
 
-    // Note: Possibly some unsafe tensor things happening here.
+    /**
+     * Get the input for the model from the current room and the stronghold start. Input is a [-1,103] int64 tensor.
+     *
+     * @param start The stronghold Start. Should be able to cast to StrongholdTreeAccessor.
+     * @param piece The current room.
+     * @return A [-1,103] int64 Tensor.
+     */
     public static Tensor getMLInputFromRoom(StrongholdGenerator.Start start, StrongholdGenerator.Piece piece) {
         //TODO looks like start is null here sometimes
         Map<StructurePiece, StructurePiece> parents = ((StrongholdTreeAccessor) start).getParents();
@@ -66,8 +70,7 @@ public class RoomHelper {
         for (int i = 0; i < 5; i++) {
             if (i < children.size()) {
                 data[0] = ArrayUtils.addAll(data[0], getArrayFromPiece(children.get(i)));
-            }
-            else {
+            } else {
 //                System.out.println(Arrays.deepToString(data));
                 data[0] = ArrayUtils.addAll(data[0], getArrayFromPiece(null));
             }
@@ -101,7 +104,7 @@ public class RoomHelper {
 
     static private int[] getArrayFromPiece(StructurePiece piece) {
         if (piece == null)
-            return ROOM_TO_VECTOR.get(NoneStructurePiece.class);
+            return ROOM_TO_VECTOR.get(null);
         else
             return ROOM_TO_VECTOR.get(piece.getClass());
     }
@@ -116,26 +119,5 @@ public class RoomHelper {
         return TInt64.tensorOf(input);
     }
 
-    /**
-     * To be used strictly as a placeholder.
-     */
-    private static final class NoneStructurePiece extends StructurePiece{
-        private NoneStructurePiece(StructurePieceType type, int length) {
-            super(type, length);
-        }
-
-        private NoneStructurePiece(StructurePieceType type, CompoundTag tag) {
-            super(type, tag);
-        }
-
-        @Override
-        protected void toNbt(CompoundTag tag) {
-        }
-
-        @Override
-        public boolean generate(ServerWorldAccess serverWorldAccess, StructureAccessor structureAccessor, ChunkGenerator chunkGenerator, Random random, BlockBox boundingBox, ChunkPos chunkPos, BlockPos blockPos) {
-            return false;
-        }
-    }
 
 }
