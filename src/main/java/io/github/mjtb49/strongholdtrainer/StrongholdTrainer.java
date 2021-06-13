@@ -11,16 +11,21 @@ import java.util.Map;
 
 public class StrongholdTrainer implements ModInitializer  {
 
-    static RendererGroup<Cuboid> cuboidRendererGroup = new RendererGroup<>(7, RendererGroup.RenderOption.RENDER_FRONT);
+    static RendererGroup<Cuboid> cuboidRendererGroup = new RendererGroup<>(1, RendererGroup.RenderOption.RENDER_FRONT);
+    static RendererGroup<Cuboid> doorRendererGroup = new RendererGroup<>(6, RendererGroup.RenderOption.RENDER_FRONT);
     static RendererGroup<Line> playerTracerGroup = new RendererGroup<>(20 * 60 * 5, RendererGroup.RenderOption.RENDER_BACK);
 
-    private static Map<String, Boolean> options = new HashMap<String, Boolean>(){{
+    private final static Map<String, Boolean> OPTIONS = new HashMap<String, Boolean>(){{
         put("trace",true);
         put("hints",true);
+        put("isReviewing",false);
     }};
 
     static public void submitRoom(Cuboid cuboid) {
         cuboidRendererGroup.addRenderer(cuboid);
+    }
+    static public void submitDoor(Cuboid cuboid) {
+        doorRendererGroup.addRenderer(cuboid);
     }
     static public void submitPlayerLine(Line line) {
         playerTracerGroup.addRenderer(line);
@@ -36,10 +41,11 @@ public class StrongholdTrainer implements ModInitializer  {
             GlStateManager.disableDepthTest();
             RenderSystem.defaultBlendFunc();
 
-            if (cuboidRendererGroup != null && options.get("hints")) {
+            if (cuboidRendererGroup != null && (OPTIONS.get("hints") || OPTIONS.get("isReviewing"))) {
+                doorRendererGroup.render();
                 cuboidRendererGroup.render();
                 GlStateManager.enableBlend();
-                if (options.get("trace"))
+                if (OPTIONS.get("trace"))
                     playerTracerGroup.render();
                 GlStateManager.disableBlend();
                 TextRenderer.render();
@@ -51,20 +57,21 @@ public class StrongholdTrainer implements ModInitializer  {
     }
 
     public static void setOption(String optionID, boolean option) {
-       options.put(optionID, option);
+       OPTIONS.put(optionID, option);
     }
 
     public static boolean getOption(String optionID) {
-        return options.get(optionID);
+        return OPTIONS.get(optionID);
     }
 
     public static void clearAll() {
         cuboidRendererGroup.clear();
         playerTracerGroup.clear();
+        doorRendererGroup.clear();
     }
 
-    public static void clearPlayerTracer() {
-        playerTracerGroup.clear();
+    public static void clearDoors() {
+        doorRendererGroup.clear();
     }
 
 }

@@ -4,12 +4,14 @@ import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import io.github.mjtb49.strongholdtrainer.api.EntranceAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
+import io.github.mjtb49.strongholdtrainer.commands.NextMistakeCommand;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
 import io.github.mjtb49.strongholdtrainer.render.Color;
 import io.github.mjtb49.strongholdtrainer.render.Cuboid;
 import io.github.mjtb49.strongholdtrainer.render.Line;
 import io.github.mjtb49.strongholdtrainer.render.TextRenderer;
 import io.github.mjtb49.strongholdtrainer.util.EntryNode;
+import io.github.mjtb49.strongholdtrainer.util.PlayerPath;
 import io.github.mjtb49.strongholdtrainer.util.StrongholdSearcher;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
@@ -19,9 +21,10 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructureStart;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockBox;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.gen.feature.StructureFeature;
@@ -41,13 +44,16 @@ public class MixinMinecraftServer {
 
     @Shadow private PlayerManager playerManager;
     @Shadow @Final private ServerNetworkIo networkIo;
-    private StructurePiece lastpiece = null;
+    private StructurePiece lastPiece = null;
     private StructurePiece mlChosen = null;
     private final Map<StructurePiece, Double> percents = new HashMap<>();
     DecimalFormat df = new DecimalFormat("0.00");
     private final List<StructureStart<?>> visitedNull = new ArrayList<>();
     private int ticksInStronghold = -1;
+    private int currentRoomTime = 0;
     private Vec3d lastPlayerPosition;
+    private PlayerPath playerPath;
+    private StructureStart<?> lastStart;
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void inject(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
@@ -62,6 +68,13 @@ public class MixinMinecraftServer {
 
             if (start != StructureStart.DEFAULT) {
 
+                //Lazy check if we've changed strongholds
+                if (lastStart != start) {
+                    lastStart = start;
+                    ticksInStronghold = -1;
+                    currentRoomTime = 0;
+                }
+
                 StrongholdGenerator.Start strongholdStart = ((StartAccessor)start).getStart();
 
                 if (strongholdStart == null) {
@@ -74,18 +87,29 @@ public class MixinMinecraftServer {
 
                 for (StructurePiece piece : start.getChildren()) {
                     if (piece.getBoundingBox().contains(player.getBlockPos())) {
-                        if (lastpiece != piece) {
-                            onRoomUpdate(start, piece, player);
-                            drawRoomsAndDoors(start, strongholdStart, piece, player);
-                            lastpiece = piece;
+                        if (lastPiece != piece) {
+                            if (
+                                    lastPiece == null
+                                    || !lastPiece.getBoundingBox().contains(player.getBlockPos())
+                                    || (lastPiece instanceof StrongholdGenerator.SmallCorridor && !(piece instanceof StrongholdGenerator.SmallCorridor)))
+                            {
+
+                                onRoomUpdate(start, piece, player);
+                                drawRoomsAndDoors(start, strongholdStart, piece, player);
+
+                                currentRoomTime = 0;
+                                lastPiece = piece;
+                            }
                         }
                     }
                 }
 
             }
-            //if (start != StructureStart.DEFAULT) {
-            //    System.out.println("In stronghold");
-            //}
+
+            if (ticksInStronghold >= 0) {
+                ticksInStronghold++;
+                currentRoomTime++;
+            }
         }
     }
 
@@ -98,6 +122,7 @@ public class MixinMinecraftServer {
         // TODO: good idea to cache this, doesn't seem to hurt perf too much
         StructurePiece searchResult = StrongholdSearcher.search(((StrongholdTreeAccessor)strongholdStart).getTree(), piece);
 
+        StrongholdTrainer.clearDoors();
         TextRenderer.clear();
 
         TextRenderer.add(cuboid.getVec(), "Depth: " + piece.getLength(), 0.01f);
@@ -130,14 +155,14 @@ public class MixinMinecraftServer {
             if (node.pointer != null && node.pointer == this.mlChosen) {
                 if (isBlue) {
 
-                    StrongholdTrainer.submitRoom(new Cuboid(Box.from(newBox).expand(0.05), Color.GREEN));
+                    StrongholdTrainer.submitDoor(new Cuboid(Box.from(newBox).expand(0.05), Color.GREEN));
                 } else {
                     color = Color.GREEN;
                 }
             }
 
             Cuboid door = new Cuboid(newBox, color);
-            StrongholdTrainer.submitRoom(door);
+            StrongholdTrainer.submitDoor(door);
 
             if (node.pointer != null) {
                 String text = df.format(this.percents.getOrDefault(node.pointer, 0.0) * 100) + "%";
@@ -152,21 +177,31 @@ public class MixinMinecraftServer {
     }
 
     private void onRoomUpdate(StructureStart<?> start, StructurePiece piece, ServerPlayerEntity player) {
-        if (lastpiece != piece) {
-            updateTimer(start, piece, player);
-            updateMLChoice(start, piece, player);
-        }
+        if (playerPath != null && !((StartAccessor) start).hasBeenRouted())
+            playerPath.addPiece((StrongholdGenerator.Piece) lastPiece, currentRoomTime);
+        updateStats(start, piece, player);
+        updateMLChoice(start, piece, player);
     }
 
-    private void updateTimer(StructureStart<?> start, StructurePiece piece, ServerPlayerEntity player) {
-        if (lastpiece instanceof StrongholdGenerator.Start && ticksInStronghold < 0 && !((StartAccessor)start).hasBeenRouted() && !lastpiece.getBoundingBox().contains(player.getBlockPos())) {
-            ticksInStronghold = 1;
+    private void updateStats(StructureStart<?> start, StructurePiece piece, ServerPlayerEntity player) {
+        if (
+                lastPiece instanceof StrongholdGenerator.Start
+                        && ticksInStronghold < 0 && !((StartAccessor)start).hasBeenRouted()
+                        && !lastPiece.getBoundingBox().contains(player.getBlockPos())
+        ) {
+            playerPath = new PlayerPath(start);
+            ticksInStronghold = 0;
         }
 
         if (piece instanceof StrongholdGenerator.PortalRoom && ticksInStronghold >= 0) {
             player.sendMessage(new LiteralText("Time of " + ticksInStronghold / 20.0 + " seconds").formatted(Formatting.DARK_GREEN), false);
             ((StartAccessor)start).setHasBeenRouted(true);
             ticksInStronghold = -1;
+            playerPath.addPiece((StrongholdGenerator.PortalRoom) piece, 0);
+            playerPath.review();
+            NextMistakeCommand.submitMistakesAndInaccuracies(playerPath.getMistakes(), playerPath.getInaccuracies());
+            NextMistakeCommand.sendInitialMessage(player);
+            playerPath = null;
         }
     }
 
@@ -204,7 +239,6 @@ public class MixinMinecraftServer {
 
     private void tracePlayer(ServerPlayerEntity player) {
         if (ticksInStronghold >= 0) {
-            ticksInStronghold++;
             if (!player.isSpectator() && !player.isCreative() && StrongholdTrainer.getOption("trace")) {
                 if (lastPlayerPosition != null)
                     if (lastPlayerPosition.distanceTo(player.getPos()) < 10)
