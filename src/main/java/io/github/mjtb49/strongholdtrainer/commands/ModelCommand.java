@@ -2,11 +2,14 @@ package io.github.mjtb49.strongholdtrainer.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import io.github.mjtb49.strongholdtrainer.api.MinecraftServerAccessor;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
 import io.github.mjtb49.strongholdtrainer.ml.model.StrongholdModel;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 
@@ -41,6 +44,7 @@ public class ModelCommand {
                             argument("identifier", StringArgumentType.string()).executes(context -> {
                                 try{
                                     StrongholdRoomClassifier.STRONGHOLD_MODEL_REGISTRY.setActiveModel(StringArgumentType.getString(context, "identifier"));
+                                    ((MinecraftServerAccessor) context.getSource().getMinecraftServer()).refreshRooms();
                                     return 1;
                                 } catch (Exception e){
                                     return -1;

@@ -2,6 +2,7 @@ package io.github.mjtb49.strongholdtrainer.mixin;
 
 import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import io.github.mjtb49.strongholdtrainer.api.EntranceAccessor;
+import io.github.mjtb49.strongholdtrainer.api.MinecraftServerAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import io.github.mjtb49.strongholdtrainer.commands.NextMistakeCommand;
@@ -12,6 +13,7 @@ import io.github.mjtb49.strongholdtrainer.render.Line;
 import io.github.mjtb49.strongholdtrainer.render.TextRenderer;
 import io.github.mjtb49.strongholdtrainer.util.EntryNode;
 import io.github.mjtb49.strongholdtrainer.util.PlayerPath;
+import io.github.mjtb49.strongholdtrainer.util.RoomFormatter;
 import io.github.mjtb49.strongholdtrainer.util.StrongholdSearcher;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
@@ -43,7 +45,7 @@ import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 @Mixin(MinecraftServer.class)
-public class MixinMinecraftServer {
+public class MixinMinecraftServer implements MinecraftServerAccessor {
 
     @Shadow private PlayerManager playerManager;
     @Shadow @Final private ServerNetworkIo networkIo;
@@ -57,6 +59,7 @@ public class MixinMinecraftServer {
     private Vec3d lastPlayerPosition;
     private PlayerPath playerPath;
     private StructureStart<?> lastStart;
+    private boolean shouldRefreshRooms = false;
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void inject(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
@@ -90,6 +93,13 @@ public class MixinMinecraftServer {
 
                 for (StructurePiece piece : start.getChildren()) {
                     if (piece.getBoundingBox().contains(player.getBlockPos())) {
+
+                        if (shouldRefreshRooms) {
+                            updateMLChoice(start, piece, player);
+                            drawRoomsAndDoors(start, strongholdStart, piece, player);
+                            shouldRefreshRooms = false;
+                        }
+
                         if (lastPiece != piece) {
                             if (
                                     lastPiece == null
@@ -130,7 +140,7 @@ public class MixinMinecraftServer {
 
         TextRenderer.add(cuboid.getVec(), "Depth: " + piece.getLength(), 0.01f);
         TextRenderer.add(cuboid.getVec().add(0, -0.2, 0), "Direction: " + piece.getFacing(), 0.01f);
-        TextRenderer.add(cuboid.getVec().add(0, -0.4, 0), "Type: " + piece.getClass().getSimpleName(), 0.01f);
+        TextRenderer.add(cuboid.getVec().add(0, -0.4, 0), "Type: " + RoomFormatter.getStrongholdPieceAsString(piece.getClass()), 0.01f);
 
         for (EntryNode node : ((EntranceAccessor) piece).getEntrances()) {
             // Means we've reached a dead end- don't render forwards entries
@@ -257,5 +267,10 @@ public class MixinMinecraftServer {
                 lastPlayerPosition = null;
             }
         }
+    }
+
+    @Override
+    public void refreshRooms()  {
+        shouldRefreshRooms = true;
     }
 }
