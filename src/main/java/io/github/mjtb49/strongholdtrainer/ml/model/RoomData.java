@@ -16,10 +16,9 @@ public enum RoomData {
     PREV_EXIT_INDEX(((start, piece) -> {
         List<StructurePiece> parentChildren = start.getTree().get(start.getParents().get(piece));
         try{
-            return parentChildren.indexOf(piece);
-
+            return Integer.valueOf(parentChildren.indexOf(piece));
         } catch (Exception e){
-            return 0;
+            return Integer.valueOf(0);
 
         }
     }), RoomDataType.INT_SCALAR),
@@ -79,7 +78,7 @@ public enum RoomData {
         return piece.getFacing();
     }), RoomDataType.DIRECTION_VECTOR),
     DEPTH(((start, piece) -> {
-        return piece.getLength();
+        return Integer.valueOf(piece.getLength());
     }), RoomDataType.INT_SCALAR);
 
     public enum RoomDataType{
