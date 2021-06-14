@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
 import io.github.mjtb49.strongholdtrainer.render.*;
+import io.github.mjtb49.strongholdtrainer.stats.StrongholdTrainerStats;
 import net.fabricmc.api.ModInitializer;
 
 import java.util.HashMap;
@@ -33,6 +34,7 @@ public class StrongholdTrainer implements ModInitializer  {
 
     @Override
     public void onInitialize() {
+        StrongholdTrainerStats.register();
         System.out.println(System.getProperty("os.arch"));
         if(!(System.getProperty("os.arch").contains("64") || !System.getProperty("os.arch").contains("arm"))){
             System.out.println(System.getProperty("os.arch") + " not supported. Disabling ML operations.");

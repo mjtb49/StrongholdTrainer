@@ -11,6 +11,7 @@ import io.github.mjtb49.strongholdtrainer.render.Color;
 import io.github.mjtb49.strongholdtrainer.render.Cuboid;
 import io.github.mjtb49.strongholdtrainer.render.Line;
 import io.github.mjtb49.strongholdtrainer.render.TextRenderer;
+import io.github.mjtb49.strongholdtrainer.stats.StrongholdTrainerStats;
 import io.github.mjtb49.strongholdtrainer.util.EntryNode;
 import io.github.mjtb49.strongholdtrainer.util.PlayerPath;
 import io.github.mjtb49.strongholdtrainer.util.RoomFormatter;
@@ -208,6 +209,7 @@ public class MixinMinecraftServer implements MinecraftServerAccessor {
         if (piece instanceof StrongholdGenerator.PortalRoom && ticksInStronghold >= 0) {
             player.sendMessage(new LiteralText(" "), false);
             player.sendMessage(new LiteralText("Time of " + ticksInStronghold / 20.0 + " seconds").formatted(Formatting.DARK_GREEN), false);
+            player.increaseStat(StrongholdTrainerStats.TOTAL_TIME, ticksInStronghold);
             ((StartAccessor)start).setHasBeenRouted(true);
             ticksInStronghold = -1;
             playerPath.addPiece((StrongholdGenerator.PortalRoom) piece, 0);

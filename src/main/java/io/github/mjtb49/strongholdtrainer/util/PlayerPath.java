@@ -3,6 +3,7 @@ package io.github.mjtb49.strongholdtrainer.util;
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
+import io.github.mjtb49.strongholdtrainer.stats.StrongholdTrainerStats;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
@@ -116,9 +117,9 @@ public class PlayerPath {
                             double chosenWeight = policy[strongholdTreeAccessor.getTree().get(currentGoodPiece).indexOf(nextPiece)];
                             int j = indexOfGoodRoom;
                             while (!solution.contains(nextPiece)) {
-                                j++;
                                 nextPiece = rooms.get(j + 1).getLeft();
                                 currentWastedTime += rooms.get(j + 1).getRight();
+                                j++;
                             }
 
                             int expectedLostTicks = (int) (currentWastedTime * (maximumWeight - chosenWeight));
@@ -145,6 +146,12 @@ public class PlayerPath {
                 }
                 indexOfGoodRoom++;
             }
+
+            playerEntity.incrementStat(StrongholdTrainerStats.NUM_STRONGHOLDS);
+            playerEntity.increaseStat(StrongholdTrainerStats.NUM_REVIEWED_ROOMS, roomsReviewed);
+            playerEntity.increaseStat(StrongholdTrainerStats.NUM_BEST_ROOMS, bestMoveCount);
+            playerEntity.increaseStat(StrongholdTrainerStats.NUM_INACCURACIES, inaccuracyCount);
+            playerEntity.increaseStat(StrongholdTrainerStats.NUM_MISTAKES, mistakeCount);
 
             playerEntity.sendMessage(new LiteralText("Wasted Time " + wastedTime / 20.0 + " seconds").formatted(Formatting.YELLOW), false);
             playerEntity.sendMessage(new LiteralText("Estimated Difficulty " + DF.format(1/difficulty)).formatted(Formatting.DARK_GREEN), false);
