@@ -299,7 +299,7 @@ public class StrongholdModel {
         StrongholdTreeAccessor castStart = (StrongholdTreeAccessor) start;
         for (RoomData type : this.inputOrder) {
             if(type.roomDataType == RoomData.RoomDataType.INT_SCALAR){
-                input[0] = ArrayUtils.add(input[0], (int) type.roomDataFunction.apply(castStart, piece));
+                input[0] = ArrayUtils.add(input[0], (Integer) type.roomDataFunction.apply(castStart, piece));
             } else if(type.roomDataType == RoomData.RoomDataType.STRUCTURE_PIECE_VECTOR){
                 StructurePiece result = (StructurePiece) type.roomDataFunction.apply(castStart, piece);
                 if(result == null){
