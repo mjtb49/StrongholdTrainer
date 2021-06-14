@@ -136,8 +136,8 @@ public class PlayerPath {
             }
 
             MinecraftClient.getInstance().player.sendMessage(new LiteralText("Wasted Time " + wastedTime / 20.0 + " seconds").formatted(Formatting.YELLOW), false);
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Bot one shots this 1 in " + DF.format(1/difficulty)).formatted(Formatting.DARK_GREEN), false);
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Rooms Reviwed " + roomsReviewed).formatted(Formatting.DARK_GREEN), false);
+            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Difficulty " + DF.format(1/difficulty)).formatted(Formatting.DARK_GREEN), false);
+            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Rooms Reviewed " + roomsReviewed).formatted(Formatting.DARK_GREEN), false);
             MinecraftClient.getInstance().player.sendMessage(new LiteralText("Best Moves " + bestMoveCount).formatted(Formatting.GREEN), false);
             MinecraftClient.getInstance().player.sendMessage(new LiteralText("Inaccuracies " + inaccuracyCount).formatted(Formatting.YELLOW), false);
             MinecraftClient.getInstance().player.sendMessage(new LiteralText("Mistakes " + mistakeCount).formatted(Formatting.RED), false);
