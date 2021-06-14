@@ -7,7 +7,7 @@ import net.minecraft.util.registry.Registry;
 
 public class StrongholdTrainerStats {
 
-    public static final String MODID = "st";
+    static final String MODID = "st";
 
     public static final Identifier NUM_STRONGHOLDS = new Identifier(MODID, "num_strongholds");
     public static final Identifier NUM_REVIEWED_ROOMS = new Identifier(MODID, "num_reviewed_rooms");
@@ -17,6 +17,8 @@ public class StrongholdTrainerStats {
     public static final Identifier TOTAL_TIME = new Identifier(MODID, "total_time");
 
     public static void register() {
+        RoomStats.register();
+
         Registry.register(Registry.CUSTOM_STAT, "num_strongholds", NUM_STRONGHOLDS);
         Registry.register(Registry.CUSTOM_STAT, "num_reviewed_rooms", NUM_REVIEWED_ROOMS);
         Registry.register(Registry.CUSTOM_STAT, "num_best_rooms", NUM_BEST_ROOMS);

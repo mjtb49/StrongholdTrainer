@@ -3,6 +3,7 @@ package io.github.mjtb49.strongholdtrainer.util;
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
+import io.github.mjtb49.strongholdtrainer.stats.RoomStats;
 import io.github.mjtb49.strongholdtrainer.stats.StrongholdTrainerStats;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.structure.StrongholdGenerator;
@@ -71,6 +72,12 @@ public class PlayerPath {
             }
         }
         return wormholes;
+    }
+
+    private void updateRoomStats(ServerPlayerEntity playerEntity) {
+        for (Pair<StrongholdGenerator.Piece, Integer> room : rooms) {
+            RoomStats.updateRoomStats(playerEntity, room.getLeft().getClass(), room.getRight());
+        }
     }
 
     public void review(ServerPlayerEntity playerEntity) {
@@ -147,6 +154,7 @@ public class PlayerPath {
                 indexOfGoodRoom++;
             }
 
+            updateRoomStats(playerEntity);
             playerEntity.incrementStat(StrongholdTrainerStats.NUM_STRONGHOLDS);
             playerEntity.increaseStat(StrongholdTrainerStats.NUM_REVIEWED_ROOMS, roomsReviewed);
             playerEntity.increaseStat(StrongholdTrainerStats.NUM_BEST_ROOMS, bestMoveCount);
