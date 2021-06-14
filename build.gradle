@@ -1,7 +1,11 @@
 plugins {
     id 'fabric-loom' version '0.6-SNAPSHOT'
     id 'maven-publish'
+    id "com.github.johnrengelman.shadow" version "6.1.0"
 }
+
+// This is a draft of a build.gradle that will bundle TensorFlow and its native backend* with the mod JAR, allowing it to load.
+// It edits remapJar to remap a shadow jar (w/ dependencies).
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
@@ -27,13 +31,13 @@ dependencies {
     mappings "net.fabricmc:yarn:1.16.1+build.21:v2"
     modImplementation "net.fabricmc:fabric-loader:0.11.3"
 
+    compile group: 'org.tensorflow', name: 'tensorflow-core-api', version: '0.3.1'
+    compile group: 'org.tensorflow', name: 'tensorflow-core-platform', version: '0.3.1'
+
     modRuntime ("com.github.SuperCoder7979:databreaker:0.2.5") {
         exclude module: "fabric-loader"
     }
 
-    implementation "org.deeplearning4j:deeplearning4j-core:1.0.0-beta6"
-    implementation "org.nd4j:nd4j-native-platform:1.0.0-beta6"
-    //compile group: 'org.tensorflow', name: 'tensorflow-core-platform', version: '0.3.1'
     //Fabric api
     //modImplementation "net.fabricmc.fabric-api:fabric-api:0.18.0+build.387-1.16.1"
 }
@@ -49,6 +53,8 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude "fabric.mod.json"
     }
+
+
 }
 
 // ensure that the encoding is set to UTF-8, no matter what the system default is
@@ -64,6 +70,18 @@ tasks.withType(JavaCompile) {
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = "sources"
     from sourceSets.main.allSource
+}
+
+// Configures shadowJar to use compile dependencies. Edits remapJar to use the shadow jar as its input
+shadowJar {
+    classifier "shadow"
+    configurations = [project.configurations.compile]
+    remapJar {
+        dependsOn shadowJar
+        input.set shadowJar.archiveFile.get()
+        remapAccessWidener.set false
+    }
+    minimize()
 }
 
 jar {

@@ -36,7 +36,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 @Mixin(MinecraftServer.class)
@@ -206,7 +209,13 @@ public class MixinMinecraftServer {
     }
 
     private void updateMLChoice(StructureStart<?> start, StructurePiece piece, ServerPlayerEntity player) {
-        double[] policy = StrongholdRoomClassifier.getPredictions(((StartAccessor) start).getStart(), (StrongholdGenerator.Piece) piece);
+        double[] policy;
+        try {
+            policy = StrongholdRoomClassifier.getPredictions(((StartAccessor) start).getStart(), (StrongholdGenerator.Piece) piece);
+        } catch (Exception e){
+            e.printStackTrace();
+            policy = new double[5];
+        }
 
         //StringBuilder s = new StringBuilder();
         //Arrays.stream(policy).forEach(e -> s.append(df.format(e)).append(" "));

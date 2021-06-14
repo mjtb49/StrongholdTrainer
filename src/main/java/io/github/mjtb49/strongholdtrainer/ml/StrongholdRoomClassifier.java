@@ -1,39 +1,47 @@
 package io.github.mjtb49.strongholdtrainer.ml;
 
-import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
+import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
+import io.github.mjtb49.strongholdtrainer.ml.model.StrongholdModelRegistry;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.structure.StrongholdGenerator;
-import net.minecraft.structure.StructurePiece;
-import org.deeplearning4j.nn.modelimport.keras.KerasModelImport;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.nd4j.linalg.io.ClassPathResource;
+import net.minecraft.text.LiteralText;
+
+import java.util.Arrays;
 
 public class StrongholdRoomClassifier {
-    private static MultiLayerNetwork model;
+    public static final StrongholdModelRegistry STRONGHOLD_MODEL_REGISTRY = new StrongholdModelRegistry();
+    public static boolean verboseOutput = false;
 
-    public static void init(String modelPath) {
-        try {
-            String simpleMlp = new ClassPathResource(modelPath).getFile().getPath();
-            model = KerasModelImport.importKerasSequentialModelAndWeights(simpleMlp);
-        } catch (Exception e) {
-            //TODO better exception handling here
-            System.err.println(e.getMessage());
-            System.err.println("LOL");
+    public static void init(String... internalModels) {
+        if(!StrongholdTrainer.ML_DISABLED){
+            for(String path : internalModels){
+                STRONGHOLD_MODEL_REGISTRY.createAndRegisterInternal(path, null);
+            }
+            STRONGHOLD_MODEL_REGISTRY.setActiveModel("basic-classifier-nobacktracking");
         }
+        // Register default included models.
+
     }
+
 
 
     public static double[] getPredictions(StrongholdGenerator.Start start, StrongholdGenerator.Piece piece) {
         //hack fix since the model hasn't been trained on rooms where the portal room is adjacent
-        int index = 0;
-        for (StructurePiece piece1 : ((StrongholdTreeAccessor) start).getTree().get(piece)) {
-            if (piece1 instanceof StrongholdGenerator.PortalRoom) {
-                double[] output = new double[5];
-                output[index] = 1.0;
-                return output;
+        if((!StrongholdTrainer.ML_DISABLED) || (STRONGHOLD_MODEL_REGISTRY.getActiveModel() != null)){
+            double[] predictions = STRONGHOLD_MODEL_REGISTRY.getActiveModel().getPredictions(start, piece);
+            if(verboseOutput){
+                PlayerEntity playerEntity = MinecraftClient.getInstance().player;
+                if(playerEntity != null){
+                    playerEntity.sendMessage(new LiteralText(Arrays.toString(predictions)), false);
+                }
             }
-            index++;
+            return STRONGHOLD_MODEL_REGISTRY.getActiveModel().getPredictions(start, piece);
+        } else {
+            return new double[]{0xffD, 0xffD, 0xffD, 0xffD, 0xffD};
         }
-
-        return model.output(RoomHelper.getMLInputFromRoom(start,piece)).toDoubleVector();
     }
+
+
+
 }

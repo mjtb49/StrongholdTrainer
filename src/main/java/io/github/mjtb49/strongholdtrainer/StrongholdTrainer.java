@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
 import io.github.mjtb49.strongholdtrainer.render.*;
 import net.fabricmc.api.ModInitializer;
+import sun.jvm.hotspot.utilities.UnsupportedPlatformException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class StrongholdTrainer implements ModInitializer  {
         put("hints",true);
         put("isReviewing",false);
     }};
-
+    public static boolean ML_DISABLED = false;
     static public void submitRoom(Cuboid cuboid) {
         cuboidRendererGroup.addRenderer(cuboid);
     }
@@ -33,7 +34,12 @@ public class StrongholdTrainer implements ModInitializer  {
 
     @Override
     public void onInitialize() {
-        StrongholdRoomClassifier.init("model102.keras");
+        System.out.println(System.getProperty("os.arch"));
+        if(!(System.getProperty("os.arch").contains("64") || !System.getProperty("os.arch").contains("arm"))){
+            System.out.println(System.getProperty("os.arch") + " not supported. Disabling ML operations.");
+            ML_DISABLED = true;
+        }
+        StrongholdRoomClassifier.init("model.zip", "rnn.zip");
         RenderQueue.get().add("hand", matrixStack -> {
             RenderSystem.pushMatrix();
             RenderSystem.multMatrix(matrixStack.peek().getModel());
