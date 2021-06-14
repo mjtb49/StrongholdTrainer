@@ -45,7 +45,29 @@ public class ModelCommand {
                                 } catch (Exception e){
                                     return -1;
                                 }
-                            })))
+                            }))
+                ).then(
+                        literal("debug").then(
+                                argument("identifier", StringArgumentType.string()).executes(context -> {
+                                    PlayerEntity playerEntity = MinecraftClient.getInstance().player;
+                                    if(playerEntity == null){
+                                        return -1;
+                                    }
+                                    try{
+                                        StrongholdRoomClassifier.STRONGHOLD_MODEL_REGISTRY.getModel(StringArgumentType.getString(context, "identifier"));
+                                        playerEntity.sendMessage(new LiteralText(StrongholdRoomClassifier.STRONGHOLD_MODEL_REGISTRY.getModel(StringArgumentType.getString(context, "identifier")).getSignatureDefDebug().toString()), false);
+                                        return 1;
+                                    } catch (Exception e){
+                                        return -1;
+                                    }
+                                })
+                        )
+                ).then(
+                        literal("verbose").executes(e -> {
+                            StrongholdRoomClassifier.verboseOutput = !StrongholdRoomClassifier.verboseOutput;
+                            return 1;
+                        })
+                )
                 );
 
     }

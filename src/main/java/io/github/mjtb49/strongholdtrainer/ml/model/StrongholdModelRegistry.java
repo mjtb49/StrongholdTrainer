@@ -73,21 +73,19 @@ public class StrongholdModelRegistry {
 
     /**
      * Creates and registers an <b>internal</b> StrongholdModel
-     * @param identifier The identifier of the model to be created.
      * @param zippedModelName The name of the model ZIP archive in the JAR.
      */
-    public void createAndRegisterInternal(String identifier, String zippedModelName, String creator){
-        this.register(new StrongholdModel(identifier, zippedModelName, creator, true));
+    public void createAndRegisterInternal(String zippedModelName, String creator){
+        this.register(new StrongholdModel(zippedModelName, creator, true));
     }
 
     /**
      * Creates and registers an <b>external</b> StrongholdModel
-     * @param identifier The identifier of the model to be created.
      * @param systemPath The path to the model.
      * @param creator The creator of this model.
      */
-    public void createAndRegisterExternal(String identifier, String systemPath, String creator){
-        this.register(new StrongholdModel(identifier, systemPath, creator, false));
+    public void createAndRegisterExternal(String systemPath, String creator){
+        this.register(new StrongholdModel(systemPath, creator, false));
     }
     public StrongholdModel getModel(String id){
         if(this.modelRegistry.containsKey(id)){

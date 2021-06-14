@@ -78,7 +78,6 @@ public class RoomHelper {
         data[0] = ArrayUtils.addAll(data[0], DIR_TO_VECTOR.get(direction));
         System.out.println(Arrays.deepToString(data));
         return intArrayToInputTensor(data);
-
     }
 
     protected static Tensor getMLInputFromRoomNoDir(StrongholdGenerator.Start start, StrongholdGenerator.Piece piece) {

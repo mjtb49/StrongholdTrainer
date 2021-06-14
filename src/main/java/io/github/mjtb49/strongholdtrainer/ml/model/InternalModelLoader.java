@@ -17,17 +17,19 @@ public class InternalModelLoader extends SavedModelLoader{
 
     public InternalModelLoader(String sourcePath, String modelIdentifier) throws IOException {
         super(sourcePath);
+
         File modelFolder;
         modelFolder = new File(CONFIG_DIRECTORY.toString());
-
+        // HACK FIX: to prevent cluttering. TODO: refactor id->UUID so that it can cache models over multiple sessions.
+        modelFolder.delete();
         if(!modelFolder.exists()){
             modelFolder.mkdirs();
         }
         if(modelFolder.isDirectory()){
             URLConnection connection = Thread.currentThread().getContextClassLoader().getResource(this.sourcePath).openConnection();
-            unzipModel(new ZipInputStream(connection.getInputStream()), Integer.toHexString(modelIdentifier.hashCode()));
+            unzipModel(new ZipInputStream(connection.getInputStream()), modelIdentifier);
         }
-        this.sourcePath = CONFIG_DIRECTORY.resolve(Integer.toHexString(modelIdentifier.hashCode())).resolve("model/").toAbsolutePath().toString();
+        this.sourcePath = CONFIG_DIRECTORY.resolve(modelIdentifier).resolve("model/").toAbsolutePath().toString();
     }
 
     @Deprecated

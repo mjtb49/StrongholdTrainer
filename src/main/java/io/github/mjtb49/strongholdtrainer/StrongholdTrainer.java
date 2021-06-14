@@ -39,7 +39,7 @@ public class StrongholdTrainer implements ModInitializer  {
             System.out.println(System.getProperty("os.arch") + " not supported. Disabling ML operations.");
             ML_DISABLED = true;
         }
-        StrongholdRoomClassifier.init("model.zip", "model/");
+        StrongholdRoomClassifier.init("model.zip", "rnn.zip");
         RenderQueue.get().add("hand", matrixStack -> {
             RenderSystem.pushMatrix();
             RenderSystem.multMatrix(matrixStack.peek().getModel());
