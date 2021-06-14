@@ -164,11 +164,11 @@ public class MixinMinecraftServer implements MinecraftServerAccessor {
                 color = Color.BLUE;
                 isBlue = true;
             }
-
+            boolean bothFlag = false;
             if (node.pointer != null && node.pointer == this.mlChosen) {
                 if (isBlue) {
-
                     StrongholdTrainer.submitDoor(new Cuboid(Box.from(newBox).expand(0.05), Color.GREEN));
+                    bothFlag = true;
                 } else {
                     color = Color.GREEN;
                 }
@@ -176,6 +176,16 @@ public class MixinMinecraftServer implements MinecraftServerAccessor {
 
             Cuboid door = new Cuboid(newBox, color);
             StrongholdTrainer.submitDoor(door);
+
+            if (StrongholdTrainer.getOption("doorLabels")) {
+                if (color == Color.GREEN) {
+                    TextRenderer.add(door.getVec().subtract(0, 0.5, 0), "Model Choice", 0.02f);
+                } else if (color == Color.BLUE) {
+                    TextRenderer.add(door.getVec().subtract(0, 0.5, 0), bothFlag ? "Perfect Choice & Model Choice" : "Perfect Choice", 0.02f);
+                } else if (color == Color.YELLOW) {
+                    TextRenderer.add(door.getVec().subtract(0, 0.5, 0), "Reverse", 0.02f);
+                }
+            }
 
             if (node.pointer != null) {
                 String text = df.format(this.percents.getOrDefault(node.pointer, 0.0) * 100) + "%";
