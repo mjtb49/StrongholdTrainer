@@ -21,10 +21,9 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructureStart;
-import net.minecraft.text.*;
+import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockBox;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.gen.feature.StructureFeature;
@@ -157,7 +156,7 @@ public class MixinMinecraftServer {
             boolean bothFlag = false;
             if (node.pointer != null && node.pointer == this.mlChosen) {
                 if (isBlue) {
-                    StrongholdTrainer.submitRoom(new Cuboid(Box.from(newBox).expand(0.05), Color.GREEN));
+                    StrongholdTrainer.submitDoor(new Cuboid(Box.from(newBox).expand(0.05), Color.GREEN));
                     bothFlag = true;
                 } else {
                     color = Color.GREEN;
@@ -165,14 +164,15 @@ public class MixinMinecraftServer {
             }
 
             Cuboid door = new Cuboid(newBox, color);
-            StrongholdTrainer.submitRoom(door);
-            if(StrongholdTrainer.getOption("doorLabels")){
-                if(color == Color.GREEN){
-                    TextRenderer.add(door.getVec().subtract(0,0.5,0), "Model Choice", 0.02f);
-                } else if(color == Color.BLUE){
-                    TextRenderer.add(door.getVec().subtract(0,0.5,0), bothFlag ? "Perfect Choice & Model Choice" : "Perfect Choice", 0.02f);
-                } else if(color == Color.YELLOW){
-                    TextRenderer.add(door.getVec().subtract(0,0.5,0), "Reverse", 0.02f);
+            StrongholdTrainer.submitDoor(door);
+
+            if (StrongholdTrainer.getOption("doorLabels")) {
+                if (color == Color.GREEN) {
+                    TextRenderer.add(door.getVec().subtract(0, 0.5, 0), "Model Choice", 0.02f);
+                } else if (color == Color.BLUE) {
+                    TextRenderer.add(door.getVec().subtract(0, 0.5, 0), bothFlag ? "Perfect Choice & Model Choice" : "Perfect Choice", 0.02f);
+                } else if (color == Color.YELLOW) {
+                    TextRenderer.add(door.getVec().subtract(0, 0.5, 0), "Reverse", 0.02f);
                 }
             }
 
