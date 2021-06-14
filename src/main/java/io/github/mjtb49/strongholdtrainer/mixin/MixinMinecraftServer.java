@@ -49,6 +49,7 @@ public class MixinMinecraftServer implements MinecraftServerAccessor {
 
     @Shadow private PlayerManager playerManager;
     @Shadow @Final private ServerNetworkIo networkIo;
+    @Shadow private int ticks;
     private StructurePiece lastPiece = null;
     private StructurePiece mlChosen = null;
     private final Map<StructurePiece, Double> percents = new HashMap<>();
@@ -219,7 +220,7 @@ public class MixinMinecraftServer implements MinecraftServerAccessor {
         if (piece instanceof StrongholdGenerator.PortalRoom && ticksInStronghold >= 0) {
             player.sendMessage(new LiteralText(" "), false);
             player.sendMessage(new LiteralText("Time of " + ticksInStronghold / 20.0 + " seconds").formatted(Formatting.DARK_GREEN), false);
-            player.increaseStat(StrongholdTrainerStats.TOTAL_TIME, ticksInStronghold);
+            StrongholdTrainerStats.updateStrongholdTimeStats(player, ticksInStronghold);
             ((StartAccessor)start).setHasBeenRouted(true);
             ticksInStronghold = -1;
             playerPath.addPiece((StrongholdGenerator.PortalRoom) piece, 0);

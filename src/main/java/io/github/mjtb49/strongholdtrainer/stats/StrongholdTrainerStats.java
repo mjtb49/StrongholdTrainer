@@ -1,5 +1,6 @@
 package io.github.mjtb49.strongholdtrainer.stats;
 
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.stat.StatFormatter;
 import net.minecraft.stat.Stats;
 import net.minecraft.util.Identifier;
@@ -15,6 +16,7 @@ public class StrongholdTrainerStats {
     public static final Identifier NUM_INACCURACIES = new Identifier(MODID, "num_inaccuracies");
     public static final Identifier NUM_MISTAKES = new Identifier(MODID, "num_mistakes");
     public static final Identifier TOTAL_TIME = new Identifier(MODID, "total_time");
+    public static final Identifier AVG_TIME = new Identifier(MODID, "avg_time");
 
     public static void register() {
         RoomStats.register();
@@ -25,6 +27,7 @@ public class StrongholdTrainerStats {
         Registry.register(Registry.CUSTOM_STAT, "num_inaccuracies", NUM_INACCURACIES);
         Registry.register(Registry.CUSTOM_STAT, "num_mistakes", NUM_MISTAKES);
         Registry.register(Registry.CUSTOM_STAT, "total_time", TOTAL_TIME);
+        Registry.register(Registry.CUSTOM_STAT, "avg_time", AVG_TIME);
 
         Stats.CUSTOM.getOrCreateStat(NUM_STRONGHOLDS, StatFormatter.DEFAULT);
         Stats.CUSTOM.getOrCreateStat(NUM_REVIEWED_ROOMS, StatFormatter.DEFAULT);
@@ -32,5 +35,16 @@ public class StrongholdTrainerStats {
         Stats.CUSTOM.getOrCreateStat(NUM_INACCURACIES, StatFormatter.DEFAULT);
         Stats.CUSTOM.getOrCreateStat(NUM_MISTAKES, StatFormatter.DEFAULT);
         Stats.CUSTOM.getOrCreateStat(TOTAL_TIME, StatFormatter.TIME);
+        Stats.CUSTOM.getOrCreateStat(AVG_TIME, StatFormatter.TIME);
+    }
+
+    public static void updateStrongholdTimeStats(ServerPlayerEntity playerEntity, int timeInTicks) {
+        playerEntity.incrementStat(NUM_STRONGHOLDS);
+        playerEntity.increaseStat(TOTAL_TIME, timeInTicks);
+        int count = playerEntity.getStatHandler().getStat(Stats.CUSTOM.getOrCreateStat(NUM_STRONGHOLDS));
+        int time = playerEntity.getStatHandler().getStat(Stats.CUSTOM.getOrCreateStat(TOTAL_TIME));
+        int avg = time / count;
+        playerEntity.resetStat(Stats.CUSTOM.getOrCreateStat(AVG_TIME));
+        playerEntity.increaseStat(AVG_TIME, avg);
     }
 }

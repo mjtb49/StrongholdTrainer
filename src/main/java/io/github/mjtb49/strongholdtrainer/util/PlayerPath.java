@@ -155,7 +155,6 @@ public class PlayerPath {
             }
 
             updateRoomStats(playerEntity);
-            playerEntity.incrementStat(StrongholdTrainerStats.NUM_STRONGHOLDS);
             playerEntity.increaseStat(StrongholdTrainerStats.NUM_REVIEWED_ROOMS, roomsReviewed);
             playerEntity.increaseStat(StrongholdTrainerStats.NUM_BEST_ROOMS, bestMoveCount);
             playerEntity.increaseStat(StrongholdTrainerStats.NUM_INACCURACIES, inaccuracyCount);
