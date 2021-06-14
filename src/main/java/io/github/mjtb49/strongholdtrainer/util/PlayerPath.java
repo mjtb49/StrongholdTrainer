@@ -112,6 +112,7 @@ public class PlayerPath {
                     //did the player choose a child?
                     if (strongholdTreeAccessor.getTree().get(currentGoodPiece).contains(nextPiece)) {
                         if (!solution.contains(nextPiece)) {
+                            roomsReviewed++;
                             double chosenWeight = policy[strongholdTreeAccessor.getTree().get(currentGoodPiece).indexOf(nextPiece)];
                             int j = indexOfGoodRoom;
                             while (!solution.contains(nextPiece)) {
@@ -129,10 +130,19 @@ public class PlayerPath {
                                 inaccuracyCount++;
                                 inaccurateRooms.add(currentGoodPiece);
                             }
-                        } else bestMoveCount++;
+                        } else {
+                            int numNonNull = 0;
+                            for (StructurePiece piece : strongholdTreeAccessor.getTree().get(currentGoodPiece)) {
+                                if (piece != null)
+                                    numNonNull++;
+                            }
+                            if (numNonNull > 1) {
+                                roomsReviewed++;
+                                bestMoveCount++;
+                            }
+                        }
                     }
                 }
-                roomsReviewed++;
                 indexOfGoodRoom++;
             }
 
