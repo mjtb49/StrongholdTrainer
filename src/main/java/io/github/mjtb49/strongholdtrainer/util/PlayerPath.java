@@ -3,7 +3,7 @@ package io.github.mjtb49.strongholdtrainer.util;
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructureStart;
@@ -12,7 +12,8 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PlayerPath {
 
@@ -71,7 +72,7 @@ public class PlayerPath {
         return wormholes;
     }
 
-    public void review() {
+    public void review(ServerPlayerEntity playerEntity) {
         if (portalRoom != null) {
             ArrayList<StructurePiece> solution = new ArrayList<>();
             StrongholdGenerator.Piece current = portalRoom;
@@ -135,13 +136,13 @@ public class PlayerPath {
                 indexOfGoodRoom++;
             }
 
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Wasted Time " + wastedTime / 20.0 + " seconds").formatted(Formatting.YELLOW), false);
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Difficulty " + DF.format(1/difficulty)).formatted(Formatting.DARK_GREEN), false);
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Rooms Reviewed " + roomsReviewed).formatted(Formatting.DARK_GREEN), false);
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Best Moves " + bestMoveCount).formatted(Formatting.GREEN), false);
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Inaccuracies " + inaccuracyCount).formatted(Formatting.YELLOW), false);
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Mistakes " + mistakeCount).formatted(Formatting.RED), false);
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Wormholes " + wormholeCount).formatted(Formatting.BLUE), false);
+            playerEntity.sendMessage(new LiteralText("Wasted Time " + wastedTime / 20.0 + " seconds").formatted(Formatting.YELLOW), false);
+            playerEntity.sendMessage(new LiteralText("Estimated Difficulty " + DF.format(1/difficulty)).formatted(Formatting.DARK_GREEN), false);
+            playerEntity.sendMessage(new LiteralText("Rooms Reviewed " + roomsReviewed).formatted(Formatting.DARK_GREEN), false);
+            playerEntity.sendMessage(new LiteralText("Best Moves " + bestMoveCount).formatted(Formatting.GREEN), false);
+            playerEntity.sendMessage(new LiteralText("Inaccuracies " + inaccuracyCount).formatted(Formatting.YELLOW), false);
+            playerEntity.sendMessage(new LiteralText("Mistakes " + mistakeCount).formatted(Formatting.RED), false);
+            playerEntity.sendMessage(new LiteralText("Wormholes " + wormholeCount).formatted(Formatting.BLUE), false);
             printTheTravel();
         }
     }

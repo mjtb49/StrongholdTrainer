@@ -5,7 +5,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
 import io.github.mjtb49.strongholdtrainer.render.*;
 import net.fabricmc.api.ModInitializer;
-import sun.jvm.hotspot.utilities.UnsupportedPlatformException;
 
 import java.util.HashMap;
 import java.util.Map;

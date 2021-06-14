@@ -23,10 +23,9 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructureStart;
-import net.minecraft.text.*;
+import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockBox;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.gen.feature.StructureFeature;
@@ -207,11 +206,12 @@ public class MixinMinecraftServer implements MinecraftServerAccessor {
         }
 
         if (piece instanceof StrongholdGenerator.PortalRoom && ticksInStronghold >= 0) {
+            player.sendMessage(new LiteralText(" "), false);
             player.sendMessage(new LiteralText("Time of " + ticksInStronghold / 20.0 + " seconds").formatted(Formatting.DARK_GREEN), false);
             ((StartAccessor)start).setHasBeenRouted(true);
             ticksInStronghold = -1;
             playerPath.addPiece((StrongholdGenerator.PortalRoom) piece, 0);
-            playerPath.review();
+            playerPath.review(player);
             NextMistakeCommand.submitMistakesAndInaccuracies(playerPath.getMistakes(), playerPath.getInaccuracies());
             NextMistakeCommand.sendInitialMessage(player);
             playerPath = null;
