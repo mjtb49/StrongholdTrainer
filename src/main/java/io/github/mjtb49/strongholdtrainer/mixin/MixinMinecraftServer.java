@@ -11,9 +11,9 @@ import io.github.mjtb49.strongholdtrainer.render.Color;
 import io.github.mjtb49.strongholdtrainer.render.Cuboid;
 import io.github.mjtb49.strongholdtrainer.render.Line;
 import io.github.mjtb49.strongholdtrainer.render.TextRenderer;
+import io.github.mjtb49.strongholdtrainer.stats.PlayerPathTracker;
 import io.github.mjtb49.strongholdtrainer.stats.StrongholdTrainerStats;
 import io.github.mjtb49.strongholdtrainer.util.EntryNode;
-import io.github.mjtb49.strongholdtrainer.util.PlayerPath;
 import io.github.mjtb49.strongholdtrainer.util.RoomFormatter;
 import io.github.mjtb49.strongholdtrainer.util.StrongholdSearcher;
 import net.minecraft.server.MinecraftServer;
@@ -58,7 +58,7 @@ public class MixinMinecraftServer implements MinecraftServerAccessor {
     private int ticksInStronghold = -1;
     private int currentRoomTime = 0;
     private Vec3d lastPlayerPosition;
-    private PlayerPath playerPath;
+    private PlayerPathTracker playerPath;
     private StructureStart<?> lastStart;
     private boolean shouldRefreshRooms = false;
 
@@ -213,7 +213,7 @@ public class MixinMinecraftServer implements MinecraftServerAccessor {
                         && ticksInStronghold < 0 && !((StartAccessor)start).hasBeenRouted()
                         && !lastPiece.getBoundingBox().contains(player.getBlockPos())
         ) {
-            playerPath = new PlayerPath(start);
+            playerPath = new PlayerPathTracker(start);
             ticksInStronghold = 0;
         }
 

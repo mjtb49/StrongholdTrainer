@@ -1,27 +1,21 @@
-package io.github.mjtb49.strongholdtrainer.util;
+package io.github.mjtb49.strongholdtrainer.stats;
 
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
-import io.github.mjtb49.strongholdtrainer.stats.RoomStats;
-import io.github.mjtb49.strongholdtrainer.stats.StrongholdTrainerStats;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructureStart;
-import net.minecraft.text.LiteralText;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlayerPath {
+public class PlayerPathTracker {
 
     private static final int INACCURACY_THRESHOLD = 20 * 5;
     private static final int MISTAKE_THRESHOLD = 20 * 10;
-    private static final DecimalFormat DF = new DecimalFormat("0.00");
 
     private final StartAccessor startAccessor;
     private final StrongholdTreeAccessor strongholdTreeAccessor;
@@ -31,7 +25,7 @@ public class PlayerPath {
     private final ArrayList<StrongholdGenerator.Piece> inaccurateRooms;
     private final ArrayList<StrongholdGenerator.Piece> mistakeRooms;
 
-    public PlayerPath(StructureStart<?> start) {
+    public PlayerPathTracker(StructureStart<?> start) {
         startAccessor = (StartAccessor) start;
         strongholdTreeAccessor = (StrongholdTreeAccessor) startAccessor.getStart();
         rooms = new ArrayList<>();
@@ -154,19 +148,18 @@ public class PlayerPath {
                 indexOfGoodRoom++;
             }
 
-            updateRoomStats(playerEntity);
-            playerEntity.increaseStat(StrongholdTrainerStats.NUM_REVIEWED_ROOMS, roomsReviewed);
-            playerEntity.increaseStat(StrongholdTrainerStats.NUM_BEST_ROOMS, bestMoveCount);
-            playerEntity.increaseStat(StrongholdTrainerStats.NUM_INACCURACIES, inaccuracyCount);
-            playerEntity.increaseStat(StrongholdTrainerStats.NUM_MISTAKES, mistakeCount);
+            PlayerPathData playerPathData = new PlayerPathData(
+                    rooms,
+                    difficulty,
+                    wastedTime,
+                    bestMoveCount,
+                    inaccuracyCount,
+                    mistakeCount,
+                    wormholeCount,
+                    roomsReviewed
+            );
 
-            playerEntity.sendMessage(new LiteralText("Wasted Time " + wastedTime / 20.0 + " seconds").formatted(Formatting.YELLOW), false);
-            playerEntity.sendMessage(new LiteralText("Estimated Difficulty " + DF.format(1/difficulty)).formatted(Formatting.DARK_GREEN), false);
-            playerEntity.sendMessage(new LiteralText("Rooms Reviewed " + roomsReviewed).formatted(Formatting.DARK_GREEN), false);
-            playerEntity.sendMessage(new LiteralText("Best Moves " + bestMoveCount).formatted(Formatting.GREEN), false);
-            playerEntity.sendMessage(new LiteralText("Inaccuracies " + inaccuracyCount).formatted(Formatting.YELLOW), false);
-            playerEntity.sendMessage(new LiteralText("Mistakes " + mistakeCount).formatted(Formatting.RED), false);
-            playerEntity.sendMessage(new LiteralText("Wormholes " + wormholeCount).formatted(Formatting.BLUE), false);
+            playerPathData.updateAllStats(playerEntity);
             printTheTravel();
         }
     }
