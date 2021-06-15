@@ -49,9 +49,10 @@ public class STInfoCommand {
             new LiteralText("\nHelp\n").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.YELLOW),
             new LiteralText("Hints").formatted(Formatting.BOLD),
             new LiteralText("Hints can be toggled using /hints.\n" +
-                    "Hints will show you all of the /" +
+                    "Hints will show you all of the " +
                     "entrances and exits in a stronghold room " +
-                    "via an outline around the entrance."),
+                    "via an outline around the entrance.").styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/hints"))
+                    .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("/hints")))),
             new LiteralText("• Blue hints indicate the perfect path to the portal room.").formatted(Formatting.BLUE),
             new LiteralText("• Green hints indicate the best judgement of the nav model.").formatted(Formatting.GREEN),
             new LiteralText("   ◦ The numbers in doorways indicate the weight that the model " +
@@ -66,8 +67,8 @@ public class STInfoCommand {
             new LiteralText("/doorLabels - adds labels to doors denoting anything with a color indicator")
                     .styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/doorLabels"))
                     .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("/doorLabels")))),
-            new LiteralText("/newStronghold - teleports you to a new stronghold").styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/doorLabels"))
-                    .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("/doorLabels"))))
+            new LiteralText("/newStronghold - teleports you to a new stronghold").styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/newStronghold"))
+                    .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("/newStronghold"))))
     };
 
     private static final Text[] modelInfo = new Text[]{
