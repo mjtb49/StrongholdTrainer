@@ -8,7 +8,7 @@ import java.util.Set;
  * A class that can store and load StrongholdModels. The models are registered with their identifiers and stored in
  * a Hashtable if everything checks out. The registry has an "active model" TODO: move the active model out of the registry.
  */
-public class StrongholdModelRegistry {
+public class StrongholdModelRegistry{
 
     private final Hashtable<String, StrongholdModel> modelRegistry;
     private StrongholdModel activeModel;
@@ -51,7 +51,7 @@ public class StrongholdModelRegistry {
      * @param id The identifier of the query.
      * @return whether or not the identifier refers to the active model.
      */
-    public boolean isActiveMode(String id){
+    public boolean isActiveModel(String id){
         return this.activeModel.getIdentifier().equals(id);
     }
 

@@ -1,7 +1,6 @@
 package io.github.mjtb49.strongholdtrainer.mixin;
 
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
-import io.github.mjtb49.strongholdtrainer.util.PlayerPath;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.util.math.Direction;

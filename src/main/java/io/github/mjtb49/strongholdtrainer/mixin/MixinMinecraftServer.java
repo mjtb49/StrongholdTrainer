@@ -1,7 +1,9 @@
 package io.github.mjtb49.strongholdtrainer.mixin;
 
+import com.mojang.authlib.minecraft.MinecraftSessionService;
 import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import io.github.mjtb49.strongholdtrainer.api.EntranceAccessor;
+import io.github.mjtb49.strongholdtrainer.api.MinecraftServerAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import io.github.mjtb49.strongholdtrainer.commands.NextMistakeCommand;
@@ -10,24 +12,25 @@ import io.github.mjtb49.strongholdtrainer.render.Color;
 import io.github.mjtb49.strongholdtrainer.render.Cuboid;
 import io.github.mjtb49.strongholdtrainer.render.Line;
 import io.github.mjtb49.strongholdtrainer.render.TextRenderer;
+import io.github.mjtb49.strongholdtrainer.stats.PlayerPathData;
+import io.github.mjtb49.strongholdtrainer.stats.PlayerPathTracker;
 import io.github.mjtb49.strongholdtrainer.util.EntryNode;
-import io.github.mjtb49.strongholdtrainer.util.PlayerPath;
+import io.github.mjtb49.strongholdtrainer.util.RoomFormatter;
 import io.github.mjtb49.strongholdtrainer.util.StrongholdSearcher;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
-import net.minecraft.server.ServerNetworkIo;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructureStart;
-import net.minecraft.text.*;
+import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockBox;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.gen.feature.StructureFeature;
+import net.minecraft.world.level.storage.LevelStorage;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -35,6 +38,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,10 +47,13 @@ import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 @Mixin(MinecraftServer.class)
-public class MixinMinecraftServer {
+public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
 
     @Shadow private PlayerManager playerManager;
-    @Shadow @Final private ServerNetworkIo networkIo;
+    @Shadow @Final protected LevelStorage.Session session;
+
+    @Shadow public abstract MinecraftSessionService getSessionService();
+
     private StructurePiece lastPiece = null;
     private StructurePiece mlChosen = null;
     private final Map<StructurePiece, Double> percents = new HashMap<>();
@@ -55,12 +62,12 @@ public class MixinMinecraftServer {
     private int ticksInStronghold = -1;
     private int currentRoomTime = 0;
     private Vec3d lastPlayerPosition;
-    private PlayerPath playerPath;
+    private PlayerPathTracker playerPath;
     private StructureStart<?> lastStart;
+    private boolean shouldRefreshRooms = false;
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void inject(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
-
         for (ServerPlayerEntity player : this.playerManager.getPlayerList()) {
 
             tracePlayer(player);
@@ -90,6 +97,13 @@ public class MixinMinecraftServer {
 
                 for (StructurePiece piece : start.getChildren()) {
                     if (piece.getBoundingBox().contains(player.getBlockPos())) {
+
+                        if (shouldRefreshRooms) {
+                            updateMLChoice(start, piece, player);
+                            drawRoomsAndDoors(start, strongholdStart, piece, player);
+                            shouldRefreshRooms = false;
+                        }
+
                         if (lastPiece != piece) {
                             if (
                                     lastPiece == null
@@ -116,6 +130,18 @@ public class MixinMinecraftServer {
         }
     }
 
+    @Inject(method = "loadWorld()V", at = @At("TAIL"))
+    private void loadWorld(CallbackInfo ci) {
+        Path p = session.getDirectory(WorldSavePathAccessor.createWorldSavePath("strongholds"));
+        try {
+            p.toFile().mkdirs();
+        } catch (SecurityException securityException) {
+            securityException.printStackTrace();
+        }
+
+        PlayerPathData.loadAllPriorPaths(p);
+    }
+
     private void drawRoomsAndDoors(StructureStart<?> start, StrongholdGenerator.Start strongholdStart, StructurePiece piece, ServerPlayerEntity player) {
         int yOffset = ((StartAccessor)start).getYOffset();
 
@@ -130,7 +156,7 @@ public class MixinMinecraftServer {
 
         TextRenderer.add(cuboid.getVec(), "Depth: " + piece.getLength(), 0.01f);
         TextRenderer.add(cuboid.getVec().add(0, -0.2, 0), "Direction: " + piece.getFacing(), 0.01f);
-        TextRenderer.add(cuboid.getVec().add(0, -0.4, 0), "Type: " + piece.getClass().getSimpleName(), 0.01f);
+        TextRenderer.add(cuboid.getVec().add(0, -0.4, 0), "Type: " + RoomFormatter.getStrongholdPieceAsString(piece.getClass()), 0.01f);
 
         for (EntryNode node : ((EntranceAccessor) piece).getEntrances()) {
             // Means we've reached a dead end- don't render forwards entries
@@ -154,11 +180,11 @@ public class MixinMinecraftServer {
                 color = Color.BLUE;
                 isBlue = true;
             }
-
+            boolean bothFlag = false;
             if (node.pointer != null && node.pointer == this.mlChosen) {
                 if (isBlue) {
-
                     StrongholdTrainer.submitDoor(new Cuboid(Box.from(newBox).expand(0.05), Color.GREEN));
+                    bothFlag = true;
                 } else {
                     color = Color.GREEN;
                 }
@@ -166,6 +192,16 @@ public class MixinMinecraftServer {
 
             Cuboid door = new Cuboid(newBox, color);
             StrongholdTrainer.submitDoor(door);
+
+            if (StrongholdTrainer.getOption("doorLabels")) {
+                if (color == Color.GREEN) {
+                    TextRenderer.add(door.getVec().subtract(0, 0.5, 0), "Model Choice", 0.02f);
+                } else if (color == Color.BLUE) {
+                    TextRenderer.add(door.getVec().subtract(0, 0.5, 0), bothFlag ? "Perfect Choice & Model Choice" : "Perfect Choice", 0.02f);
+                } else if (color == Color.YELLOW) {
+                    TextRenderer.add(door.getVec().subtract(0, 0.5, 0), "Reverse", 0.02f);
+                }
+            }
 
             if (node.pointer != null) {
                 String text = df.format(this.percents.getOrDefault(node.pointer, 0.0) * 100) + "%";
@@ -192,19 +228,21 @@ public class MixinMinecraftServer {
                         && ticksInStronghold < 0 && !((StartAccessor)start).hasBeenRouted()
                         && !lastPiece.getBoundingBox().contains(player.getBlockPos())
         ) {
-            playerPath = new PlayerPath(start);
+            playerPath = new PlayerPathTracker(start);
             ticksInStronghold = 0;
         }
 
         if (piece instanceof StrongholdGenerator.PortalRoom && ticksInStronghold >= 0) {
-            player.sendMessage(new LiteralText("Time of " + ticksInStronghold / 20.0 + " seconds").formatted(Formatting.DARK_GREEN), false);
-            ((StartAccessor)start).setHasBeenRouted(true);
-            ticksInStronghold = -1;
+
             playerPath.addPiece((StrongholdGenerator.PortalRoom) piece, 0);
-            playerPath.review();
+            playerPath.reviewAndUpdateStats(player, ticksInStronghold);
+
             NextMistakeCommand.submitMistakesAndInaccuracies(playerPath.getMistakes(), playerPath.getInaccuracies());
             NextMistakeCommand.sendInitialMessage(player);
+
             playerPath = null;
+            ticksInStronghold = -1;
+            ((StartAccessor)start).setHasBeenRouted(true);
         }
     }
 
@@ -257,5 +295,10 @@ public class MixinMinecraftServer {
                 lastPlayerPosition = null;
             }
         }
+    }
+
+    @Override
+    public void refreshRooms()  {
+        shouldRefreshRooms = true;
     }
 }

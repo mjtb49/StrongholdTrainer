@@ -1,24 +1,21 @@
-package io.github.mjtb49.strongholdtrainer.util;
+package io.github.mjtb49.strongholdtrainer.stats;
 
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructureStart;
-import net.minecraft.text.LiteralText;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 
-import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class PlayerPath {
+public class PlayerPathTracker {
 
     private static final int INACCURACY_THRESHOLD = 20 * 5;
     private static final int MISTAKE_THRESHOLD = 20 * 10;
-    private static final DecimalFormat DF = new DecimalFormat("0.00");
 
     private final StartAccessor startAccessor;
     private final StrongholdTreeAccessor strongholdTreeAccessor;
@@ -28,7 +25,7 @@ public class PlayerPath {
     private final ArrayList<StrongholdGenerator.Piece> inaccurateRooms;
     private final ArrayList<StrongholdGenerator.Piece> mistakeRooms;
 
-    public PlayerPath(StructureStart<?> start) {
+    public PlayerPathTracker(StructureStart<?> start) {
         startAccessor = (StartAccessor) start;
         strongholdTreeAccessor = (StrongholdTreeAccessor) startAccessor.getStart();
         rooms = new ArrayList<>();
@@ -71,7 +68,7 @@ public class PlayerPath {
         return wormholes;
     }
 
-    public void review() {
+    public void reviewAndUpdateStats(ServerPlayerEntity playerEntity, int ticksInStronghold) {
         if (portalRoom != null) {
             ArrayList<StructurePiece> solution = new ArrayList<>();
             StrongholdGenerator.Piece current = portalRoom;
@@ -111,12 +108,13 @@ public class PlayerPath {
                     //did the player choose a child?
                     if (strongholdTreeAccessor.getTree().get(currentGoodPiece).contains(nextPiece)) {
                         if (!solution.contains(nextPiece)) {
+                            roomsReviewed++;
                             double chosenWeight = policy[strongholdTreeAccessor.getTree().get(currentGoodPiece).indexOf(nextPiece)];
                             int j = indexOfGoodRoom;
                             while (!solution.contains(nextPiece)) {
-                                j++;
                                 nextPiece = rooms.get(j + 1).getLeft();
                                 currentWastedTime += rooms.get(j + 1).getRight();
+                                j++;
                             }
 
                             int expectedLostTicks = (int) (currentWastedTime * (maximumWeight - chosenWeight));
@@ -128,21 +126,35 @@ public class PlayerPath {
                                 inaccuracyCount++;
                                 inaccurateRooms.add(currentGoodPiece);
                             }
-                        } else bestMoveCount++;
+                        } else {
+                            int numNonNull = 0;
+                            for (StructurePiece piece : strongholdTreeAccessor.getTree().get(currentGoodPiece)) {
+                                if (piece != null)
+                                    numNonNull++;
+                            }
+                            if (numNonNull > 1) {
+                                roomsReviewed++;
+                                bestMoveCount++;
+                            }
+                        }
                     }
                 }
-                roomsReviewed++;
                 indexOfGoodRoom++;
             }
 
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Wasted Time " + wastedTime / 20.0 + " seconds").formatted(Formatting.YELLOW), false);
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Difficulty " + DF.format(1/difficulty)).formatted(Formatting.DARK_GREEN), false);
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Rooms Reviewed " + roomsReviewed).formatted(Formatting.DARK_GREEN), false);
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Best Moves " + bestMoveCount).formatted(Formatting.GREEN), false);
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Inaccuracies " + inaccuracyCount).formatted(Formatting.YELLOW), false);
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Mistakes " + mistakeCount).formatted(Formatting.RED), false);
-            MinecraftClient.getInstance().player.sendMessage(new LiteralText("Wormholes " + wormholeCount).formatted(Formatting.BLUE), false);
-            printTheTravel();
+            PlayerPathData playerPathData = new PlayerPathData(
+                    rooms,
+                    ticksInStronghold,
+                    difficulty,
+                    wastedTime,
+                    bestMoveCount,
+                    inaccuracyCount,
+                    mistakeCount,
+                    wormholeCount,
+                    roomsReviewed
+            );
+
+            playerPathData.updateAndPrintAllStats(playerEntity);
         }
     }
 
@@ -156,12 +168,6 @@ public class PlayerPath {
         }
         //should never run
         return -1;
-    }
-
-    private void printTheTravel() {
-        for (Pair<StrongholdGenerator.Piece, Integer> pair : rooms) {
-            System.out.println(pair.getLeft().getClass().getSimpleName() + " " + pair.getRight());
-        }
     }
 
     public ArrayList<StrongholdGenerator.Piece> getMistakes() {

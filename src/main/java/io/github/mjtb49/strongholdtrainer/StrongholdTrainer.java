@@ -4,8 +4,8 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
 import io.github.mjtb49.strongholdtrainer.render.*;
+import io.github.mjtb49.strongholdtrainer.stats.StrongholdTrainerStats;
 import net.fabricmc.api.ModInitializer;
-import sun.jvm.hotspot.utilities.UnsupportedPlatformException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +20,7 @@ public class StrongholdTrainer implements ModInitializer  {
         put("trace",true);
         put("hints",true);
         put("isReviewing",false);
+        put("doorLabels", false);
     }};
     public static boolean ML_DISABLED = false;
     static public void submitRoom(Cuboid cuboid) {
@@ -34,6 +35,7 @@ public class StrongholdTrainer implements ModInitializer  {
 
     @Override
     public void onInitialize() {
+        StrongholdTrainerStats.register();
         System.out.println(System.getProperty("os.arch"));
         if(!(System.getProperty("os.arch").contains("64") || !System.getProperty("os.arch").contains("arm"))){
             System.out.println(System.getProperty("os.arch") + " not supported. Disabling ML operations.");
@@ -74,6 +76,7 @@ public class StrongholdTrainer implements ModInitializer  {
         cuboidRendererGroup.clear();
         playerTracerGroup.clear();
         doorRendererGroup.clear();
+        TextRenderer.clear();
     }
 
     public static void clearDoors() {

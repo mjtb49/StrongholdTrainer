@@ -12,16 +12,10 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 
 import java.util.ArrayList;
 
-import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
-import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
-import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
-import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
-import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 
@@ -30,7 +24,7 @@ public class NextMistakeCommand {
     private static ArrayList<StrongholdGenerator.Piece> mistakes;
     private static ArrayList<StrongholdGenerator.Piece> inaccuracies;
     private static int numMistakesReviewed;
-    private final static String command = "#strongholdTrainer#nextMistake";
+    private final static String command = "⨒strongholdTrainer#nextMistake";
 
     public static void submitMistakesAndInaccuracies(ArrayList<StrongholdGenerator.Piece> mistakes, ArrayList<StrongholdGenerator.Piece> inaccuracies) {
         NextMistakeCommand.mistakes = mistakes;
