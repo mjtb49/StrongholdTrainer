@@ -1,6 +1,7 @@
 package io.github.mjtb49.strongholdtrainer.ml.model;
 
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.util.math.Direction;
@@ -29,13 +30,11 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static io.github.mjtb49.strongholdtrainer.ml.model.InternalModelLoader.CONFIG_DIRECTORY;
-
-// TODO: Refactor and optimize
 public class StrongholdModel {
 
+    public static Path CONFIG_DIRECTORY = FabricLoader.getInstance().getConfigDir().resolve("stronghold-trainer");
 
-    private final Map<Direction, int[]> directionMap = new HashMap<Direction, int[]>() {{
+    private Map<Direction, int[]> directionMap = new HashMap<Direction, int[]>() {{
         put(Direction.EAST, new int[]{1, 0, 0, 0});
         put(Direction.WEST, new int[]{0, 1, 0, 0});
         put(Direction.NORTH, new int[]{0, 0, 1, 0});
@@ -46,7 +45,6 @@ public class StrongholdModel {
     private String creator;
     private String path;
     private final boolean isInternal;
-    private boolean verboseOutput = false;
     // Model Metadata
     private Shape inputShape; // TODO: Shape detection
     private Shape outputShape; // TODO: Shape detection
@@ -69,7 +67,7 @@ public class StrongholdModel {
         put(StrongholdGenerator.Start.class, new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0});
         put(null, new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1});
     }};
-    private final HashMap<String, Class<? extends StructurePiece>> pieceNotationToClassMap = new HashMap<String, Class<? extends StructurePiece>>() {{
+    private final static HashMap<String, Class<? extends StructurePiece>> pieceNotationToClassMap = new HashMap<String, Class<? extends StructurePiece>>() {{
         put("COR", StrongholdGenerator.Corridor.class);
         put("PRI", StrongholdGenerator.PrisonHall.class);
         put("LEF", StrongholdGenerator.LeftTurn.class);
@@ -84,6 +82,12 @@ public class StrongholdModel {
         put("SMA", StrongholdGenerator.SmallCorridor.class);
         put("SPI*", StrongholdGenerator.Start.class);
         put("NUL", null);
+    }};
+    private final static HashMap<String, Direction> directionNotationToDirectionMap = new HashMap<String, Direction>() {{
+        put("E", Direction.EAST);
+        put("W", Direction.WEST);
+        put("N", Direction.NORTH);
+        put("S", Direction.SOUTH);
     }};
     private List<RoomData> inputOrder;
     private List<RoomData> outputOrder;
@@ -103,23 +107,14 @@ public class StrongholdModel {
             this.creator = creator;
             try {
                 this.path = unzipAndGetPath((UUID.randomUUID()).toString(), path).toString();
-                this.modelBundle = new SavedModelLoader(this.path).loadModel();
             } catch (TensorFlowException | IOException ioException) {
-                System.err.println("Failed to create model " + identifier + " because of " + ioException.toString());
+                System.err.println("Failed to create model at "+ this.path + " because of " + ioException.toString());
                 ioException.printStackTrace();
                 return;
             }
-
-        } else {
-            try {
-                this.modelBundle = new SavedModelLoader(this.path).loadModel();
-            } catch (TensorFlowException ioException) {
-                System.err.println("Failed to create model " + identifier + " because of " + ioException.toString());
-                ioException.printStackTrace();
-                return;
-            }
-
         }
+
+        this.modelBundle = SavedModelBundle.load(this.path);
 
         try {
             parseSTMeta();
@@ -127,7 +122,7 @@ public class StrongholdModel {
         } catch (Exception e) {
             System.out.println("Failed to parse STMETA file, using default initializer.");
             e.printStackTrace();
-            initializeToDefaultClassifierEncoding();
+            initializeDefault();
         }
 
         SignatureDef signatureMap = this.modelBundle.metaGraphDef().getSignatureDefMap().get("serving_default");
@@ -186,8 +181,8 @@ public class StrongholdModel {
     }
 
 
-    private static HashMap<Class<? extends StructurePiece>, int[]> orderToFullMap(LinkedList<Class<? extends StructurePiece>> list) {
-        HashMap<Class<? extends StructurePiece>, int[]> hashMap = new HashMap<>();
+    private static <T> HashMap<T, int[]> encodingOrderToFullMap(LinkedList<T> list) {
+        HashMap<T, int[]> hashMap = new HashMap<>();
         int length = list.size();
         int[] oneHotEncoding = new int[length];
         for (int i = 0; i < length; ++i) {
@@ -234,7 +229,7 @@ public class StrongholdModel {
         }
     }
 
-    private void initializeToDefaultClassifierEncoding() {
+    private void initializeDefault() {
 
         this.inputOrder = new LinkedList<RoomData>() {{
             add(RoomData.DEPTH); // 1
@@ -360,16 +355,12 @@ public class StrongholdModel {
         String current = fileReader.readLine();
         String[] args;
         int line = 1;
-        /*byte flags = 0;*/ // All 8 things need to be defined
+        byte flags = 0;
         try {
             if (current.contains("stmeta")) {
                 while ((current = fileReader.readLine()) != null) {
                     ++line;
-//                    System.out.println(line);
-                    if (current.isEmpty()) {
-                        // Consume empty lines
-                        ;
-                    } else {
+                    if (!current.isEmpty()) {
                         args = current.split("=");
                         if (current.equals("eof")) {
                             break;
@@ -379,34 +370,43 @@ public class StrongholdModel {
                         }
                         if (args[0].equals("creator")) {
                             this.creator = parseStringLiteral(args[1], line);
+                            flags |= 1;
                         } else if (args[0].equals("id")) {
                             String candidateID = parseStringLiteral(args[1], line);
                             if (candidateID.isEmpty()) {
                                 throw new STMetaSyntaxException(line, "Invalid identifier: Cannot be blank!");
                             }
                             this.identifier = candidateID;
+                            flags |= 1 << 1;
                         } else if (args[0].equals("input_shape")) {
                             this.inputShape = parseShapeDefinition(args[1], line);
-                        } else if (args[0].equals("redefine(ROOM_TO_VECTOR)")) {
-                            LinkedList<Class<? extends StructurePiece>> order = new LinkedList<>();
-                            String[] redef = args[1].replaceAll(" ", "").split(",");
-                            for (String roomCode : redef) {
-                                Class<? extends StructurePiece> piece = pieceNotationToClassMap.get(roomCode);
-                                if (!pieceNotationToClassMap.containsKey(roomCode)) {
-                                    throw new STMetaSyntaxException(line, "Invalid ROOM->VEC redefine: Invalid room token " + roomCode);
+                            flags |= 1 << 2;
+                        } else if (args[0].startsWith("redefine")) {
+                            String target = args[0].replace("redefine", "");
+                            if(target.equals("(ROOM_TO_VECTOR)")){
+                                try{
+                                    LinkedList<Class<? extends StructurePiece>> order = parseEncodingRedefinition(args[1], pieceNotationToClassMap);
+                                    this.roomVectorMap = encodingOrderToFullMap(order);
+                                } catch (Exception e){
+                                    throw new STMetaSyntaxException(line, "Invalid ROOM->VEC redefine: " + e.getMessage());
                                 }
-                                order.add(piece);
+                            } else if(target.equals("(DIR_TO_VECTOR)")){
+                                try{
+                                    LinkedList<Direction> order = parseEncodingRedefinition(args[1], directionNotationToDirectionMap);
+                                    this.directionMap = encodingOrderToFullMap(order);
+                                } catch (Exception e){
+                                    throw new STMetaSyntaxException(line, "Invalid DIR->VEC redefine: " + e.getMessage());
+                                }
                             }
-                            this.roomVectorMap = orderToFullMap(order);
-                        } else if (args[0].equals("redefine(DIR_TO_VECTOR)")) {
-                            // TODO We aren't allowing this to be defined currently.
                         } else if (args[0].equals("input_vec_order")) {
                             this.inputOrder = parseVecOrder(args[1], line);
+                            flags |= 1 << 3;
                         } else if (args[0].equals("output_shape")) {
                             this.outputShape = parseShapeDefinition(args[1], line);
+                            flags |= 1 << 4;
                         } else if (args[0].equals("output_vec_order")) {
-                            // TODO We're not handling this rn.
                             this.outputOrder = parseVecOrder(args[1], line);
+                            flags |= 1 << 5;
                         }
                     }
                 }
@@ -417,7 +417,34 @@ public class StrongholdModel {
             fileReader.close();
             throw e;
         }
+        giveParserWarnings(flags);
         fileReader.close();
+
+    }
+
+    private void giveParserWarnings(byte flags){
+        System.out.println(Integer.toBinaryString(flags));
+        if(((flags) & 1) != 1){
+            warn("Creator not defined!", 0);
+            this.creator = "";
+        }
+        if(((flags >> 1) & 1) != 1){
+            warn("Identifier not defined!", 0);
+            this.identifier = UUID.randomUUID().toString();
+        }
+        if(((flags >> 2) & 1) != 1){
+            warn("Input shape not defined!", 0);
+            this.identifier = UUID.randomUUID().toString();
+        }
+        if(((flags >> 3) & 1) != 1){
+            warn("Input vector order not defined, using default!", 0);
+        }
+        if(((flags >> 4) & 1) != 1){
+            warn("Output shape not defined, using default!", 0);
+        }
+        if(((flags >> 5) & 1) != 1){
+            warn("Output vector order not defined, but it doesn't matter!", 0);
+        }
 
     }
 
@@ -437,6 +464,23 @@ public class StrongholdModel {
             list.add(dataType);
         }
         return list;
+    }
+
+    private static <T> LinkedList<T> parseEncodingRedefinition(String input, HashMap<String, T> mapping){
+        LinkedList<T> order = new LinkedList<>();
+        String[] redef = input.replaceAll(" ", "").split(",");
+        for (String token : redef) {
+            T piece = mapping.get(token);
+            if (!pieceNotationToClassMap.containsKey(token)) {
+                throw new IllegalArgumentException("Invalid token \"" + token + "\"");
+            }
+            order.add(piece);
+        }
+        return order;
+    }
+
+    private static void warn(String message, int line){
+        System.out.println("\u001b[33mSTMETA WARN at line " + line + ": " + message + "\u001b[0m");
     }
 
     private String parseStringLiteral(String literal, int line) throws STMetaSyntaxException {
@@ -467,7 +511,7 @@ public class StrongholdModel {
             long[] dimSizes = new long[shapeDef.length];
             for (int i = 0; i < dimSizes.length; ++i) {
                 try {
-                    System.out.println("WARN: Hard converting unknown size to 1");
+                    warn("Converting unknown size to 1!", line);
                     dimSizes[i] = Long.parseLong(shapeDef[i]) > -1 ? Long.parseLong(shapeDef[i]) : 1;
                 } catch (NumberFormatException e) {
                     throw new STMetaSyntaxException(line, "Illegal shape definition: invalid integer literal!");
@@ -491,11 +535,4 @@ public class StrongholdModel {
         return this.modelBundle.metaGraphDef().getSignatureDefMap();
     }
 
-    public void toggleVerboseOutput(){
-        this.verboseOutput = !this.verboseOutput;
-    }
-
-    public void setVerboseOutput(boolean verboseOutput1){
-        this.verboseOutput =  verboseOutput1;
-    }
 }

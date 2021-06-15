@@ -7,9 +7,7 @@ import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
 import io.github.mjtb49.strongholdtrainer.ml.model.StrongholdModel;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 
@@ -34,7 +32,7 @@ public class ModelCommand {
                             registeredModels.forEach(s -> {
                                 StrongholdModel model = StrongholdRoomClassifier.STRONGHOLD_MODEL_REGISTRY.getModel(s);
                                 String entry = "• \""  + s + "\" | by: " + model.getCreator() + " | external: " + !model.isInternal();
-                                playerEntity.sendMessage(new LiteralText(entry).formatted(StrongholdRoomClassifier.STRONGHOLD_MODEL_REGISTRY.isActiveMode(s) ?
+                                playerEntity.sendMessage(new LiteralText(entry).formatted(StrongholdRoomClassifier.STRONGHOLD_MODEL_REGISTRY.isActiveModel(s) ?
                                         Formatting.ITALIC : Formatting.RESET), false);
                             });
                             return 0;

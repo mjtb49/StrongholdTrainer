@@ -40,17 +40,19 @@ re-assignable one-hot encoding map and the `TOKEN`s are valid tokens associated 
     
 - _Input Vector Order:_ ``input_vec_order=ROOM_DATA_1,ROOM_DATA_2,...ROOM_DATA_n``. The order in which the model
 takes the room data. This reflects a restriction on models that the mod will load. **Models can only take
-  their inputs as concatenated vectors/scalars in the innermost dimension of their input tensor.** The room
+  their inputs as concatenated vectors/scalars in the last dimension of their input tensor.** The room
   data that models can take, as well as what they are encoded to are listed below.
     - ```
       CURRENT is the type of the current room, encoded to a vector with ROOM_TO_VECTOR
       PREV is the type of the previous room, encoded to vector with ROOM_TO_VECTOR
       EXIT_{1..5} are the types of the 5 exits from the current room, encoded to vectors with ROOM_TO_VECTOR
       EXIT_BACK a room data value that references the type of the previous room, encoded to a vector with ROOM_TO_VECTOR
-      PREV_EXIT_INDEX is the index of exit that led to the current room, encoded directly to a scalar integer.
+      PREV_EXIT_INDEX is the index of the exit that led to the current room, encoded directly to an integer scalar.
       DIRECTION is the facing direction of the current room, encoded to a vector with DIR_TO_VECTOR
-      DEPTH is the depth of the current room, encoded directly with n to a scalar integer.
+      DEPTH is the depth of the current room, encoded directly to an integer scalar.
       ```
   
 - _Output Vector Order:_  ``output_vec_order=<exits ⊆ {EXIT_1,EXIT_2,EXIT_3,EXIT_4,EXIT_5,EXIT_BACK}>``.
 The order and number of model output weights. Currently, the parser ignores this.
+  
+- _Optional EOF:_ `eof`. A quick way to terminate parsing before the actual end of the file.
