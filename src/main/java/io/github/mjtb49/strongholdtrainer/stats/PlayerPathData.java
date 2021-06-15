@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 import com.google.gson.reflect.TypeToken;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.stat.Stats;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
@@ -14,6 +15,7 @@ import java.io.*;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class PlayerPathData {
 
@@ -70,6 +72,9 @@ public class PlayerPathData {
         playerEntity.increaseStat(StrongholdTrainerStats.NUM_INACCURACIES, inaccuracyCount);
         playerEntity.increaseStat(StrongholdTrainerStats.NUM_MISTAKES, mistakeCount);
 
+        playerEntity.resetStat(Stats.CUSTOM.getOrCreateStat(StrongholdTrainerStats.MEDIAN_TIME));
+        playerEntity.increaseStat(StrongholdTrainerStats.MEDIAN_TIME, computeMedianTimeTaken());
+
         playerEntity.sendMessage(new LiteralText(" "), false);
         playerEntity.sendMessage(new LiteralText("Time of " + ticksInStronghold / 20.0 + " seconds").formatted(Formatting.DARK_GREEN), false);
         playerEntity.sendMessage(new LiteralText("Wasted Time " + wastedTime / 20.0 + " seconds").formatted(Formatting.YELLOW), false);
@@ -85,6 +90,17 @@ public class PlayerPathData {
         for (Pair<StrongholdGenerator.Piece, Integer> room : rooms) {
             RoomStats.updateRoomStats(playerEntity, room.getLeft().getClass(), room.getRight());
         }
+    }
+
+    private int computeMedianTimeTaken() {
+        ArrayList<Integer> times = new ArrayList<>();
+        for (PlayerPathData playerPathData : allPlayerPathData) {
+            times.add(playerPathData.ticksInStronghold);
+        }
+        Collections.sort(times);
+        int index = (times.size() - 1) / 2;
+        int index2 = times.size() / 2;
+        return (times.get(index) + times.get(index2)) / 2;
     }
 
     private void printTheTravel() {

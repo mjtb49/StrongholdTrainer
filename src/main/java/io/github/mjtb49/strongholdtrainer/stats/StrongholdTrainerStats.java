@@ -17,6 +17,7 @@ public class StrongholdTrainerStats {
     public static final Identifier NUM_MISTAKES = new Identifier(MODID, "num_mistakes");
     public static final Identifier TOTAL_TIME = new Identifier(MODID, "total_time");
     public static final Identifier AVG_TIME = new Identifier(MODID, "avg_time");
+    public static final Identifier MEDIAN_TIME = new Identifier(MODID, "med_time");
 
     public static void register() {
         RoomStats.register();
@@ -28,6 +29,7 @@ public class StrongholdTrainerStats {
         Registry.register(Registry.CUSTOM_STAT, "num_mistakes", NUM_MISTAKES);
         Registry.register(Registry.CUSTOM_STAT, "total_time", TOTAL_TIME);
         Registry.register(Registry.CUSTOM_STAT, "avg_time", AVG_TIME);
+        Registry.register(Registry.CUSTOM_STAT, "med_time", MEDIAN_TIME);
 
         Stats.CUSTOM.getOrCreateStat(NUM_STRONGHOLDS, StatFormatter.DEFAULT);
         Stats.CUSTOM.getOrCreateStat(NUM_REVIEWED_ROOMS, StatFormatter.DEFAULT);
@@ -36,6 +38,7 @@ public class StrongholdTrainerStats {
         Stats.CUSTOM.getOrCreateStat(NUM_MISTAKES, StatFormatter.DEFAULT);
         Stats.CUSTOM.getOrCreateStat(TOTAL_TIME, StatFormatter.TIME);
         Stats.CUSTOM.getOrCreateStat(AVG_TIME, StatFormatter.TIME);
+        Stats.CUSTOM.getOrCreateStat(MEDIAN_TIME, StatFormatter.TIME);
     }
 
     public static void updateStrongholdTimeStats(ServerPlayerEntity playerEntity, int timeInTicks) {
