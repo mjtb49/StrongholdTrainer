@@ -1,5 +1,6 @@
 package io.github.mjtb49.strongholdtrainer.mixin;
 
+import com.mojang.authlib.minecraft.MinecraftSessionService;
 import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import io.github.mjtb49.strongholdtrainer.api.EntranceAccessor;
 import io.github.mjtb49.strongholdtrainer.api.MinecraftServerAccessor;
@@ -11,14 +12,13 @@ import io.github.mjtb49.strongholdtrainer.render.Color;
 import io.github.mjtb49.strongholdtrainer.render.Cuboid;
 import io.github.mjtb49.strongholdtrainer.render.Line;
 import io.github.mjtb49.strongholdtrainer.render.TextRenderer;
+import io.github.mjtb49.strongholdtrainer.stats.PlayerPathData;
 import io.github.mjtb49.strongholdtrainer.stats.PlayerPathTracker;
-import io.github.mjtb49.strongholdtrainer.stats.StrongholdTrainerStats;
 import io.github.mjtb49.strongholdtrainer.util.EntryNode;
 import io.github.mjtb49.strongholdtrainer.util.RoomFormatter;
 import io.github.mjtb49.strongholdtrainer.util.StrongholdSearcher;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
-import net.minecraft.server.ServerNetworkIo;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StrongholdGenerator;
@@ -30,6 +30,7 @@ import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.gen.feature.StructureFeature;
+import net.minecraft.world.level.storage.LevelStorage;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -37,6 +38,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,11 +47,13 @@ import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 @Mixin(MinecraftServer.class)
-public class MixinMinecraftServer implements MinecraftServerAccessor {
+public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
 
     @Shadow private PlayerManager playerManager;
-    @Shadow @Final private ServerNetworkIo networkIo;
-    @Shadow private int ticks;
+    @Shadow @Final protected LevelStorage.Session session;
+
+    @Shadow public abstract MinecraftSessionService getSessionService();
+
     private StructurePiece lastPiece = null;
     private StructurePiece mlChosen = null;
     private final Map<StructurePiece, Double> percents = new HashMap<>();
@@ -64,7 +68,6 @@ public class MixinMinecraftServer implements MinecraftServerAccessor {
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void inject(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
-
         for (ServerPlayerEntity player : this.playerManager.getPlayerList()) {
 
             tracePlayer(player);
@@ -125,6 +128,18 @@ public class MixinMinecraftServer implements MinecraftServerAccessor {
                 currentRoomTime++;
             }
         }
+    }
+
+    @Inject(method = "loadWorld()V", at = @At("TAIL"))
+    private void loadWorld(CallbackInfo ci) {
+        Path p = session.getDirectory(WorldSavePathAccessor.createWorldSavePath("strongholds"));
+        try {
+            p.toFile().mkdirs();
+        } catch (SecurityException securityException) {
+            securityException.printStackTrace();
+        }
+
+        PlayerPathData.loadAllPriorPaths(p);
     }
 
     private void drawRoomsAndDoors(StructureStart<?> start, StrongholdGenerator.Start strongholdStart, StructurePiece piece, ServerPlayerEntity player) {
@@ -218,16 +233,16 @@ public class MixinMinecraftServer implements MinecraftServerAccessor {
         }
 
         if (piece instanceof StrongholdGenerator.PortalRoom && ticksInStronghold >= 0) {
-            player.sendMessage(new LiteralText(" "), false);
-            player.sendMessage(new LiteralText("Time of " + ticksInStronghold / 20.0 + " seconds").formatted(Formatting.DARK_GREEN), false);
-            StrongholdTrainerStats.updateStrongholdTimeStats(player, ticksInStronghold);
-            ((StartAccessor)start).setHasBeenRouted(true);
-            ticksInStronghold = -1;
+
             playerPath.addPiece((StrongholdGenerator.PortalRoom) piece, 0);
-            playerPath.review(player);
+            playerPath.reviewAndUpdateStats(player, ticksInStronghold);
+
             NextMistakeCommand.submitMistakesAndInaccuracies(playerPath.getMistakes(), playerPath.getInaccuracies());
             NextMistakeCommand.sendInitialMessage(player);
+
             playerPath = null;
+            ticksInStronghold = -1;
+            ((StartAccessor)start).setHasBeenRouted(true);
         }
     }
 

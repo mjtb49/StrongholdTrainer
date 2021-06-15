@@ -76,6 +76,7 @@ public class StrongholdTrainer implements ModInitializer  {
         cuboidRendererGroup.clear();
         playerTracerGroup.clear();
         doorRendererGroup.clear();
+        TextRenderer.clear();
     }
 
     public static void clearDoors() {

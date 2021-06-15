@@ -16,5 +16,6 @@ public abstract class MixinClientPlayNetworkHandler {
     public void onGameJoin(GameJoinS2CPacket packet, CallbackInfo ci) {
         assert MinecraftClient.getInstance().player != null;
         MinecraftClient.getInstance().player.sendMessage(new LiteralText("Loaded Stronghold Trainer (use /newStronghold to go to a new stronghold, /stinfo for more help)").formatted(Formatting.AQUA), false); }
+
 }
 

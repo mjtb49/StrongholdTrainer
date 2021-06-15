@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "MixinClientPlayNetworkHandler",
+    "MixinClientWorld",
     "MixinCommandManager",
     "MixinDummyProfiler",
     "MixinGameRenderer",
@@ -16,7 +17,8 @@
     "MixinStrongholdGeneratorFiveWayCrossing",
     "MixinStrongholdGeneratorSquareRoom",
     "MixinStrongholdGeneratorStart",
-    "MixinStrongholdPiece"
+    "MixinStrongholdPiece",
+    "WorldSavePathAccessor"
   ],
   "client": [
   ],

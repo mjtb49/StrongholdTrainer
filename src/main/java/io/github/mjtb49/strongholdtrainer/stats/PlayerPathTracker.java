@@ -68,13 +68,7 @@ public class PlayerPathTracker {
         return wormholes;
     }
 
-    private void updateRoomStats(ServerPlayerEntity playerEntity) {
-        for (Pair<StrongholdGenerator.Piece, Integer> room : rooms) {
-            RoomStats.updateRoomStats(playerEntity, room.getLeft().getClass(), room.getRight());
-        }
-    }
-
-    public void review(ServerPlayerEntity playerEntity) {
+    public void reviewAndUpdateStats(ServerPlayerEntity playerEntity, int ticksInStronghold) {
         if (portalRoom != null) {
             ArrayList<StructurePiece> solution = new ArrayList<>();
             StrongholdGenerator.Piece current = portalRoom;
@@ -150,6 +144,7 @@ public class PlayerPathTracker {
 
             PlayerPathData playerPathData = new PlayerPathData(
                     rooms,
+                    ticksInStronghold,
                     difficulty,
                     wastedTime,
                     bestMoveCount,
@@ -159,8 +154,7 @@ public class PlayerPathTracker {
                     roomsReviewed
             );
 
-            playerPathData.updateAllStats(playerEntity);
-            printTheTravel();
+            playerPathData.updateAndPrintAllStats(playerEntity);
         }
     }
 
@@ -174,12 +168,6 @@ public class PlayerPathTracker {
         }
         //should never run
         return -1;
-    }
-
-    private void printTheTravel() {
-        for (Pair<StrongholdGenerator.Piece, Integer> pair : rooms) {
-            System.out.println(pair.getLeft().getClass().getSimpleName() + " " + pair.getRight());
-        }
     }
 
     public ArrayList<StrongholdGenerator.Piece> getMistakes() {
