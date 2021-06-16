@@ -20,6 +20,7 @@
     "MixinStrongholdGeneratorSquareRoom",
     "MixinStrongholdGeneratorStart",
     "MixinStrongholdPiece",
+    "MixinEntry",
     "WorldSavePathAccessor"
   ],
   "client": [
