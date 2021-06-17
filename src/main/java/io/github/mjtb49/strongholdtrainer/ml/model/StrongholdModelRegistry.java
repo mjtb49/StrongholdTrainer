@@ -1,6 +1,7 @@
 package io.github.mjtb49.strongholdtrainer.ml.model;
 
 
+import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Optional;
 import java.util.Set;
@@ -98,5 +99,20 @@ public class StrongholdModelRegistry{
         } else {
             throw new IllegalArgumentException("There is no registered model with the id \"" + id + "\"");
         }
+    }
+
+    public void forceReload(String id) throws IOException {
+        this.getModel(id).forceReload();
+    }
+
+    public void forceReloadAll(){
+        this.modelRegistry.forEach((id, model) -> {
+            try {
+                model.forceReload();
+            } catch (IOException e) {
+                System.err.println("Failed to force reload all models.");
+                e.printStackTrace();
+            }
+        });
     }
 }
