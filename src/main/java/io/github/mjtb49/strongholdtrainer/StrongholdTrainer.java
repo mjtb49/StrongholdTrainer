@@ -44,11 +44,11 @@ public class StrongholdTrainer implements ModInitializer  {
             GlStateManager.disableDepthTest();
             RenderSystem.defaultBlendFunc();
 
-            if (cuboidRendererGroup != null && (OptionTracker.getBoolOption(OptionTracker.Option.HINTS) || IS_REVIEWING)) {
+            if (cuboidRendererGroup != null && (OptionTracker.getBoolean(OptionTracker.Option.HINTS) || IS_REVIEWING)) {
                 doorRendererGroup.render();
                 cuboidRendererGroup.render();
                 GlStateManager.enableBlend();
-                if (OptionTracker.getBoolOption(OptionTracker.Option.TRACE))
+                if (OptionTracker.getBoolean(OptionTracker.Option.TRACE))
                     playerTracerGroup.render();
                 GlStateManager.disableBlend();
                 TextRenderer.render();

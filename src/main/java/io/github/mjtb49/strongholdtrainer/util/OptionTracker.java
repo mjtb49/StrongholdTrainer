@@ -1,10 +1,13 @@
 package io.github.mjtb49.strongholdtrainer.util;
 
+import com.google.gson.*;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.util.Properties;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 
 public class OptionTracker {
 
@@ -14,6 +17,17 @@ public class OptionTracker {
         DOOR_LABELS("doorLabels"),
         ALLOW_SCUFFED("allowScuffed");
 
+        private static final HashMap<String, Option> strToOption = new HashMap<>();
+        static {
+            for(Option option : Option.values()){
+                strToOption.put(option.id, option);
+            }
+        }
+
+        public static Option getOption(String str){
+            return strToOption.get(str);
+        }
+
         public String id;
 
         Option(String id) {
@@ -21,20 +35,26 @@ public class OptionTracker {
         }
     }
 
-    private static final Path OPTIONS_PATH = FabricLoader.getInstance().getGameDir().resolve("strongholdOptions.txt");
-    static Properties DEFAULTS;
-    static Properties OPTIONS;
+    private static final Path OPTIONS_PATH = FabricLoader.getInstance().getGameDir().resolve("strongholdOptions.json");
+
+    private static final Map<Option, Boolean> DEFAULT = new EnumMap<>(Option.class);
+    private static final Map<Option, JsonElement> OPTIONS = new EnumMap<>(Option.class);
+
+    private static final Gson gson = new Gson();
+    private static final JsonParser parser = new JsonParser();
 
     public static void init() {
-        DEFAULTS = new Properties();
-        DEFAULTS.setProperty(Option.TRACE.id, "true");
-        DEFAULTS.setProperty(Option.HINTS.id, "true");
-        DEFAULTS.setProperty(Option.DOOR_LABELS.id, "false");
-        DEFAULTS.setProperty(Option.ALLOW_SCUFFED.id, "true");
-        OPTIONS = new Properties(DEFAULTS);
         try {
             BufferedReader br = new BufferedReader(new FileReader(String.valueOf(OPTIONS_PATH)));
-            OPTIONS.load(br);
+            JsonObject obj = parser.parse(br).getAsJsonObject();
+            for(Map.Entry<String, JsonElement> entry : obj.entrySet()){
+                Option option = Option.getOption(entry.getKey());
+                if(option == null){
+                    continue;
+                }
+                OPTIONS.put(option, entry.getValue());
+                DEFAULT.put(option, false);
+            }
             br.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -42,30 +62,42 @@ public class OptionTracker {
     }
 
     public static void writeOptions() {
+        JsonObject obj = new JsonObject();
+        for(Map.Entry<Option, JsonElement> option : OPTIONS.entrySet()){
+            if(!DEFAULT.containsKey(option.getKey()) || !DEFAULT.get(option.getKey())){
+                obj.add(option.getKey().id, option.getValue());
+            }
+        }
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(String.valueOf(OPTIONS_PATH)));
-            OPTIONS.store(bw,"");
-            bw.flush();
+            gson.toJson(obj, bw);
             bw.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public static void setBoolOption(Option option, boolean bool) {
-        OPTIONS.setProperty(option.id, Boolean.toString(bool));
+    public static void setOption(Option optionID, JsonElement value){
+        OPTIONS.put(optionID, value);
     }
 
-    public static void setOption(Option option, String value) {
-        OPTIONS.setProperty(option.id, value);
+    public static void markDefault(Option optionID, boolean isDefault){
+        DEFAULT.put(optionID, isDefault);
     }
 
-    public static boolean getBoolOption(Option option) {
-        return Boolean.parseBoolean(OPTIONS.getProperty(option.id));
+    public static JsonElement getOption(Option optionID){
+        if(OPTIONS.containsKey(optionID)){
+            return OPTIONS.get(optionID);
+        }
+        return null;
     }
 
-    public static String getOption(Option option) {
-        return OPTIONS.getProperty(option.id);
+    public static boolean getBoolean(Option optionID){
+        JsonElement element = getOption(optionID);
+        if(element == null){
+            return false;
+        }
+        return element.getAsBoolean();
     }
 
 }

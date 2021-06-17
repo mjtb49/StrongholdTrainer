@@ -26,10 +26,10 @@ public abstract class MixinCommandManager {
     public void CommandManager(CommandManager.RegistrationEnvironment environment, CallbackInfo ci) {
         NewStrongholdCommand.register(dispatcher);
         NextMistakeCommand.register(dispatcher);
-        BoolOptionCommand.register(OptionTracker.Option.HINTS, dispatcher);
-        BoolOptionCommand.register(OptionTracker.Option.DOOR_LABELS, dispatcher);
-        BoolOptionCommand.register(OptionTracker.Option.TRACE, dispatcher);
-        BoolOptionCommand.register(OptionTracker.Option.ALLOW_SCUFFED, dispatcher);
+        new BooleanOptionCommand(OptionTracker.Option.HINTS).register(dispatcher);
+        new BooleanOptionCommand(OptionTracker.Option.DOOR_LABELS).register(dispatcher);
+        new BooleanOptionCommand(OptionTracker.Option.TRACE).register(dispatcher);
+        new BooleanOptionCommand(OptionTracker.Option.ALLOW_SCUFFED).register(dispatcher);
         ModelCommand.register(dispatcher);
         STInfoCommand.register(dispatcher);
     }

@@ -3,6 +3,7 @@ package io.github.mjtb49.strongholdtrainer.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
+import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.minecraft.block.Blocks;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.structure.StrongholdGenerator;

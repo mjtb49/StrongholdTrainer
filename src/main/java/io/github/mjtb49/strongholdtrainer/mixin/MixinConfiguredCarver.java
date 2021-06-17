@@ -13,6 +13,6 @@ import java.util.Random;
 public class MixinConfiguredCarver {
     @Inject(method = "shouldCarve(Ljava/util/Random;II)Z", at = @At("TAIL"), cancellable = true)
     public void shouldCarve(Random random, int chunkX, int chunkZ, CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(cir.getReturnValue() && OptionTracker.getBoolOption(OptionTracker.Option.ALLOW_SCUFFED)); //StrongholdTrainer.getOption("allowScuffed"));
+        cir.setReturnValue(cir.getReturnValue() && OptionTracker.getBoolean(OptionTracker.Option.ALLOW_SCUFFED));
     }
 }
