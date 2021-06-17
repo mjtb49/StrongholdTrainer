@@ -4,7 +4,7 @@ id="basic-classifier-nobacktracking"
 
 input_shape=[1,103]
 redefine(ROOM_TO_VECTOR)=COR,PRI,LEF,RIG,SQU,STA,SPI,FIV,CHE,LIB,POR,SMA,SPI*,NUL
-input_vec_order=DEPTH,PREV,CURRENT,EXIT_1,EXIT_2,EXIT_3,EXIT_4,EXIT_5,DIRECTION
+input_vec_order=DEPTH,PARENT_ROOM,CURRENT,EXIT_1,EXIT_2,EXIT_3,EXIT_4,EXIT_5,DIRECTION
 
 output_shape=[1,5]
 output_vec_order=EXIT_1,EXIT_2,EXIT_3,EXIT_4,EXIT_5

@@ -1,0 +1,9 @@
+stmeta 1.0
+creator="neoprene1337"
+id="rnn_2"
+
+input_shape=[1,109]
+input_vec_order=DIRECTION,PREV_EXIT_INDEX_COMPAT,EXIT_5,EXIT_4,EXIT_3,EXIT_2,EXIT_1,PARENT_ROOM,CURRENT,CONSTANT,DOWNWARDS
+
+output_shape=[1,6]
+eof

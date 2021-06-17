@@ -26,17 +26,17 @@ public class StrongholdRoomClassifier {
 
 
 
-    public static double[] getPredictions(StrongholdGenerator.Start start, StrongholdGenerator.Piece piece) {
+    public static double[] getPredictions(StrongholdGenerator.Start start, StrongholdGenerator.Piece piece, StrongholdGenerator.Piece previous) {
         //hack fix since the model hasn't been trained on rooms where the portal room is adjacent
         if((!StrongholdTrainer.ML_DISABLED) || (STRONGHOLD_MODEL_REGISTRY.getActiveModel() != null)){
-            double[] predictions = STRONGHOLD_MODEL_REGISTRY.getActiveModel().getPredictions(start, piece);
+            double[] predictions = STRONGHOLD_MODEL_REGISTRY.getActiveModel().getPredictions(start, piece, previous);
             if(verboseOutput){
                 PlayerEntity playerEntity = MinecraftClient.getInstance().player;
                 if(playerEntity != null){
                     playerEntity.sendMessage(new LiteralText(Arrays.toString(predictions)), false);
                 }
             }
-            return STRONGHOLD_MODEL_REGISTRY.getActiveModel().getPredictions(start, piece);
+            return STRONGHOLD_MODEL_REGISTRY.getActiveModel().getPredictions(start, piece, previous);
         } else {
             return new double[]{0xffD, 0xffD, 0xffD, 0xffD, 0xffD};
         }
