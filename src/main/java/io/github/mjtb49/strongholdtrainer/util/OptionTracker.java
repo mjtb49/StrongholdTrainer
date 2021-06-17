@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 public class OptionTracker {
 

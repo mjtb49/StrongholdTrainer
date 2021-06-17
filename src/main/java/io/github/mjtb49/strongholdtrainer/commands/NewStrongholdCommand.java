@@ -28,7 +28,7 @@ public class NewStrongholdCommand {
                 literal("newStronghold").executes(c -> {
 
                     StrongholdTrainer.clearAll();
-                    StrongholdTrainer.isReviewing = false;
+                    StrongholdTrainer.IS_REVIEWING = false;
 
                     int x = (int) (c.getSource().getPlayer().getX() + GAP * 8) / 16 / GAP;
                     int z = (int) (c.getSource().getPlayer().getZ() + GAP * 8) / 16 / GAP;

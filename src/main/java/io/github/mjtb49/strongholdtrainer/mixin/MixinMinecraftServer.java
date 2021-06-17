@@ -311,9 +311,6 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
                 this.mlChosen = null;
             }
         }
-
-
-
     }
 
     private void tracePlayer(ServerPlayerEntity player) {

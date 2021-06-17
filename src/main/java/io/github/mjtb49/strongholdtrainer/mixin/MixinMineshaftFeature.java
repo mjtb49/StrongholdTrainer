@@ -1,6 +1,5 @@
 package io.github.mjtb49.strongholdtrainer.mixin;
 
-import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.biome.Biome;

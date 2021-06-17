@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
-import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.structure.StrongholdGenerator;
@@ -65,7 +64,7 @@ public class NextMistakeCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                literal(command).executes( c -> {
-                   StrongholdTrainer.isReviewing = true;
+                   StrongholdTrainer.IS_REVIEWING = true;
                    if ((mistakes == null || mistakes.size() == 0) && (inaccuracies == null || inaccuracies.size() == 0))
                        c.getSource().getPlayer().sendMessage(new LiteralText("Nothing left to review!").formatted(Formatting.GREEN), false);
                    else  if (mistakes != null && mistakes.size() == 0 && numMistakesReviewed > 0) {
