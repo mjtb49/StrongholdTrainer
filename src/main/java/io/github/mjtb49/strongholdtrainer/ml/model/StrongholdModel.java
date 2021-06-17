@@ -140,7 +140,7 @@ public class StrongholdModel {
         Map<String, TensorInfo> inputMap = signatureMap.getInputsMap();
         Map<String, TensorInfo> outputMap = signatureMap.getOutputsMap();
         // TODO: add stmeta param for this instead of hard-coding it
-        if(this.identifier.equals("rnn_2")){
+        if(this.identifier.contains("rnn")){
             this.batchInput = true;
         }
 

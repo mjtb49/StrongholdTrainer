@@ -2,10 +2,7 @@ package io.github.mjtb49.strongholdtrainer.ml;
 
 import net.minecraft.structure.StrongholdGenerator;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class StrongholdPath {
     private final StrongholdGenerator.Start start;
