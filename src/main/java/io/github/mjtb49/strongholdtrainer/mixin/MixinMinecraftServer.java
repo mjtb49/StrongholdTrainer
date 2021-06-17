@@ -15,6 +15,7 @@ import io.github.mjtb49.strongholdtrainer.render.TextRenderer;
 import io.github.mjtb49.strongholdtrainer.stats.PlayerPathData;
 import io.github.mjtb49.strongholdtrainer.stats.PlayerPathTracker;
 import io.github.mjtb49.strongholdtrainer.util.EntryNode;
+import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import io.github.mjtb49.strongholdtrainer.util.RoomFormatter;
 import io.github.mjtb49.strongholdtrainer.util.StrongholdSearcher;
 import net.minecraft.server.MinecraftServer;
@@ -193,7 +194,7 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
             Cuboid door = new Cuboid(newBox, color);
             StrongholdTrainer.submitDoor(door);
 
-            if (StrongholdTrainer.getBoolean("doorLabels")) {
+            if (OptionTracker.getBoolean(OptionTracker.Option.DOOR_LABELS)) {
                 if (color == Color.GREEN) {
                     TextRenderer.add(door.getVec().subtract(0, 0.5, 0), "Model Choice", 0.02f);
                 } else if (color == Color.BLUE) {
@@ -317,7 +318,7 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
 
     private void tracePlayer(ServerPlayerEntity player) {
         if (ticksInStronghold >= 0) {
-            if (!player.isSpectator() && !player.isCreative() && StrongholdTrainer.getBoolean("trace")) {
+            if (!player.isSpectator() && !player.isCreative() && OptionTracker.getBoolean(OptionTracker.Option.TRACE)) {
                 if (lastPlayerPosition != null)
                     if (lastPlayerPosition.distanceTo(player.getPos()) < 10)
                         StrongholdTrainer.submitPlayerLine(new Line(lastPlayerPosition.add(0,0.01,0), player.getPos().add(0,0.01,0), Color.PINK));

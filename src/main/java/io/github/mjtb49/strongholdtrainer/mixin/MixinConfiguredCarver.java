@@ -1,6 +1,7 @@
 package io.github.mjtb49.strongholdtrainer.mixin;
 
 import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
+import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.minecraft.world.gen.carver.ConfiguredCarver;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,6 +14,6 @@ import java.util.Random;
 public class MixinConfiguredCarver {
     @Inject(method = "shouldCarve(Ljava/util/Random;II)Z", at = @At("TAIL"), cancellable = true)
     public void shouldCarve(Random random, int chunkX, int chunkZ, CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(cir.getReturnValue() && StrongholdTrainer.getBoolean("allowScuffed"));
+        cir.setReturnValue(cir.getReturnValue() && OptionTracker.getBoolean(OptionTracker.Option.ALLOW_SCUFFED));
     }
 }

@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
 
@@ -14,11 +15,11 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class BooleanOptionCommand extends OptionCommand {
 
-    public BooleanOptionCommand(String optionID) {
+    public BooleanOptionCommand(OptionTracker.Option optionID) {
         this(optionID, false);
     }
 
-    public BooleanOptionCommand(String optionID, boolean defaultValue) {
+    public BooleanOptionCommand(OptionTracker.Option optionID, boolean defaultValue) {
         super(optionID, new JsonPrimitive(defaultValue));
         setOption();
     }
@@ -26,8 +27,8 @@ public class BooleanOptionCommand extends OptionCommand {
     @Override
     public void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-                literal(optionID).then(
-                        argument(optionID, bool()).executes(
+                literal(optionID.id).then(
+                        argument(optionID.id, bool()).executes(
                                 c -> {
                                     this.setOption(c);
                                     c.getSource().getPlayer().sendMessage(new LiteralText(this.optionID + " is now " + this.getOption()), false);
@@ -47,7 +48,7 @@ public class BooleanOptionCommand extends OptionCommand {
 
     @Override
     protected JsonElement getArgument(CommandContext<ServerCommandSource> c) {
-        return new JsonPrimitive(getBool(c, optionID));
+        return new JsonPrimitive(getBool(c, optionID.id));
     }
 
     private void setOption(boolean value){

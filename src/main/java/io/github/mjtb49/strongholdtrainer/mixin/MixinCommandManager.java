@@ -2,6 +2,7 @@ package io.github.mjtb49.strongholdtrainer.mixin;
 
 import com.mojang.brigadier.CommandDispatcher;
 import io.github.mjtb49.strongholdtrainer.commands.*;
+import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import org.spongepowered.asm.mixin.Final;
@@ -25,10 +26,10 @@ public abstract class MixinCommandManager {
     public void CommandManager(CommandManager.RegistrationEnvironment environment, CallbackInfo ci) {
         NewStrongholdCommand.register(dispatcher);
         NextMistakeCommand.register(dispatcher);
-        new BooleanOptionCommand("hints").register(dispatcher);
-        new BooleanOptionCommand("doorLabels").register(dispatcher);
-        new BooleanOptionCommand("trace").register(dispatcher);
-        new BooleanOptionCommand("allowScuffed").register(dispatcher);
+        new BooleanOptionCommand(OptionTracker.Option.HINTS).register(dispatcher);
+        new BooleanOptionCommand(OptionTracker.Option.DOOR_LABELS).register(dispatcher);
+        new BooleanOptionCommand(OptionTracker.Option.TRACE).register(dispatcher);
+        new BooleanOptionCommand(OptionTracker.Option.ALLOW_SCUFFED).register(dispatcher);
         ModelCommand.register(dispatcher);
         STInfoCommand.register(dispatcher);
     }

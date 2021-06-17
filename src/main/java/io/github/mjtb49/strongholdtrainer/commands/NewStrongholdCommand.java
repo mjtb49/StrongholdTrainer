@@ -3,6 +3,7 @@ package io.github.mjtb49.strongholdtrainer.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
+import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.minecraft.block.Blocks;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.structure.StrongholdGenerator;
@@ -27,7 +28,7 @@ public class NewStrongholdCommand {
                 literal("newStronghold").executes(c -> {
 
                     StrongholdTrainer.clearAll();
-                    StrongholdTrainer.setOption("isReviewing", false);
+                    StrongholdTrainer.isReviewing = false;
 
                     int x = (int) (c.getSource().getPlayer().getX() + GAP * 8) / 16 / GAP;
                     int z = (int) (c.getSource().getPlayer().getZ() + GAP * 8) / 16 / GAP;
