@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 import com.google.gson.reflect.TypeToken;
+import io.github.mjtb49.strongholdtrainer.util.RoomFormatter;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.stat.Stats;
 import net.minecraft.structure.StrongholdGenerator;
@@ -16,6 +17,7 @@ import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 public class PlayerPathData {
 
@@ -24,6 +26,8 @@ public class PlayerPathData {
 
     private static final DecimalFormat DF = new DecimalFormat("0.00");
     private final ArrayList<Pair<StrongholdGenerator.Piece, Integer>> rooms;
+    @Expose
+    private final HashMap<String, ArrayList<Integer>> roomsToWriteToFile;
     @Expose
     private final int ticksInStronghold;
     @Expose
@@ -59,6 +63,14 @@ public class PlayerPathData {
         this.mistakeCount = mistakeCount;
         this.wormholeCount = wormholeCount;
         this.roomsReviewed = roomsReviewed;
+
+        roomsToWriteToFile = new HashMap<>();
+        for (Pair<StrongholdGenerator.Piece, Integer> pair : rooms) {
+            ArrayList<Integer> list = roomsToWriteToFile.getOrDefault(RoomFormatter.ROOM_TO_STRING.get(pair.getLeft().getClass()), new ArrayList<>());
+            list.add(pair.getRight());
+            roomsToWriteToFile.put(RoomFormatter.ROOM_TO_STRING.get(pair.getLeft().getClass()), list);
+        }
+
         allPlayerPathData.add(this);
     }
 

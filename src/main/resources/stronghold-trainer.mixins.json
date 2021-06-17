@@ -7,10 +7,13 @@
     "MixinClientPlayNetworkHandler",
     "MixinClientWorld",
     "MixinCommandManager",
+    "MixinConfiguredCarver",
     "MixinDummyProfiler",
     "MixinEndPortalBlock",
+    "MixinEntry",
     "MixinGameRenderer",
     "MixinMinecraftServer",
+    "MixinMineshaftFeature",
     "MixinPortalRoom",
     "MixinStrongholdFeature",
     "MixinStrongholdFeatureStart",
@@ -20,7 +23,6 @@
     "MixinStrongholdGeneratorSquareRoom",
     "MixinStrongholdGeneratorStart",
     "MixinStrongholdPiece",
-    "MixinEntry",
     "WorldSavePathAccessor"
   ],
   "client": [

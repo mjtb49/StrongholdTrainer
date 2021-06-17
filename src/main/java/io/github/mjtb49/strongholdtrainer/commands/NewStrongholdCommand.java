@@ -3,6 +3,7 @@ package io.github.mjtb49.strongholdtrainer.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
+import net.minecraft.block.Blocks;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructureStart;
@@ -64,7 +65,9 @@ public class NewStrongholdCommand {
                                 break;
                         }
                         c.getSource().getPlayer().teleport(c.getSource().getWorld(), blockX, yFinal, blockZ, yaw, 0);
+                        c.getSource().getPlayer().getServerWorld().setBlockState(new BlockPos(blockX, yFinal - 1, blockZ), Blocks.TARGET.getDefaultState());
                         c.getSource().getPlayer().setSpawnPoint(c.getSource().getWorld().getWorld().getRegistryKey(), new BlockPos(blockX, yFinal, blockZ), true, false);
+
                     } else {
                         c.getSource().getPlayer().sendMessage(new LiteralText("Didn't find a stronghold, but try digging down here").formatted(Formatting.RED), false);
                         c.getSource().getPlayer().teleport(c.getSource().getWorld(), blockX, 90, blockZ, 0, 0);

@@ -19,8 +19,9 @@ public class StrongholdTrainer implements ModInitializer  {
     private final static Map<String, Boolean> OPTIONS = new HashMap<String, Boolean>(){{
         put("trace",true);
         put("hints",true);
-        put("isReviewing",false);
+        put("isReviewing", false); //TODO weird to have this in here when its not a command
         put("doorLabels", false);
+        put("allowScuffed", true);
     }};
     public static boolean ML_DISABLED = false;
     static public void submitRoom(Cuboid cuboid) {
