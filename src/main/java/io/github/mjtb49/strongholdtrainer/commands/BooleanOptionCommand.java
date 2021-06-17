@@ -21,7 +21,6 @@ public class BooleanOptionCommand extends OptionCommand {
 
     public BooleanOptionCommand(OptionTracker.Option optionID, boolean defaultValue) {
         super(optionID, new JsonPrimitive(defaultValue));
-        setOption();
     }
 
     @Override
