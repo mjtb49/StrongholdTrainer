@@ -1,33 +1,50 @@
 package io.github.mjtb49.strongholdtrainer.commands;
 
+import com.google.gson.JsonElement;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.context.CommandContext;
 import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
 
-import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
-import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-public class OptionCommand {
-    public static void register(String optionID, CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(
-                literal(optionID).then(
-                        argument(optionID, bool()).executes(
-                                c -> {
-                                    StrongholdTrainer.setOption(optionID, getBool(c, optionID));
-                                    c.getSource().getPlayer().sendMessage(new LiteralText(optionID + " is now " + StrongholdTrainer.getOption(optionID)), false);
-                                    return 1;
-                                }
-                        )
-                ).executes(
-                        c -> {
-                            StrongholdTrainer.setOption(optionID, !StrongholdTrainer.getOption(optionID));
-                            c.getSource().getPlayer().sendMessage(new LiteralText(optionID + " is now " + StrongholdTrainer.getOption(optionID)), false);
-                            return 1;
-                        }
-                )
-        );
+public abstract class OptionCommand {
+    public final String optionID;
+    private final JsonElement defaultValue;
+
+    OptionCommand(String optionID, JsonElement defaultValue){
+        this.optionID = optionID;
+        this.defaultValue = defaultValue;
+    }
+
+    abstract public void register(CommandDispatcher<ServerCommandSource> dispatcher);
+
+    // get the argument from the command line
+    abstract protected JsonElement getArgument(CommandContext<ServerCommandSource> c);
+
+    protected void setOption(CommandContext<ServerCommandSource> c){
+        this.setOption(getArgument(c));
+    }
+
+    protected void setOption(){
+        setOption(defaultValue);
+    }
+
+    protected void setOption(JsonElement value){
+        if(value.equals(defaultValue)){
+            StrongholdTrainer.markDefault(optionID);
+        }
+        StrongholdTrainer.setOption(optionID, value);
+    }
+
+    protected JsonElement getOption(){
+        JsonElement option = StrongholdTrainer.getOption(optionID);
+        if(option == null){
+            return defaultValue;
+        }
+        return option;
     }
 }

@@ -1,5 +1,9 @@
 package io.github.mjtb49.strongholdtrainer;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
@@ -9,6 +13,7 @@ import net.fabricmc.api.ModInitializer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class StrongholdTrainer implements ModInitializer  {
 
@@ -16,12 +21,12 @@ public class StrongholdTrainer implements ModInitializer  {
     static RendererGroup<Cuboid> doorRendererGroup = new RendererGroup<>(6, RendererGroup.RenderOption.RENDER_FRONT);
     static RendererGroup<Line> playerTracerGroup = new RendererGroup<>(20 * 60 * 5, RendererGroup.RenderOption.RENDER_BACK);
 
-    private final static Map<String, Boolean> OPTIONS = new HashMap<String, Boolean>(){{
-        put("trace",true);
-        put("hints",true);
-        put("isReviewing", false); //TODO weird to have this in here when its not a command
-        put("doorLabels", false);
-        put("allowScuffed", true);
+    private final static Map<String, JsonElement> OPTIONS = new HashMap<String, JsonElement>(){{
+//        put("trace",true);
+//        put("hints",true);
+//        put("isReviewing", false); //TODO weird to have this in here when its not a command
+//        put("doorLabels", false);
+//        put("allowScuffed", true);
     }};
     public static boolean ML_DISABLED = false;
     static public void submitRoom(Cuboid cuboid) {
@@ -50,11 +55,11 @@ public class StrongholdTrainer implements ModInitializer  {
             GlStateManager.disableDepthTest();
             RenderSystem.defaultBlendFunc();
 
-            if (cuboidRendererGroup != null && (OPTIONS.get("hints") || OPTIONS.get("isReviewing"))) {
+            if (cuboidRendererGroup != null && (getBoolean("hints") || getBoolean("isReviewing"))) {
                 doorRendererGroup.render();
                 cuboidRendererGroup.render();
                 GlStateManager.enableBlend();
-                if (OPTIONS.get("trace"))
+                if (getBoolean("trace"))
                     playerTracerGroup.render();
                 GlStateManager.disableBlend();
                 TextRenderer.render();
@@ -65,12 +70,31 @@ public class StrongholdTrainer implements ModInitializer  {
         });
     }
 
-    public static void setOption(String optionID, boolean option) {
-       OPTIONS.put(optionID, option);
+    public static void setOption(String optionID, boolean value){
+        setOption(optionID, new JsonPrimitive(value));
     }
 
-    public static boolean getOption(String optionID) {
-        return OPTIONS.get(optionID);
+    public static void setOption(String optionID, JsonElement value){
+        OPTIONS.put(optionID, value);
+    }
+
+    public static void markDefault(String optionID){
+//        OPTIONS.remove(optionID);
+    }
+
+    public static JsonElement getOption(String optionID){
+        if(OPTIONS.containsKey(optionID)){
+            return OPTIONS.get(optionID);
+        }
+        return null;
+    }
+
+    public static boolean getBoolean(String optionID){
+        JsonElement element = getOption(optionID);
+        if(element == null){
+            return false;
+        }
+        return element.getAsBoolean();
     }
 
     public static void clearAll() {

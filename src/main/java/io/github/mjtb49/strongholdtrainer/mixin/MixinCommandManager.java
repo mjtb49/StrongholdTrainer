@@ -25,10 +25,10 @@ public abstract class MixinCommandManager {
     public void CommandManager(CommandManager.RegistrationEnvironment environment, CallbackInfo ci) {
         NewStrongholdCommand.register(dispatcher);
         NextMistakeCommand.register(dispatcher);
-        OptionCommand.register("hints", dispatcher);
-        OptionCommand.register("doorLabels", dispatcher);
-        OptionCommand.register("trace", dispatcher);
-        OptionCommand.register("allowScuffed", dispatcher);
+        new BooleanOptionCommand("hints").register(dispatcher);
+        new BooleanOptionCommand("doorLabels").register(dispatcher);
+        new BooleanOptionCommand("trace").register(dispatcher);
+        new BooleanOptionCommand("allowScuffed").register(dispatcher);
         ModelCommand.register(dispatcher);
         STInfoCommand.register(dispatcher);
     }
