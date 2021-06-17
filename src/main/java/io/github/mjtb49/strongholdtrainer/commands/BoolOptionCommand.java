@@ -10,7 +10,7 @@ import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-public class OptionCommand {
+public class BoolOptionCommand {
     public static void register(OptionTracker.Option option, CommandDispatcher<ServerCommandSource> dispatcher) {
         String optionID = option.id;
         dispatcher.register(
