@@ -1,12 +1,12 @@
 package io.github.mjtb49.strongholdtrainer.mixin;
 
-import com.mojang.authlib.minecraft.MinecraftSessionService;
 import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import io.github.mjtb49.strongholdtrainer.api.EntranceAccessor;
 import io.github.mjtb49.strongholdtrainer.api.MinecraftServerAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import io.github.mjtb49.strongholdtrainer.commands.NextMistakeCommand;
+import io.github.mjtb49.strongholdtrainer.ml.StrongholdPath;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
 import io.github.mjtb49.strongholdtrainer.render.Color;
 import io.github.mjtb49.strongholdtrainer.render.Cuboid;
@@ -52,8 +52,6 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
     @Shadow private PlayerManager playerManager;
     @Shadow @Final protected LevelStorage.Session session;
 
-    @Shadow public abstract MinecraftSessionService getSessionService();
-
     private StructurePiece lastPiece = null;
     private StructurePiece mlChosen = null;
     private final Map<StructurePiece, Double> percents = new HashMap<>();
@@ -65,6 +63,7 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
     private PlayerPathTracker playerPath;
     private StructureStart<?> lastStart;
     private boolean shouldRefreshRooms = false;
+    private static StrongholdPath currentPath;
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void inject(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
@@ -80,6 +79,7 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
 
                 //Lazy check if we've changed strongholds
                 if (lastStart != start) {
+                    currentPath = new StrongholdPath(((StartAccessor)start).getStart());
                     lastStart = start;
                     ticksInStronghold = -1;
                     currentRoomTime = 0;
@@ -212,6 +212,7 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
                 // TODO: remove when we've implemented this
                 TextRenderer.add(door.getVec(), "not supported", 0.01f);
             }
+
         }
     }
 
@@ -247,9 +248,11 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
     }
 
     private void updateMLChoice(StructureStart<?> start, StructurePiece piece, ServerPlayerEntity player) {
+        currentPath.add((StrongholdGenerator.Piece) piece, (StrongholdGenerator.Piece) lastPiece);
+//        currentPath.iterator().forEachRemaining(System.out::println);
         double[] policy;
         try {
-            policy = StrongholdRoomClassifier.getPredictions(((StartAccessor) start).getStart(), (StrongholdGenerator.Piece) piece);
+            policy = StrongholdRoomClassifier.getPredictions(currentPath);
         } catch (Exception e){
             e.printStackTrace();
             policy = new double[5];
@@ -258,30 +261,55 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
         //StringBuilder s = new StringBuilder();
         //Arrays.stream(policy).forEach(e -> s.append(df.format(e)).append(" "));
         //player.sendMessage(new LiteralText(s.toString()).formatted(Formatting.YELLOW), false);
+        // hack fixes for backtracking, need to be cleaned up.
 
         List<StructurePiece> pieces = ((StrongholdTreeAccessor)((StartAccessor) start).getStart()).getTree().getOrDefault(piece, new ArrayList<>());
-
+        // TODO: actually implement backtracking
         this.percents.clear();
         int idx = -1;
-        double min = Double.NEGATIVE_INFINITY;
-        for (int i = 0; i < policy.length; i++) {
-            double p = policy[i];
+        double min = 0;
+        if(policy.length == 5){
+            for (int i = 0; i < policy.length; i++) {
+                double p = policy[i];
 
-            if (i < pieces.size()) {
-                this.percents.put(pieces.get(i), p);
+                if (i < pieces.size()) {
+                    this.percents.put(pieces.get(i), p);
+                }
+
+                if (p > min) {
+                    idx = i;
+                    min = p;
+                }
             }
+            if (idx < pieces.size()) {
+                this.mlChosen = pieces.get(idx);
+            } else {
+                this.mlChosen = null;
+            }
+        } else{
+            for (int i = 0; i < policy.length; i++) {
+                double p = policy[i];
 
-            if (p > min) {
-                idx = i;
-                min = p;
+                if ((i - 1) < pieces.size() && i != 0) {
+                    this.percents.put(pieces.get(i - 1), p);
+                }
+
+                if (p > min) {
+                    idx = i;
+                    min = p;
+                }
+            }
+            if (idx == 0) {
+                this.mlChosen = null;
+            } else if(idx - 1 < pieces.size()){
+                this.mlChosen = pieces.get(idx - 1);
+            } else{
+                this.mlChosen = null;
             }
         }
 
-        if (idx < pieces.size()) {
-            this.mlChosen = pieces.get(idx);
-        } else {
-            this.mlChosen = null;
-        }
+
+
     }
 
     private void tracePlayer(ServerPlayerEntity player) {

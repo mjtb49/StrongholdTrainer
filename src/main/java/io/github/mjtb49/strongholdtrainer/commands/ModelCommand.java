@@ -2,6 +2,7 @@ package io.github.mjtb49.strongholdtrainer.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.mjtb49.strongholdtrainer.api.MinecraftServerAccessor;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
 import io.github.mjtb49.strongholdtrainer.ml.model.StrongholdModel;
@@ -20,6 +21,19 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class ModelCommand {
     public static void register(CommandDispatcher<ServerCommandSource> sourceCommandDispatcher){
+        LiteralArgumentBuilder<ServerCommandSource> builder =  literal("load");
+        for(String key:StrongholdRoomClassifier.STRONGHOLD_MODEL_REGISTRY.getRegisteredIdentifiers()){
+            builder = builder.then(literal(key).executes(context -> {
+                try{
+                    StrongholdRoomClassifier.STRONGHOLD_MODEL_REGISTRY.setActiveModel(key);
+                    ((MinecraftServerAccessor) context.getSource().getMinecraftServer()).refreshRooms();
+                    return 1;
+                } catch (Exception e){
+                    return -1;
+                }
+            }));
+
+        }
         sourceCommandDispatcher.register(
                 literal("model").then(
                         literal("list").executes(c -> {
@@ -38,16 +52,7 @@ public class ModelCommand {
                             return 0;
                         })
                 ).then(
-                        literal("load").then(
-                            argument("identifier", StringArgumentType.string()).executes(context -> {
-                                try{
-                                    StrongholdRoomClassifier.STRONGHOLD_MODEL_REGISTRY.setActiveModel(StringArgumentType.getString(context, "identifier"));
-                                    ((MinecraftServerAccessor) context.getSource().getMinecraftServer()).refreshRooms();
-                                    return 1;
-                                } catch (Exception e){
-                                    return -1;
-                                }
-                            }))
+                        builder
                 ).then(
                         literal("debug").then(
                                 argument("identifier", StringArgumentType.string()).executes(context -> {
