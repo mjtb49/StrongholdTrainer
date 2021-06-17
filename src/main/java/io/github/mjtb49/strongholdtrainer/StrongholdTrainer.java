@@ -8,23 +8,15 @@ import io.github.mjtb49.strongholdtrainer.stats.StrongholdTrainerStats;
 import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.fabricmc.api.ModInitializer;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class StrongholdTrainer implements ModInitializer  {
 
     static RendererGroup<Cuboid> cuboidRendererGroup = new RendererGroup<>(1, RendererGroup.RenderOption.RENDER_FRONT);
     static RendererGroup<Cuboid> doorRendererGroup = new RendererGroup<>(6, RendererGroup.RenderOption.RENDER_FRONT);
     static RendererGroup<Line> playerTracerGroup = new RendererGroup<>(20 * 60 * 5, RendererGroup.RenderOption.RENDER_BACK);
 
-    private final static Map<String, Boolean> OPTIONS = new HashMap<String, Boolean>(){{
-        put("trace",true);
-        put("hints",true);
-        put("isReviewing", false); //TODO weird to have this in here when its not a command
-        put("doorLabels", false);
-        put("allowScuffed", true);
-    }};
     public static boolean ML_DISABLED = false;
+    public static boolean IS_REVIEWING = false;
+
     static public void submitRoom(Cuboid cuboid) {
         cuboidRendererGroup.addRenderer(cuboid);
     }
@@ -52,11 +44,11 @@ public class StrongholdTrainer implements ModInitializer  {
             GlStateManager.disableDepthTest();
             RenderSystem.defaultBlendFunc();
 
-            if (cuboidRendererGroup != null && (OPTIONS.get("hints") || OPTIONS.get("isReviewing"))) {
+            if (cuboidRendererGroup != null && (OptionTracker.getBoolOption(OptionTracker.Option.HINTS) || IS_REVIEWING)) {
                 doorRendererGroup.render();
                 cuboidRendererGroup.render();
                 GlStateManager.enableBlend();
-                if (OPTIONS.get("trace"))
+                if (OptionTracker.getBoolOption(OptionTracker.Option.TRACE))
                     playerTracerGroup.render();
                 GlStateManager.disableBlend();
                 TextRenderer.render();
@@ -65,14 +57,6 @@ public class StrongholdTrainer implements ModInitializer  {
             RenderSystem.popMatrix();
 
         });
-    }
-
-    public static void setOption(String optionID, boolean option) {
-       OPTIONS.put(optionID, option);
-    }
-
-    public static boolean getOption(String optionID) {
-        return OPTIONS.get(optionID);
     }
 
     public static void clearAll() {

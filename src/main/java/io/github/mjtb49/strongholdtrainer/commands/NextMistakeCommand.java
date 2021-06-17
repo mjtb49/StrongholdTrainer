@@ -64,7 +64,7 @@ public class NextMistakeCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                literal(command).executes( c -> {
-                   StrongholdTrainer.setOption("isReviewing", true);
+                   StrongholdTrainer.IS_REVIEWING = true;
                    if ((mistakes == null || mistakes.size() == 0) && (inaccuracies == null || inaccuracies.size() == 0))
                        c.getSource().getPlayer().sendMessage(new LiteralText("Nothing left to review!").formatted(Formatting.GREEN), false);
                    else  if (mistakes != null && mistakes.size() == 0 && numMistakesReviewed > 0) {

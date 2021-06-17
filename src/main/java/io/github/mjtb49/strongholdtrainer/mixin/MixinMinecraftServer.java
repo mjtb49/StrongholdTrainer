@@ -323,7 +323,7 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
 
     private void tracePlayer(ServerPlayerEntity player) {
         if (ticksInStronghold >= 0) {
-            if (!player.isSpectator() && !player.isCreative() && StrongholdTrainer.getOption("trace")) {
+            if (!player.isSpectator() && !player.isCreative() && OptionTracker.getBoolOption(OptionTracker.Option.TRACE)) {
                 if (lastPlayerPosition != null)
                     if (lastPlayerPosition.distanceTo(player.getPos()) < 10)
                         StrongholdTrainer.submitPlayerLine(new Line(lastPlayerPosition.add(0,0.01,0), player.getPos().add(0,0.01,0), Color.PINK));

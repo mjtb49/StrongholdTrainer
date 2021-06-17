@@ -14,7 +14,7 @@ public class OptionTracker {
         DOOR_LABELS("doorLabels"),
         ALLOW_SCUFFED("allowScuffed");
 
-        String id;
+        public String id;
 
         Option(String id) {
             this.id = id;
@@ -60,11 +60,11 @@ public class OptionTracker {
         OPTIONS.setProperty(option.id, value);
     }
 
-    public boolean getBoolOption(Option option) {
+    public static boolean getBoolOption(Option option) {
         return Boolean.parseBoolean(OPTIONS.getProperty(option.id));
     }
 
-    public String getOption(Option option) {
+    public static String getOption(Option option) {
         return OPTIONS.getProperty(option.id);
     }
 
