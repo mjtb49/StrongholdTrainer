@@ -15,6 +15,7 @@ import io.github.mjtb49.strongholdtrainer.render.TextRenderer;
 import io.github.mjtb49.strongholdtrainer.stats.PlayerPathData;
 import io.github.mjtb49.strongholdtrainer.stats.PlayerPathTracker;
 import io.github.mjtb49.strongholdtrainer.util.EntryNode;
+import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import io.github.mjtb49.strongholdtrainer.util.RoomFormatter;
 import io.github.mjtb49.strongholdtrainer.util.StrongholdSearcher;
 import net.minecraft.server.MinecraftServer;
@@ -64,6 +65,7 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
     private StructureStart<?> lastStart;
     private boolean shouldRefreshRooms = false;
     private static StrongholdPath currentPath;
+    private boolean loadedModelSupportsBacktracking = false;
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void inject(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
@@ -181,7 +183,8 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
                 isBlue = true;
             }
             boolean bothFlag = false;
-            if (node.pointer != null && node.pointer == this.mlChosen) {
+            if ((node.pointer != null && node.pointer == this.mlChosen)
+            || (this.mlChosen == ((StrongholdTreeAccessor) strongholdStart).getParents().get(piece) && node.type == EntryNode.Type.BACKWARDS && loadedModelSupportsBacktracking)) {
                 if (isBlue) {
                     StrongholdTrainer.submitDoor(new Cuboid(Box.from(newBox).expand(0.05), Color.GREEN));
                     bothFlag = true;
@@ -193,7 +196,7 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
             Cuboid door = new Cuboid(newBox, color);
             StrongholdTrainer.submitDoor(door);
 
-            if (StrongholdTrainer.getOption("doorLabels")) {
+            if (OptionTracker.getBoolOption(OptionTracker.Option.DOOR_LABELS)) {
                 if (color == Color.GREEN) {
                     TextRenderer.add(door.getVec().subtract(0, 0.5, 0), "Model Choice", 0.02f);
                 } else if (color == Color.BLUE) {
@@ -206,11 +209,14 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
             if (node.pointer != null) {
                 String text = df.format(this.percents.getOrDefault(node.pointer, 0.0) * 100) + "%";
                 TextRenderer.add(door.getVec(), text);
-            }
-
-            if (node.type == EntryNode.Type.BACKWARDS) {
-                // TODO: remove when we've implemented this
-                TextRenderer.add(door.getVec(), "not supported", 0.01f);
+            } else if (node.type == EntryNode.Type.BACKWARDS) {
+                if (loadedModelSupportsBacktracking) {
+                    StructurePiece parent = ((StrongholdTreeAccessor) strongholdStart).getParents().get(piece);
+                    String text = df.format(this.percents.getOrDefault(parent, 0.0) * 100) + "%";
+                    TextRenderer.add(door.getVec(), text);
+                } else {
+                    TextRenderer.add(door.getVec(), "not supported", 0.01f);
+                }
             }
 
         }
@@ -219,8 +225,6 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
     private void onRoomUpdate(StructureStart<?> start, StructurePiece piece, ServerPlayerEntity player) {
         if (playerPath != null && !((StartAccessor) start).hasBeenRouted())
             playerPath.addPiece((StrongholdGenerator.Piece) lastPiece, currentRoomTime);
-
-        currentPath.add((StrongholdGenerator.Piece) piece, (StrongholdGenerator.Piece) lastPiece);
         updateStats(start, piece, player);
         updateMLChoice(start, piece, player);
     }
@@ -250,68 +254,70 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
     }
 
     private void updateMLChoice(StructureStart<?> start, StructurePiece piece, ServerPlayerEntity player) {
-        /*currentPath.iterator().forEachRemaining(System.out::println);
-        System.out.println("============================================");*/
+            currentPath.add((StrongholdGenerator.Piece) piece, (StrongholdGenerator.Piece) lastPiece);
 //        currentPath.iterator().forEachRemaining(System.out::println);
-        double[] policy;
-        try {
-            policy = StrongholdRoomClassifier.getPredictions(currentPath);
-        } catch (Exception e){
-            e.printStackTrace();
-            policy = new double[5];
-        }
-
-        //StringBuilder s = new StringBuilder();
-        //Arrays.stream(policy).forEach(e -> s.append(df.format(e)).append(" "));
-        //player.sendMessage(new LiteralText(s.toString()).formatted(Formatting.YELLOW), false);
-        // hack fixes for backtracking, need to be cleaned up.
-
-        List<StructurePiece> pieces = ((StrongholdTreeAccessor)((StartAccessor) start).getStart()).getTree().getOrDefault(piece, new ArrayList<>());
-        // TODO: actually implement backtracking
-        this.percents.clear();
-        int idx = -1;
-        double min = 0;
-        if(policy.length == 5){
-            for (int i = 0; i < policy.length; i++) {
-                double p = policy[i];
-
-                if (i < pieces.size()) {
-                    this.percents.put(pieces.get(i), p);
-                }
-
-                if (p > min) {
-                    idx = i;
-                    min = p;
-                }
+            double[] policy;
+            try {
+                policy = StrongholdRoomClassifier.getPredictions(currentPath);
+            } catch (Exception e) {
+                e.printStackTrace();
+                policy = new double[5];
             }
-            if (idx < pieces.size()) {
-                this.mlChosen = pieces.get(idx);
+
+            //StringBuilder s = new StringBuilder();
+            //Arrays.stream(policy).forEach(e -> s.append(df.format(e)).append(" "));
+            //player.sendMessage(new LiteralText(s.toString()).formatted(Formatting.YELLOW), false);
+            // hack fixes for backtracking, need to be cleaned up.
+
+            List<StructurePiece> pieces = ((StrongholdTreeAccessor) ((StartAccessor) start).getStart()).getTree().getOrDefault(piece, new ArrayList<>());
+            StructurePiece parent = ((StrongholdTreeAccessor) (((StartAccessor) start).getStart())).getParents().getOrDefault(piece, null);
+
+            this.percents.clear();
+            int idx = -1;
+            double min = 0;
+            if (policy.length == 5) {
+                loadedModelSupportsBacktracking = false;
+                for (int i = 0; i < policy.length; i++) {
+                    double p = policy[i];
+
+                    if (i < pieces.size()) {
+                        this.percents.put(pieces.get(i), p);
+                    }
+
+                    if (p > min) {
+                        idx = i;
+                        min = p;
+                    }
+                }
+                if (idx < pieces.size()) {
+                    this.mlChosen = pieces.get(idx);
+                } else {
+                    this.mlChosen = null;
+                }
             } else {
-                this.mlChosen = null;
-            }
-        } else{
-            for (int i = 0; i < policy.length; i++) {
-                double p = policy[i];
+                loadedModelSupportsBacktracking = true;
+                for (int i = 0; i < policy.length; i++) {
+                    double p = policy[i];
 
-                if ((i - 1) < pieces.size() && i != 0) {
-                    this.percents.put(pieces.get(i - 1), p);
+                    if ((i - 1) < pieces.size() && i != 0) {
+                        this.percents.put(pieces.get(i - 1), p);
+                    } else if (i == 0) {
+                        this.percents.put(parent, p);
+                    }
+
+                    if (p > min) {
+                        idx = i;
+                        min = p;
+                    }
                 }
-
-                if (p > min) {
-                    idx = i;
-                    min = p;
+                if (idx == 0) {
+                    this.mlChosen = parent;
+                } else if (idx - 1 < pieces.size()) {
+                    this.mlChosen = pieces.get(idx - 1);
+                } else {
+                    this.mlChosen = null;
                 }
             }
-            if (idx == 0) {
-                this.mlChosen = null;
-            } else if(idx - 1 < pieces.size()){
-                this.mlChosen = pieces.get(idx - 1);
-            } else{
-                this.mlChosen = null;
-            }
-        }
-
-
 
     }
 
