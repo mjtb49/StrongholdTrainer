@@ -8,6 +8,7 @@ import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructureStart;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.gen.feature.StructureFeature;
 
@@ -63,9 +64,11 @@ public class NewStrongholdCommand {
                                 break;
                         }
                         c.getSource().getPlayer().teleport(c.getSource().getWorld(), blockX, yFinal, blockZ, yaw, 0);
+                        c.getSource().getPlayer().setSpawnPoint(c.getSource().getWorld().getWorld().getRegistryKey(), new BlockPos(blockX, yFinal, blockZ), true, false);
                     } else {
                         c.getSource().getPlayer().sendMessage(new LiteralText("Didn't find a stronghold, but try digging down here").formatted(Formatting.RED), false);
                         c.getSource().getPlayer().teleport(c.getSource().getWorld(), blockX, 90, blockZ, 0, 0);
+                        c.getSource().getPlayer().setSpawnPoint(c.getSource().getWorld().getWorld().getRegistryKey(), new BlockPos(blockX, 90, blockZ), true, false);
                     }
 
                     return 1;
