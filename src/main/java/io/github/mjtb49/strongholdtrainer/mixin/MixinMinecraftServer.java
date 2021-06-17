@@ -219,6 +219,8 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
     private void onRoomUpdate(StructureStart<?> start, StructurePiece piece, ServerPlayerEntity player) {
         if (playerPath != null && !((StartAccessor) start).hasBeenRouted())
             playerPath.addPiece((StrongholdGenerator.Piece) lastPiece, currentRoomTime);
+
+        currentPath.add((StrongholdGenerator.Piece) piece, (StrongholdGenerator.Piece) lastPiece);
         updateStats(start, piece, player);
         updateMLChoice(start, piece, player);
     }
@@ -248,7 +250,8 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
     }
 
     private void updateMLChoice(StructureStart<?> start, StructurePiece piece, ServerPlayerEntity player) {
-        currentPath.add((StrongholdGenerator.Piece) piece, (StrongholdGenerator.Piece) lastPiece);
+        /*currentPath.iterator().forEachRemaining(System.out::println);
+        System.out.println("============================================");*/
 //        currentPath.iterator().forEachRemaining(System.out::println);
         double[] policy;
         try {
