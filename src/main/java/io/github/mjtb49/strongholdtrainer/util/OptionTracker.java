@@ -1,6 +1,7 @@
 package io.github.mjtb49.strongholdtrainer.util;
 
 import com.google.gson.*;
+import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.*;
@@ -12,10 +13,11 @@ import java.util.Map;
 public class OptionTracker {
 
     public enum Option {
-        TRACE("trace"),
-        HINTS("hints"),
-        DOOR_LABELS("doorLabels"),
-        ALLOW_SCUFFED("allowScuffed");
+        TRACE("trace", false),
+        HINTS("hints", false),
+        DOOR_LABELS("doorLabels", false),
+        ALLOW_SCUFFED("allowScuffed", false),
+        MODEL("model", new JsonPrimitive(StrongholdRoomClassifier.STRONGHOLD_MODEL_REGISTRY.getDefaultModelIdentifier()));
 
         private static final HashMap<String, Option> strToOption = new HashMap<>();
         static {
@@ -28,20 +30,25 @@ public class OptionTracker {
             return strToOption.get(str);
         }
 
-        public String id;
+        public final String id;
+        public final JsonElement defaultValue;
 
-        Option(String id) {
+        Option(String id, boolean defaultValue){
+            this(id, new JsonPrimitive(defaultValue));
+        }
+
+        Option(String id, JsonElement defaultValue) {
             this.id = id;
+            this.defaultValue = defaultValue;
         }
     }
 
     private static final Path OPTIONS_PATH = FabricLoader.getInstance().getGameDir().resolve("strongholdOptions.json");
 
-    private static final Map<Option, Boolean> DEFAULT = new EnumMap<>(Option.class);
-    private static final Map<Option, JsonElement> OPTIONS = new EnumMap<>(Option.class);
-
-    private static final Gson gson = new Gson();
     private static final JsonParser parser = new JsonParser();
+    private static final Gson gson = new Gson();
+
+    private static final Map<Option, JsonElement> OPTIONS = new EnumMap<>(Option.class);
 
     public static void init() {
         try {
@@ -53,7 +60,6 @@ public class OptionTracker {
                     continue;
                 }
                 OPTIONS.put(option, entry.getValue());
-                DEFAULT.put(option, false);
             }
             br.close();
         } catch (IOException e) {
@@ -64,7 +70,7 @@ public class OptionTracker {
     public static void writeOptions() {
         JsonObject obj = new JsonObject();
         for(Map.Entry<Option, JsonElement> option : OPTIONS.entrySet()){
-            if(!DEFAULT.containsKey(option.getKey()) || !DEFAULT.get(option.getKey())){
+            if(!option.getKey().defaultValue.equals(option.getValue())){
                 obj.add(option.getKey().id, option.getValue());
             }
         }
@@ -78,26 +84,26 @@ public class OptionTracker {
     }
 
     public static void setOption(Option optionID, JsonElement value){
-        OPTIONS.put(optionID, value);
-    }
-
-    public static void markDefault(Option optionID, boolean isDefault){
-        DEFAULT.put(optionID, isDefault);
+        if(optionID.defaultValue.equals(value)){
+            OPTIONS.remove(optionID);
+        }
+        else {
+            OPTIONS.put(optionID, value);
+        }
     }
 
     public static JsonElement getOption(Option optionID){
         if(OPTIONS.containsKey(optionID)){
             return OPTIONS.get(optionID);
         }
-        return null;
+        return optionID.defaultValue;
     }
 
     public static boolean getBoolean(Option optionID){
-        JsonElement element = getOption(optionID);
-        if(element == null){
-            return false;
-        }
-        return element.getAsBoolean();
+        return getOption(optionID).getAsBoolean();
     }
 
+    public static String getString(Option optionID){
+        return getOption(optionID).getAsString();
+    }
 }

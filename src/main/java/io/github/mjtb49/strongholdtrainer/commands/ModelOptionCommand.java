@@ -1,11 +1,15 @@
 package io.github.mjtb49.strongholdtrainer.commands;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
 import io.github.mjtb49.strongholdtrainer.api.MinecraftServerAccessor;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
 import io.github.mjtb49.strongholdtrainer.ml.model.StrongholdModel;
+import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
@@ -19,14 +23,23 @@ import java.util.stream.Collectors;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-public class ModelCommand {
-    public static void register(CommandDispatcher<ServerCommandSource> sourceCommandDispatcher){
+public class ModelOptionCommand extends OptionCommand {
+
+    public ModelOptionCommand() {
+        super(OptionTracker.Option.MODEL);
+        try {
+            StrongholdRoomClassifier.STRONGHOLD_MODEL_REGISTRY.setActiveModel(OptionTracker.getString(optionID));
+        } catch(Exception ignored){}
+    }
+
+    public void register(CommandDispatcher<ServerCommandSource> sourceCommandDispatcher){
         LiteralArgumentBuilder<ServerCommandSource> builder =  literal("load");
         for(String key:StrongholdRoomClassifier.STRONGHOLD_MODEL_REGISTRY.getRegisteredIdentifiers()){
             builder = builder.then(literal(key).executes(context -> {
                 try{
                     StrongholdRoomClassifier.STRONGHOLD_MODEL_REGISTRY.setActiveModel(key);
                     ((MinecraftServerAccessor) context.getSource().getMinecraftServer()).refreshRooms();
+                    setOption(key);
                     return 1;
                 } catch (Exception e){
                     return -1;
@@ -36,6 +49,8 @@ public class ModelCommand {
         }
         sourceCommandDispatcher.register(
                 literal("model").then(
+                        builder
+                ).then(
                         literal("list").executes(c -> {
                             PlayerEntity playerEntity = MinecraftClient.getInstance().player;
                             if(playerEntity == null){
@@ -51,8 +66,6 @@ public class ModelCommand {
                             });
                             return 0;
                         })
-                ).then(
-                        builder
                 ).then(
                         literal("debug").then(
                                 argument("identifier", StringArgumentType.string()).executes(context -> {
@@ -77,5 +90,9 @@ public class ModelCommand {
                 )
                 );
 
+    }
+
+    private void setOption(String key) {
+        this.setOption(new JsonPrimitive(key));
     }
 }

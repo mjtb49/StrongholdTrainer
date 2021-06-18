@@ -16,11 +16,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class BooleanOptionCommand extends OptionCommand {
 
     public BooleanOptionCommand(OptionTracker.Option optionID) {
-        this(optionID, false);
-    }
-
-    public BooleanOptionCommand(OptionTracker.Option optionID, boolean defaultValue) {
-        super(optionID, new JsonPrimitive(defaultValue));
+        super(optionID);
     }
 
     @Override
@@ -29,7 +25,7 @@ public class BooleanOptionCommand extends OptionCommand {
                 literal(optionID.id).then(
                         argument(optionID.id, bool()).executes(
                                 c -> {
-                                    this.setOption(c);
+                                    this.setOption(new JsonPrimitive(getBool(c, optionID.id)));
                                     c.getSource().getPlayer().sendMessage(new LiteralText(this.optionID + " is now " + this.getOption()), false);
                                     return 1;
                                 }
@@ -43,11 +39,6 @@ public class BooleanOptionCommand extends OptionCommand {
                         }
                 )
         );
-    }
-
-    @Override
-    protected JsonElement getArgument(CommandContext<ServerCommandSource> c) {
-        return new JsonPrimitive(getBool(c, optionID.id));
     }
 
     private void setOption(boolean value){
