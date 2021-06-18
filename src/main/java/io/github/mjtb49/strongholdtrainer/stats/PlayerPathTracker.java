@@ -17,7 +17,6 @@ public class PlayerPathTracker {
     private static final int INACCURACY_THRESHOLD = 20 * 5;
     private static final int MISTAKE_THRESHOLD = 20 * 10;
 
-    private final StartAccessor startAccessor;
     private final StrongholdTreeAccessor strongholdTreeAccessor;
     private final ArrayList<Pair<StrongholdGenerator.Piece, Integer>> rooms;
     StrongholdGenerator.PortalRoom portalRoom;
@@ -26,7 +25,7 @@ public class PlayerPathTracker {
     private final ArrayList<StrongholdGenerator.Piece> mistakeRooms;
 
     public PlayerPathTracker(StructureStart<?> start) {
-        startAccessor = (StartAccessor) start;
+        StartAccessor startAccessor = (StartAccessor) start;
         strongholdTreeAccessor = (StrongholdTreeAccessor) startAccessor.getStart();
         rooms = new ArrayList<>();
         inaccurateRooms = new ArrayList<>();

@@ -30,7 +30,7 @@ public class BooleanOptionCommand extends OptionCommand {
                         argument(optionID.id, bool()).executes(
                                 c -> {
                                     this.setOption(c);
-                                    c.getSource().getPlayer().sendMessage(new LiteralText(this.optionID + " is now " + this.getOption()), false);
+                                    c.getSource().getPlayer().sendMessage(new LiteralText(optionID.id + " is now " + this.getOption()), false);
                                     return 1;
                                 }
                         )
@@ -38,7 +38,7 @@ public class BooleanOptionCommand extends OptionCommand {
                         c -> {
                             boolean newValue = !this.getOption().getAsBoolean();
                             this.setOption(newValue);
-                            c.getSource().getPlayer().sendMessage(new LiteralText(optionID + " is now " + newValue), false);
+                            c.getSource().getPlayer().sendMessage(new LiteralText(optionID.id + " is now " + newValue), false);
                             return 1;
                         }
                 )
