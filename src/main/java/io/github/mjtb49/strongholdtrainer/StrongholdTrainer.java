@@ -10,6 +10,8 @@ import net.fabricmc.api.ModInitializer;
 
 public class StrongholdTrainer implements ModInitializer  {
 
+    public static final String modID = "stronghold-trainer";
+
     static RendererGroup<Cuboid> cuboidRendererGroup = new RendererGroup<>(1, RendererGroup.RenderOption.RENDER_FRONT);
     static RendererGroup<Cuboid> doorRendererGroup = new RendererGroup<>(6, RendererGroup.RenderOption.RENDER_FRONT);
     static RendererGroup<Line> playerTracerGroup = new RendererGroup<>(20 * 60 * 5, RendererGroup.RenderOption.RENDER_BACK);

@@ -1,6 +1,10 @@
 package io.github.mjtb49.strongholdtrainer.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
+import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
+import net.fabricmc.loader.ModContainer;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.metadata.Person;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
@@ -10,10 +14,30 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class STInfoCommand {
     // Look into maybe reading from files?
+
+    private static final ModContainer container = (ModContainer) FabricLoader.getInstance().getModContainer(StrongholdTrainer.modID).get();
+
+    private static final String authors;
+    static {
+        StringBuilder builder = new StringBuilder("- ");
+        List<Person> people = new ArrayList<>(container.getMetadata().getAuthors());
+        for(int i = 0; i < people.size() - 1; i++){
+            Person person = people.get(i);
+            builder.append(person.getName())
+            .append(", ");
+        }
+        builder.append("and ")
+        .append(people.get(people.size() - 1).getName());
+        authors = builder.toString();
+    }
 
     public final static Text GITHUB_LINK = new LiteralText(" https://github.com/mjtb49/StrongholdTrainer/").styled((style ->
             style.withBold(true)
@@ -29,7 +53,7 @@ public class STInfoCommand {
 
     private final static Text[] creditsInfo = new Text[]{
             new LiteralText("\nCredits\n").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.YELLOW),
-            new LiteralText("Mod Development").formatted().append(new LiteralText("- Matthew Bolan, SuperCoder79, fsharpseven, and KaptainWutax").formatted(Formatting.RESET)),
+            new LiteralText("Mod Development").formatted().append(new LiteralText(authors).formatted(Formatting.RESET)),
             new LiteralText("\"basic-classifier-nobacktracking\"").formatted().append(new LiteralText("- Geosquare, Matthew Bolan, XeroOl\n").formatted(Formatting.RESET)),
     };
 
