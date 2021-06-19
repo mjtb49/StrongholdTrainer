@@ -2,6 +2,7 @@ package io.github.mjtb49.strongholdtrainer.stats;
 
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
+import io.github.mjtb49.strongholdtrainer.ml.StrongholdMachineLearning;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
@@ -9,7 +10,6 @@ import net.minecraft.structure.StructureStart;
 import net.minecraft.util.Pair;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class PlayerPathTracker {
@@ -18,6 +18,8 @@ public class PlayerPathTracker {
     private static final int MISTAKE_THRESHOLD = 20 * 10;
 
     private final StrongholdTreeAccessor strongholdTreeAccessor;
+    private final StartAccessor startAccessor;
+
     private final ArrayList<Pair<StrongholdGenerator.Piece, Integer>> rooms;
     StrongholdGenerator.PortalRoom portalRoom;
 
@@ -25,7 +27,7 @@ public class PlayerPathTracker {
     private final ArrayList<StrongholdGenerator.Piece> mistakeRooms;
 
     public PlayerPathTracker(StructureStart<?> start) {
-        StartAccessor startAccessor = (StartAccessor) start;
+        startAccessor = (StartAccessor) start;
         strongholdTreeAccessor = (StrongholdTreeAccessor) startAccessor.getStart();
         rooms = new ArrayList<>();
         inaccurateRooms = new ArrayList<>();
@@ -42,8 +44,10 @@ public class PlayerPathTracker {
         double difficulty = 1.0;
         //Loop starts at 2 because the portal room and the room before it have messed up policy but are always trivial
         for (int i = 2; i < solution.size(); i++) {
-            difficulty *= 0.5;
-//            difficulty *= getWeightOfCorrectDoor(solution,(StrongholdGenerator.Piece) solution.get(i), StrongholdRoomClassifier.getPredictions(startAccessor.getStart(), (StrongholdGenerator.Piece) solution.get(i)));
+            //difficulty *= 0.5;
+            difficulty *= getWeightOfCorrectDoor(solution,(StrongholdGenerator.Piece) solution.get(i),
+                    StrongholdMachineLearning.MODEL_REGISTRY.getModel("basic-classifier-nobacktracking").getPredictions(startAccessor.getStart(), (StrongholdGenerator.Piece) solution.get(i)));
+
         }
         return difficulty;
     }
@@ -98,8 +102,7 @@ public class PlayerPathTracker {
                 }
 
                 if (currentGoodPiece != portalRoom) {
-                    double[] policy = new double[6];
-                    Arrays.fill(policy, 0.03d);
+                    double[] policy = StrongholdMachineLearning.MODEL_REGISTRY.getModel("basic-classifier-nobacktracking").getPredictions(startAccessor.getStart(), currentGoodPiece);
 
                     double maximumWeight = -1;
                     for (double d : policy)
