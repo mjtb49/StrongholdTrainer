@@ -47,6 +47,7 @@ public class StrongholdModel {
     private String creator;
     private String path;
     private final boolean isInternal;
+
     private boolean batchInput = false;
     // Model Metadata
     private Shape inputShape; // TODO: Shape detection
@@ -205,7 +206,6 @@ public class StrongholdModel {
         return TFloat32.tensorOf(input);
     }
 
-
     private static <T> HashMap<T, int[]> encodingOrderToFullMap(LinkedList<T> list) {
         HashMap<T, int[]> hashMap = new HashMap<>();
         int length = list.size();
@@ -221,7 +221,6 @@ public class StrongholdModel {
         }
         return hashMap;
     }
-
 
     private static Path unzipAndGetPath(String modelIdentifier, String zippedPath) throws IOException {
         File modelFolder;
@@ -297,7 +296,34 @@ public class StrongholdModel {
         Arrays.fill(predictions, 0.0d);
 
         Session session = this.modelBundle.session();
-        try (Tensor input = this.getMLInputFromRoom(path)) {
+        try (Tensor input = this.getMLInputFromStrongholdPath(path)) {
+//            System.out.println(input.shape().toString());
+            try (Tensor out = session.runner()
+                    .feed(this.inputName, input)
+                    .fetch(this.outputName)
+                    .run().get(0)) {
+                predictions = processOutput(out);
+            }
+        }
+        return predictions;
+    }
+
+    public double[] getPredictions(StrongholdGenerator.Start start, StrongholdGenerator.Piece current){
+        int index = 0;
+        for (StructurePiece piece1 : ((StrongholdTreeAccessor) start).getTree().get(current)) {
+            if (piece1 instanceof StrongholdGenerator.PortalRoom) {
+                double[] output = new double[5];
+                output[index] = 1.0;
+                return output;
+            }
+            index++;
+        }
+
+        double[] predictions = new double[this.outputShape.size(1) == 5 ? 5 : 6];
+        Arrays.fill(predictions, 0.0d);
+
+        Session session = this.modelBundle.session();
+        try (Tensor input = this.getMLInputDirectly((StrongholdTreeAccessor) start, current)) {
 //            System.out.println(input.shape().toString());
             try (Tensor out = session.runner()
                     .feed(this.inputName, input)
@@ -313,7 +339,7 @@ public class StrongholdModel {
         return identifier;
     }
 
-    public Tensor getMLInputFromRoom(StrongholdPath strongholdPath) {
+    public Tensor getMLInputFromStrongholdPath(StrongholdPath strongholdPath) {
         //TODO looks like start is null here sometimes
         int[][] input = new int[strongholdPath.getHistory().size()][];
 //        this.roomVectorMap.forEach((key, value) -> System.out.println(key + Arrays.toString(value)));
@@ -329,6 +355,24 @@ public class StrongholdModel {
 
 
 //        System.out.println("NEW "+Arrays.deepToString(input));
+        Tensor inputTensor;
+        if (this.inputShape.numDimensions() == 3) {
+            inputTensor = int3ArrayToInputTensor(input);
+        } else {
+            inputTensor = intArrayToInputTensor(input);
+        }
+        if (!inputTensor.shape().isCompatibleWith(this.inputShape)) {
+            inputTensor.close();
+            throw new IllegalArgumentException("Input " + inputTensor.shape() + " is not compatible with shape " + this.inputShape);
+        } else {
+            return inputTensor;
+        }
+    }
+
+    private Tensor getMLInputDirectly(StrongholdTreeAccessor castStart, StrongholdGenerator.Piece piece) {
+        //TODO looks like start is null here sometimes
+        int[][] input = new int[1][];
+        input[0] = getInputForRooms(piece, null, castStart);
         Tensor inputTensor;
         if (this.inputShape.numDimensions() == 3) {
             inputTensor = int3ArrayToInputTensor(input);
@@ -359,10 +403,10 @@ public class StrongholdModel {
         }
     }
 
-    private int[] getInputForOneEntry(StrongholdPathEntry entry, StrongholdTreeAccessor castStart){
+    private int[] getInputForOneEntry(StrongholdPathEntry pathEntry, StrongholdTreeAccessor castStart){
+        StrongholdGenerator.Piece piece = pathEntry.getCurrentPiece();
+        StrongholdGenerator.Piece previous = pathEntry.getPreviousPiece();
 
-        StrongholdGenerator.Piece piece = entry.getCurrentPiece();
-        StrongholdGenerator.Piece previous = entry.getPreviousPiece();
         int[] input = new int[0];
         for (RoomData type : this.inputOrder) {
 //            System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous));
@@ -389,7 +433,35 @@ public class StrongholdModel {
         }
         return input;
     }
+    // For statistics
+    private int[] getInputForRooms(StrongholdGenerator.Piece piece, StrongholdGenerator.Piece previous, StrongholdTreeAccessor castStart){
 
+        int[] input = new int[0];
+        for (RoomData type : this.inputOrder) {
+//            System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous));
+            if(type.roomDataType == RoomData.RoomDataType.INT_SCALAR){
+//                System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous));
+                input = ArrayUtils.add(input, (Integer) type.roomDataFunction.apply(castStart, piece, previous));
+            } else if(type.roomDataType == RoomData.RoomDataType.STRUCTURE_PIECE_VECTOR){
+                StructurePiece result = (StructurePiece) type.roomDataFunction.apply(castStart, piece, previous);
+                if(result == null){
+//                    System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous) + "->" + Arrays.toString(roomVectorMap.get(null)));
+                    input = ArrayUtils.addAll(input, roomVectorMap.get(null));
+                } else {
+//                    System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous) + "->" + Arrays.toString(roomVectorMap.get(result.getClass())));
+                    input = ArrayUtils.addAll(input, roomVectorMap.get(result.getClass()));
+                }
+            } else if(type.roomDataType == RoomData.RoomDataType.DIRECTION_VECTOR){
+                Direction result = (Direction) type.roomDataFunction.apply(castStart, piece, previous);
+//                System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous) + "->" + Arrays.toString(directionMap.get(result)));
+                input = ArrayUtils.addAll(input, directionMap.get(result));
+            } else if(type.roomDataType == RoomData.RoomDataType.INDEX_VECTOR){
+//                System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous) + "->" + Arrays.toString(indexVectorMap.get(type.roomDataFunction.apply(castStart,piece,previous))));
+                input = ArrayUtils.addAll(input, indexVectorMap.get(type.roomDataFunction.apply(castStart, piece, previous)));
+            }
+        }
+        return input;
+    }
 
     public String getCreator() {
         return creator;
