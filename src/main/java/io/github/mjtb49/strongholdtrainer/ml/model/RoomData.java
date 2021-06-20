@@ -76,7 +76,7 @@ public enum RoomData {
         return Integer.valueOf(current.getLength());
     }, RoomDataType.INT_SCALAR),
     CONSTANT((start,current,previous) -> 0, RoomDataType.INT_SCALAR),
-    DOWNWARDS((start, current,previous) -> {
+    DOWNWARDS((start,current,previous) -> {
         try{
             if(current.getLength() > previous.getLength()){
                 return 1;
@@ -87,7 +87,18 @@ public enum RoomData {
             return 0;
         }
 
-    }, RoomDataType.INT_SCALAR);
+    }, RoomDataType.INT_SCALAR),
+    ENTRY((start, current,previous) -> {
+        try{
+            if(current.getLength() > previous.getLength()){
+                return 0;
+            } else {
+                return start.getTree().get(current).indexOf(previous) + 1;
+            }
+        } catch (Exception e){
+            return 0;
+        }
+    }, RoomDataType.INDEX_VECTOR);
 
     public enum RoomDataType{
         INT_SCALAR,
