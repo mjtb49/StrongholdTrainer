@@ -15,6 +15,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Vec3i;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -34,15 +35,32 @@ public class NextMistakeCommand {
 
     private static void teleportPlayerToNextMistake(CommandContext<ServerCommandSource> c) throws CommandSyntaxException {
         Vec3i pos = null;
+        float yaw = 0;
         if (mistakes != null && mistakes.size() > 0) {
             numMistakesReviewed++;
-            pos = mistakes.remove(0).getBoundingBox().getCenter();
+            StrongholdGenerator.Piece piece = mistakes.remove(0);
+            pos = piece.getBoundingBox().getCenter();
+
+            switch (Objects.requireNonNull((piece.getFacing()))) {
+                case NORTH:
+                    yaw = 180;
+                    break;
+                case SOUTH:
+                    yaw = 0;
+                    break;
+                case WEST:
+                    yaw = 90;
+                    break;
+                case EAST:
+                    yaw = -90;
+                    break;
+            }
         } else if (inaccuracies != null && inaccuracies.size() > 0) {
             pos = inaccuracies.remove(0).getBoundingBox().getCenter();
         }
-        //TODO, orient the player here
+
         if (pos != null) {
-            c.getSource().getPlayer().teleport(pos.getX(), pos.getY(), pos.getZ());
+            c.getSource().getPlayer().teleport(c.getSource().getWorld(), pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, yaw, 0);
         }
     }
 

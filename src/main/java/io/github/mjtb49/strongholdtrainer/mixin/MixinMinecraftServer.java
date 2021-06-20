@@ -6,8 +6,8 @@ import io.github.mjtb49.strongholdtrainer.api.MinecraftServerAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import io.github.mjtb49.strongholdtrainer.commands.NextMistakeCommand;
+import io.github.mjtb49.strongholdtrainer.ml.StrongholdMachineLearning;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdPath;
-import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
 import io.github.mjtb49.strongholdtrainer.render.Color;
 import io.github.mjtb49.strongholdtrainer.render.Cuboid;
 import io.github.mjtb49.strongholdtrainer.render.Line;
@@ -112,7 +112,7 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
                                     || !lastPiece.getBoundingBox().contains(player.getBlockPos())
                                     || (lastPiece instanceof StrongholdGenerator.SmallCorridor && !(piece instanceof StrongholdGenerator.SmallCorridor)))
                             {
-
+                                currentPath.add((StrongholdGenerator.Piece) piece, (StrongholdGenerator.Piece) lastPiece);
                                 onRoomUpdate(start, piece, player);
                                 drawRoomsAndDoors(start, strongholdStart, piece, player);
 
@@ -254,11 +254,10 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
     }
 
     private void updateMLChoice(StructureStart<?> start, StructurePiece piece, ServerPlayerEntity player) {
-            currentPath.add((StrongholdGenerator.Piece) piece, (StrongholdGenerator.Piece) lastPiece);
 //        currentPath.iterator().forEachRemaining(System.out::println);
             double[] policy;
             try {
-                policy = StrongholdRoomClassifier.getPredictions(currentPath);
+                policy = StrongholdMachineLearning.getPredictions(currentPath);
             } catch (Exception e) {
                 e.printStackTrace();
                 policy = new double[5];

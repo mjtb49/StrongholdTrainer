@@ -2,7 +2,7 @@ package io.github.mjtb49.strongholdtrainer;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
+import io.github.mjtb49.strongholdtrainer.ml.StrongholdMachineLearning;
 import io.github.mjtb49.strongholdtrainer.render.*;
 import io.github.mjtb49.strongholdtrainer.stats.StrongholdTrainerStats;
 import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
@@ -38,7 +38,7 @@ public class StrongholdTrainer implements ModInitializer  {
             System.out.println(System.getProperty("os.arch") + " not supported. Disabling ML operations.");
             ML_DISABLED = true;
         }
-        StrongholdRoomClassifier.init("model2.zip", "rnn.zip", "rnn_4.zip");
+        StrongholdMachineLearning.init("model2.zip", "rnn.zip", "rnn_4.zip");
         RenderQueue.get().add("hand", matrixStack -> {
             RenderSystem.pushMatrix();
             RenderSystem.multMatrix(matrixStack.peek().getModel());
