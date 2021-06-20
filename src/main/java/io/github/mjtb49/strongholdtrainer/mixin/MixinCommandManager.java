@@ -27,9 +27,9 @@ public abstract class MixinCommandManager {
         NewStrongholdCommand.register(dispatcher);
         NextMistakeCommand.register(dispatcher);
         new BooleanOptionCommand(OptionTracker.Option.HINTS).register(dispatcher);
-        new BooleanOptionCommand(OptionTracker.Option.DOOR_LABELS).register(dispatcher);
         new BooleanOptionCommand(OptionTracker.Option.TRACE).register(dispatcher);
         new BooleanOptionCommand(OptionTracker.Option.ALLOW_SCUFFED).register(dispatcher);
+        new DoorLabelCommand().register(dispatcher);
         new ModelOptionCommand().register(dispatcher);
         STInfoCommand.register(dispatcher);
     }

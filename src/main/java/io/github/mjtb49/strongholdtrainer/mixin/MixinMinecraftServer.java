@@ -150,7 +150,6 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
         Cuboid cuboid = new Cuboid(piece.getBoundingBox(), Color.PURPLE);
 
         StrongholdTrainer.submitRoom(cuboid);
-        // TODO: good idea to cache this, doesn't seem to hurt perf too much
         StructurePiece searchResult = StrongholdSearcher.search(((StrongholdTreeAccessor)strongholdStart).getTree(), piece);
 
         StrongholdTrainer.clearDoors();

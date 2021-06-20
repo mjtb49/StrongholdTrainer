@@ -13,7 +13,7 @@ import java.util.Map;
 public class OptionTracker {
 
     public enum Option {
-        TRACE("trace", false),
+        TRACE("trace", true),
         HINTS("hints", true),
         DOOR_LABELS("doorLabels", false),
         ALLOW_SCUFFED("allowScuffed", true),
