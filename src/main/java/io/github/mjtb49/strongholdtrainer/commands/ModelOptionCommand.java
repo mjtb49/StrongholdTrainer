@@ -11,6 +11,8 @@ import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 
@@ -34,6 +36,10 @@ public class ModelOptionCommand extends OptionCommand {
         LiteralArgumentBuilder<ServerCommandSource> builder =  literal("load");
         for(String key: StrongholdMachineLearning.MODEL_REGISTRY.getRegisteredIdentifiers()){
             builder = builder.then(literal(key).executes(context -> {
+                PlayerEntity playerEntity = MinecraftClient.getInstance().player;
+                if(playerEntity != null){
+                    playerEntity.sendMessage(new LiteralText("loading model: ").append(new LiteralText("\"" + key + "\"").formatted(Formatting.LIGHT_PURPLE)), false);
+                }
                 try{
                     StrongholdMachineLearning.MODEL_REGISTRY.setActiveModel(key);
                     ((MinecraftServerAccessor) context.getSource().getMinecraftServer()).refreshRooms();
@@ -54,13 +60,26 @@ public class ModelOptionCommand extends OptionCommand {
                             if(playerEntity == null){
                                 return -1;
                             }
+                            playerEntity.sendMessage(new LiteralText("---------------- models ----------------"), false);
+
                             Set<String> registeredModels = StrongholdMachineLearning.MODEL_REGISTRY.getRegisteredIdentifiers();
                             registeredModels = registeredModels.stream().sorted().collect(Collectors.toCollection(LinkedHashSet::new));
                             registeredModels.forEach(s -> {
+                                boolean isActive = StrongholdMachineLearning.MODEL_REGISTRY.isActiveModel(s);
                                 StrongholdModel model = StrongholdMachineLearning.MODEL_REGISTRY.getModel(s);
-                                String entry = "• \""  + s + "\" | by: " + model.getCreator() + " | external: " + !model.isInternal();
-                                playerEntity.sendMessage(new LiteralText(entry).formatted(StrongholdMachineLearning.MODEL_REGISTRY.isActiveModel(s) ?
-                                        Formatting.ITALIC : Formatting.RESET), false);
+
+                                StringBuilder stringBuilder = new StringBuilder();
+                                if(isActive){
+                                    stringBuilder.append(" *");
+                                }
+                                else {
+                                    stringBuilder.append("•");
+                                }
+                                stringBuilder.append(" \"").append(s).append("\" | by: ").append(model.getCreator()).append(" | external: ").append(!model.isInternal());
+                                playerEntity.sendMessage(new LiteralText(stringBuilder.toString()).formatted(isActive ?
+                                        Formatting.ITALIC : Formatting.RESET).formatted(isActive? Formatting.LIGHT_PURPLE : Formatting.RESET).styled((style) -> style
+                                                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/model load " + s))
+                                                .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("load \"" + s + "\"")))), false);
                             });
                             return 0;
                         })
