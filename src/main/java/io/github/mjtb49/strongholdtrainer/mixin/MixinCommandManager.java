@@ -30,7 +30,7 @@ public abstract class MixinCommandManager {
         new BooleanOptionCommand(OptionTracker.Option.DOOR_LABELS).register(dispatcher);
         new BooleanOptionCommand(OptionTracker.Option.TRACE).register(dispatcher);
         new BooleanOptionCommand(OptionTracker.Option.ALLOW_SCUFFED).register(dispatcher);
-        ModelCommand.register(dispatcher);
+        new ModelOptionCommand().register(dispatcher);
         STInfoCommand.register(dispatcher);
     }
 }

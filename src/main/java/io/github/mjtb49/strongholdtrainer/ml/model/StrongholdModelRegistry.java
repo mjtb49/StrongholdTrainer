@@ -2,6 +2,7 @@ package io.github.mjtb49.strongholdtrainer.ml.model;
 
 
 import java.util.Hashtable;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -53,6 +54,10 @@ public class StrongholdModelRegistry{
      */
     public boolean isActiveModel(String id){
         return this.activeModel.getIdentifier().equals(id);
+    }
+
+    public String getDefaultModelIdentifier(){
+        return this.modelRegistry.keySet().stream().findFirst().orElse("");
     }
 
     /**
