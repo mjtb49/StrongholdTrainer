@@ -1,7 +1,7 @@
 package io.github.mjtb49.strongholdtrainer.util;
 
 import com.google.gson.*;
-import io.github.mjtb49.strongholdtrainer.ml.StrongholdRoomClassifier;
+import io.github.mjtb49.strongholdtrainer.ml.StrongholdMachineLearning;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.*;
@@ -14,10 +14,10 @@ public class OptionTracker {
 
     public enum Option {
         TRACE("trace", false),
-        HINTS("hints", false),
+        HINTS("hints", true),
         DOOR_LABELS("doorLabels", false),
-        ALLOW_SCUFFED("allowScuffed", false),
-        MODEL("model", new JsonPrimitive(StrongholdRoomClassifier.STRONGHOLD_MODEL_REGISTRY.getDefaultModelIdentifier()));
+        ALLOW_SCUFFED("allowScuffed", true),
+        MODEL("model", new JsonPrimitive(StrongholdMachineLearning.MODEL_REGISTRY.getDefaultModelIdentifier()));
 
         private static final HashMap<String, Option> strToOption = new HashMap<>();
         static {

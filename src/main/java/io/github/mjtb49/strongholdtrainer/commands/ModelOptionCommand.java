@@ -1,11 +1,9 @@
 package io.github.mjtb49.strongholdtrainer.commands;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import io.github.mjtb49.strongholdtrainer.api.MinecraftServerAccessor;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdMachineLearning;
 import io.github.mjtb49.strongholdtrainer.ml.model.StrongholdModel;
@@ -28,7 +26,7 @@ public class ModelOptionCommand extends OptionCommand {
     public ModelOptionCommand() {
         super(OptionTracker.Option.MODEL);
         try {
-            StrongholdRoomClassifier.STRONGHOLD_MODEL_REGISTRY.setActiveModel(OptionTracker.getString(optionID));
+            StrongholdMachineLearning.MODEL_REGISTRY.setActiveModel(OptionTracker.getString(optionID));
         } catch(Exception ignored){}
     }
 
