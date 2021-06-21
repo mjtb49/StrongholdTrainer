@@ -42,7 +42,7 @@ defines the identifier with which the model is registered.
   
 - _Input/Output Shape Definition:_ ``<input_shape|output_shape>=<shape_definition>`` where `<shape_definition>` is a tensor shape
 formatted as `[size_1, size_2, ... size_n]`. All sizes must be valid 64-bit integer literals. At some point, shapes will be validated against the 
-auto-detected shape of the model's signature definition. 
+auto-detected shape of the model's signature definition. __Currently, only `[1,6]` and `[1,5]` are supported as output shapes__, anything else will cause an error.
   
 - _Encoding Configuration:_ ``redefine(map_id):TOKEN_1,TOKEN_2,...TOKEN_n`` where `map_id` is a valid
 re-assignable one-hot encoding map and the `TOKEN`s are valid tokens associated with the map.
@@ -83,3 +83,17 @@ The order and number of model output weights. Currently, the mod ignores this. A
 size 5 vector output as exits 1-5 and size 6 as backtracking then the ordered exits.
   
 - _Optional EOF:_ `eof`. A quick way to terminate parsing before the actual end of the file.
+
+## Example: The STMETA for rnn_8, with comments
+```
+stmeta 1.0
+creator="neoprene1337"
+id="rnn_8"
+input_shape=[-1,-1,114]
+input_vec_order=DIRECTION,PREV_EXIT_INDEX_COMPAT,ENTRY,EXIT_5,EXIT_4,EXIT_3,EXIT_2,EXIT_1,PARENT_ROOM,CURRENT
+redefine(ROOM_TO_VECTOR)=COR,PRI,LEF,RIG,SQU,STA,SPI,FIV,CHE,LIB,POR,SMA,SPI*,NUL
+redefine(DIR_TO_VECTOR)=N,S,E,W
+output_shape=[1,6]
+eof
+```
+Lines 1-3 are standard stuff, declaring the file, the creator, and the identifier of this model. Lines 4-5 define the input shape and the order of the input. The next two `redefine`s set up how the model expects room types and directions to be one-hot encoded. The penultimate line defines the shape of the output, the last ends the file.
