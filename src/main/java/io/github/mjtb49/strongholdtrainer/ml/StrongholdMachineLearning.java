@@ -37,7 +37,7 @@ public class StrongholdMachineLearning {
                         playerEntity.sendMessage(new LiteralText(Arrays.toString(predictions)), false);
                     }
                 }
-                return MODEL_REGISTRY.getActiveModel().getPredictions(path);
+                return predictions;
             } else {
                 return ERROR_POLICY;
             }
