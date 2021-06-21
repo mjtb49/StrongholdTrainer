@@ -1,4 +1,8 @@
 # StrongholdTrainer
+![GitHub license](https://img.shields.io/github/license/mjtb49/StrongholdTrainer.svg) 
+![GitHub issues](https://img.shields.io/github/issues/mjtb49/StrongholdTrainer.svg)
+![GitHub release](https://img.shields.io/github/release/mjtb49/StrongholdTrainer.svg?include_prereleases)
+
 A mod for Fabric on Minecraft 1.16.1 to help speedrunners practice navigating strongholds. The mod can record statistics and time stronghold runs, as well as give feed back on nav. It also includes machine learning models trained to optimally navigate strongholds (use `/stinfo model` for more info).
 
 ## Installing
