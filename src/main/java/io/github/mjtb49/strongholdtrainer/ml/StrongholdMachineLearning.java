@@ -18,7 +18,7 @@ public class StrongholdMachineLearning {
     public static void init(String... internalModels) {
         if(!StrongholdTrainer.ML_DISABLED){
             for(String path : internalModels){
-                MODEL_REGISTRY.createAndRegisterInternal(path, null);
+                MODEL_REGISTRY.createAndRegisterInternal(path);
             }
             MODEL_REGISTRY.setActiveModel("basic-classifier-nobacktracking");
         }

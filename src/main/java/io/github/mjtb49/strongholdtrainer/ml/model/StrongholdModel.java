@@ -109,11 +109,9 @@ public class StrongholdModel {
      * Create a new external StrongholdModel
      *
      * @param path    The <b>system path</b>.
-     * @param creator The name of the creator(s).
      */
-    public StrongholdModel(String path, @Nullable String creator, boolean isInternal) {
+    public StrongholdModel(String path, boolean isInternal) {
         this.path = path;
-        this.creator = creator;
         this.isInternal = isInternal;
         initialize();
     }
@@ -198,28 +196,6 @@ public class StrongholdModel {
 //        System.out.println(this.inputName);
 //        System.out.println(this.inputShape);
     }
-
-    @Deprecated // Reading shape from .stmeta
-    protected static Shape tensorShapeProtoToShape(TensorShapeProto tensorShapeProto) {
-        int numberOfDimensions = tensorShapeProto.getDimCount();
-        List<TensorShapeProto.Dim> dimensionList = tensorShapeProto.getDimList();
-        long[] dimensionSizes = new long[numberOfDimensions];
-        for (int i = 0; i < numberOfDimensions; ++i) {
-            dimensionSizes[i] = dimensionList.get(i).getSize() < 0 ? 1 : dimensionList.get(i).getSize();
-        }
-        return Shape.of(dimensionSizes);
-    }
-
-    static protected Tensor intArrayToInputTensor(int[][] data) {
-        LongNdArray input = NdArrays.ofLongs(Shape.of(1, data[0].length));
-        long[][] toInt64 = new long[1][data[0].length];
-        for (int i = 0; i < toInt64[0].length; ++i) {
-            toInt64[0][i] = data[0][i];
-        }
-        input.set(NdArrays.vectorOf(toInt64[0]), 0);
-        return TInt64.tensorOf(input);
-    }
-
 
     static protected Tensor int3ArrayToInputTensor(int[][] data) {
         FloatNdArray input = NdArrays.ofFloats(Shape.of(1, data.length, data[0].length));
