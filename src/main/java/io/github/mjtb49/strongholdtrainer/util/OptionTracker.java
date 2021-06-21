@@ -17,6 +17,7 @@ public class OptionTracker {
         HINTS("hints", true),
         DOOR_LABELS("doorLabels", false),
         ALLOW_SCUFFED("allowScuffed", true),
+        CUSTOM_INVENTORY("customInventory", false),
         MODEL("model", new JsonPrimitive(StrongholdMachineLearning.MODEL_REGISTRY.getDefaultModelIdentifier()));
 
         private static final HashMap<String, Option> strToOption = new HashMap<>();
