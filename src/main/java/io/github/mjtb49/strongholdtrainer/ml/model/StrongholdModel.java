@@ -109,16 +109,44 @@ public class StrongholdModel {
      * Create a new external StrongholdModel
      *
      * @param path    The <b>system path</b>.
-     * @param creator The name of the creator(s).
      */
-    public StrongholdModel(String path, @Nullable String creator, boolean isInternal) {
+    public StrongholdModel(String path, boolean isInternal) {
         this.path = path;
-        this.creator = creator;
         this.isInternal = isInternal;
+        initialize();
+    }
+
+    @Deprecated // Reading shape from .stmeta
+    protected static Shape tensorShapeProtoToShape(TensorShapeProto tensorShapeProto) {
+        int numberOfDimensions = tensorShapeProto.getDimCount();
+        List<TensorShapeProto.Dim> dimensionList = tensorShapeProto.getDimList();
+        long[] dimensionSizes = new long[numberOfDimensions];
+        for (int i = 0; i < numberOfDimensions; ++i) {
+            dimensionSizes[i] = dimensionList.get(i).getSize() < 0 ? 1 : dimensionList.get(i).getSize();
+        }
+        return Shape.of(dimensionSizes);
+    }
+
+    static protected Tensor intArrayToInputTensor(int[][] data) {
+        LongNdArray input = NdArrays.ofLongs(Shape.of(1, data[0].length));
+        long[][] toInt64 = new long[1][data[0].length];
+        for (int i = 0; i < toInt64[0].length; ++i) {
+            toInt64[0][i] = data[0][i];
+        }
+        input.set(NdArrays.vectorOf(toInt64[0]), 0);
+        return TInt64.tensorOf(input);
+    }
+
+    public void forceReload() throws IOException {
+        FileUtils.deleteDirectory(new File(this.path));
+        initialize();
+    }
+
+    protected void initialize(){
         if(this.isInternal){
             this.creator = creator;
             try {
-                this.path = unzipAndGetPath((UUID.randomUUID()).toString(), path).toString();
+                this.path = unzipAndGetPath(path, path).toString();
             } catch (TensorFlowException | IOException ioException) {
                 System.err.println("Failed to create model at "+ this.path + " because of " + ioException.toString());
                 ioException.printStackTrace();
@@ -169,28 +197,6 @@ public class StrongholdModel {
 //        System.out.println(this.inputShape);
     }
 
-    @Deprecated // Reading shape from .stmeta
-    protected static Shape tensorShapeProtoToShape(TensorShapeProto tensorShapeProto) {
-        int numberOfDimensions = tensorShapeProto.getDimCount();
-        List<TensorShapeProto.Dim> dimensionList = tensorShapeProto.getDimList();
-        long[] dimensionSizes = new long[numberOfDimensions];
-        for (int i = 0; i < numberOfDimensions; ++i) {
-            dimensionSizes[i] = dimensionList.get(i).getSize() < 0 ? 1 : dimensionList.get(i).getSize();
-        }
-        return Shape.of(dimensionSizes);
-    }
-
-    static protected Tensor intArrayToInputTensor(int[][] data) {
-        LongNdArray input = NdArrays.ofLongs(Shape.of(1, data[0].length));
-        long[][] toInt64 = new long[1][data[0].length];
-        for (int i = 0; i < toInt64[0].length; ++i) {
-            toInt64[0][i] = data[0][i];
-        }
-        input.set(NdArrays.vectorOf(toInt64[0]), 0);
-        return TInt64.tensorOf(input);
-    }
-
-
     static protected Tensor int3ArrayToInputTensor(int[][] data) {
         FloatNdArray input = NdArrays.ofFloats(Shape.of(1, data.length, data[0].length));
         float[][][] toFloat32 = new float[1][data.length][data[0].length];
@@ -225,15 +231,16 @@ public class StrongholdModel {
     private static Path unzipAndGetPath(String modelIdentifier, String zippedPath) throws IOException {
         File modelFolder;
         modelFolder = new File(CONFIG_DIRECTORY.toString());
-        FileUtils.deleteDirectory(modelFolder);
+        Path forThisModel = CONFIG_DIRECTORY.resolve(Integer.toHexString(modelIdentifier.hashCode()));
+//        FileUtils.deleteDirectory(modelFolder);
         if (!modelFolder.exists()) {
             modelFolder.mkdirs();
         }
         if (modelFolder.isDirectory()) {
             URLConnection connection = Thread.currentThread().getContextClassLoader().getResource(zippedPath).openConnection();
-            unzipModel(new ZipInputStream(connection.getInputStream()), modelIdentifier);
+            unzipModel(new ZipInputStream(connection.getInputStream()), forThisModel.toString());
         }
-        return CONFIG_DIRECTORY.resolve(modelIdentifier).resolve("model/").toAbsolutePath();
+        return forThisModel.resolve("model/").toAbsolutePath();
     }
 
     private static void unzipModel(ZipInputStream f, String targetInternal) throws IOException {
