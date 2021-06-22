@@ -31,6 +31,7 @@ public abstract class MixinCommandManager {
         new BooleanOptionCommand(OptionTracker.Option.ALLOW_SCUFFED).register(dispatcher);
         new DoorLabelCommand().register(dispatcher);
         new ModelOptionCommand().register(dispatcher);
+        CustomInventoryCommand.register(dispatcher);
         STInfoCommand.register(dispatcher);
     }
 }

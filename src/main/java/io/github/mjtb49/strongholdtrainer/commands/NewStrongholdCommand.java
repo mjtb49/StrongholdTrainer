@@ -3,6 +3,7 @@ package io.github.mjtb49.strongholdtrainer.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
+import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.minecraft.block.Blocks;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.structure.StrongholdGenerator;
@@ -70,12 +71,19 @@ public class NewStrongholdCommand {
                             c.getSource().getPlayer().setSpawnPoint(c.getSource().getWorld().getWorld().getRegistryKey(), new BlockPos(blockX, yFinal, blockZ), true, false);
                         }
 
+
                     } else {
                         c.getSource().getPlayer().sendMessage(new LiteralText("Didn't find a stronghold, but try digging down here").formatted(Formatting.RED), false);
                         c.getSource().getPlayer().teleport(c.getSource().getWorld(), blockX, 90, blockZ, 0, 0);
                         c.getSource().getPlayer().setSpawnPoint(c.getSource().getWorld().getWorld().getRegistryKey(), new BlockPos(blockX, 90, blockZ), true, false);
                     }
-
+                    c.getSource().getPlayer().heal(20);
+                    c.getSource().getPlayer().getHungerManager().setSaturationLevelClient(5.0f);
+                    c.getSource().getPlayer().getHungerManager().setFoodLevel(20);
+                    if(OptionTracker.getOption(OptionTracker.Option.CUSTOM_INVENTORY).getAsBoolean()){
+                        c.getSource().getPlayer().inventory.clear();
+                        c.getSource().getMinecraftServer().getCommandManager().execute(c.getSource(), "/inventory load");
+                    }
                     return 1;
                 })
         );
