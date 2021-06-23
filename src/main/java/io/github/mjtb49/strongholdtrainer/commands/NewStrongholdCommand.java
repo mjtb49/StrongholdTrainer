@@ -68,10 +68,8 @@ public class NewStrongholdCommand {
                         c.getSource().getPlayer().teleport(c.getSource().getWorld(), blockX, yFinal, blockZ, yaw, 0);
                         if (!c.getSource().getPlayer().getServerWorld().getBlockState(new BlockPos(blockX, yFinal - 1, blockZ)).getMaterial().blocksMovement()) {
                             c.getSource().getPlayer().getServerWorld().setBlockState(new BlockPos(blockX, yFinal - 1, blockZ), Blocks.BARRIER.getDefaultState());
-                            c.getSource().getPlayer().setSpawnPoint(c.getSource().getWorld().getWorld().getRegistryKey(), new BlockPos(blockX, yFinal, blockZ), true, false);
                         }
-
-
+                        c.getSource().getPlayer().setSpawnPoint(c.getSource().getWorld().getWorld().getRegistryKey(), new BlockPos(blockX, yFinal, blockZ), true, false);
                     } else {
                         c.getSource().getPlayer().sendMessage(new LiteralText("Didn't find a stronghold, but try digging down here").formatted(Formatting.RED), false);
                         c.getSource().getPlayer().teleport(c.getSource().getWorld(), blockX, 90, blockZ, 0, 0);
