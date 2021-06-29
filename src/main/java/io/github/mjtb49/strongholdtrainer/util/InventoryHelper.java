@@ -7,10 +7,9 @@ import net.minecraft.text.LiteralText;
 
 import java.io.*;
 
-public class InventoryUtils {
+public class InventoryHelper {
 
     public static void saveInventoryToFile(File file, PlayerEntity playerEntity) throws IOException {
-
         try {
             ListTag tags = new ListTag();
             playerEntity.inventory.serialize(tags);
@@ -22,8 +21,6 @@ public class InventoryUtils {
             e.printStackTrace();
             playerEntity.sendMessage(new LiteralText(e.getMessage()), false);
         }
-
-
     }
 
     public static void loadInventoryFromFile(File file, PlayerEntity entity) throws IOException {

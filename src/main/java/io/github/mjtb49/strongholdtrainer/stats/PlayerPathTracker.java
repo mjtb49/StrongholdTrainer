@@ -12,6 +12,7 @@ import net.minecraft.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class PlayerPathTracker {
 
     private static final int INACCURACY_THRESHOLD = 20 * 5;
@@ -155,7 +156,8 @@ public class PlayerPathTracker {
                     inaccuracyCount,
                     mistakeCount,
                     wormholeCount,
-                    roomsReviewed
+                    roomsReviewed,
+                    0
             );
 
             playerPathData.updateAndPrintAllStats(playerEntity);

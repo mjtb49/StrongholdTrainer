@@ -2,6 +2,7 @@ package io.github.mjtb49.strongholdtrainer.ml;
 
 import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import io.github.mjtb49.strongholdtrainer.ml.model.StrongholdModelRegistry;
+import io.github.mjtb49.strongholdtrainer.path.StrongholdPath;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.LiteralText;

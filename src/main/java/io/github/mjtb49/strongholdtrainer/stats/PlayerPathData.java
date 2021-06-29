@@ -8,6 +8,7 @@ import io.github.mjtb49.strongholdtrainer.util.RoomFormatter;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.stat.Stats;
 import net.minecraft.structure.StrongholdGenerator;
+import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
@@ -44,6 +45,10 @@ public class PlayerPathData {
     private final int wormholeCount;
     @Expose
     private final int roomsReviewed;
+    // TODO: Should this be serialized?
+    @Expose
+    private final int ticksLostAgainstFeinberg;
+
 
     public PlayerPathData(ArrayList<Pair<StrongholdGenerator.Piece, Integer>> rooms,
                           int ticksInStronghold,
@@ -53,7 +58,8 @@ public class PlayerPathData {
                           int inaccuracyCount,
                           int mistakeCount,
                           int wormholeCount,
-                          int roomsReviewed) {
+                          int roomsReviewed,
+                          int tickLossAgainstFeinberg) {
         this.rooms = rooms;
         this.ticksInStronghold = ticksInStronghold;
         this.difficulty = difficulty;
@@ -63,6 +69,7 @@ public class PlayerPathData {
         this.mistakeCount = mistakeCount;
         this.wormholeCount = wormholeCount;
         this.roomsReviewed = roomsReviewed;
+        this.ticksLostAgainstFeinberg = tickLossAgainstFeinberg;
 
         roomsToWriteToFile = new HashMap<>();
         for (Pair<StrongholdGenerator.Piece, Integer> pair : rooms) {
@@ -88,14 +95,17 @@ public class PlayerPathData {
         playerEntity.increaseStat(StrongholdTrainerStats.MEDIAN_TIME, computeMedianTimeTaken());
 
         playerEntity.sendMessage(new LiteralText(" "), false);
-        playerEntity.sendMessage(new LiteralText("Time of " + ticksInStronghold / 20.0 + " seconds").formatted(Formatting.DARK_GREEN), false);
-        playerEntity.sendMessage(new LiteralText("Wasted Time " + wastedTime / 20.0 + " seconds").formatted(Formatting.YELLOW), false);
-        playerEntity.sendMessage(new LiteralText("Estimated Difficulty " + DF.format(1/difficulty)).formatted(Formatting.DARK_GREEN), false);
-        playerEntity.sendMessage(new LiteralText("Rooms Reviewed " + roomsReviewed).formatted(Formatting.DARK_GREEN), false);
-        playerEntity.sendMessage(new LiteralText("Best Moves " + bestMoveCount).formatted(Formatting.GREEN), false);
-        playerEntity.sendMessage(new LiteralText("Inaccuracies " + inaccuracyCount).formatted(Formatting.YELLOW), false);
-        playerEntity.sendMessage(new LiteralText("Mistakes " + mistakeCount).formatted(Formatting.RED), false);
-        playerEntity.sendMessage(new LiteralText("Wormholes " + wormholeCount).formatted(Formatting.BLUE), false);
+        playerEntity.sendMessage(new LiteralText("Time of " + ticksInStronghold / 20.0 + " seconds").formatted(Formatting.AQUA, Formatting.BOLD), false);
+        playerEntity.sendMessage(new LiteralText("Wasted Time " + wastedTime / 20.0 + " seconds").formatted(Formatting.DARK_RED), false);
+        playerEntity.sendMessage(new LiteralText("Time Loss/Gain Against Feinberg " + (this.ticksLostAgainstFeinberg > 0 ? "+" : "") + this.ticksLostAgainstFeinberg / 20.0 + "s").formatted(this.ticksLostAgainstFeinberg > 0 ? Formatting.RED : Formatting.GREEN).styled(
+                style -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("This is calculated by taking the sum of the time you spent in each room minus Feinberg's average time in that room.")))
+        ), false);
+        playerEntity.sendMessage(new LiteralText("Estimated Difficulty " + DF.format(1 / difficulty)).formatted(Formatting.DARK_GREEN), false);
+        playerEntity.sendMessage(new LiteralText("№ Rooms Reviewed " + roomsReviewed + "").formatted(Formatting.DARK_GREEN), false);
+        playerEntity.sendMessage(new LiteralText("‼ Best Moves " + bestMoveCount).formatted(Formatting.GOLD), false);
+        playerEntity.sendMessage(new LiteralText("⁈ Inaccuracies " + inaccuracyCount).formatted(Formatting.YELLOW), false);
+        playerEntity.sendMessage(new LiteralText("⁇ Mistakes " + mistakeCount).formatted(Formatting.RED), false);
+        playerEntity.sendMessage(new LiteralText("↔ Wormholes " + wormholeCount).formatted(Formatting.DARK_PURPLE), false);
     }
 
     private void updateRoomStats(ServerPlayerEntity playerEntity) {
@@ -115,6 +125,10 @@ public class PlayerPathData {
         return (times.get(index) + times.get(index2)) / 2;
     }
 
+    /**
+     * @deprecated in favor of sendSplits() or using getHistory().forEach(System::println) in StrongholdPath
+     */
+    @Deprecated
     private void printTheTravel() {
         for (Pair<StrongholdGenerator.Piece, Integer> pair : rooms) {
             System.out.println(pair.getLeft().getClass().getSimpleName() + " " + pair.getRight());

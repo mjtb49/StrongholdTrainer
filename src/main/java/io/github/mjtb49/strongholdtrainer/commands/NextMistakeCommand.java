@@ -7,10 +7,7 @@ import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.structure.StrongholdGenerator;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Vec3i;
 
@@ -66,16 +63,16 @@ public class NextMistakeCommand {
 
     public static void sendInitialMessage(ServerPlayerEntity playerEntity) {
         if (mistakes != null && mistakes.size() > 0) {
-            playerEntity.sendMessage(new LiteralText("Review Mistakes?").styled(
-                    (style) -> style.withColor(Formatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + command)).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("Review next mistake")))),false);
+            playerEntity.sendMessage(Texts.bracketed(new LiteralText("Review Mistakes").formatted(Formatting.LIGHT_PURPLE)).styled(
+                    (style) -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + command)).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("Review next mistake")))),false);
 
         } else if (inaccuracies != null && inaccuracies.size() > 0) {
-            playerEntity.sendMessage(new LiteralText("Review Inaccuracies?").styled(
-                    (style) -> style.withColor(Formatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + command))
+            playerEntity.sendMessage(Texts.bracketed(new LiteralText("Review Inaccuracies").formatted(Formatting.LIGHT_PURPLE)).styled(
+                    (style) -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + command))
                             .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("Review next inaccuracy")))),false);
 
         } else {
-            playerEntity.sendMessage(new LiteralText("No significant errors to review! ").formatted(Formatting.GREEN), false);
+            playerEntity.sendMessage(new LiteralText("No significant errors to review! ").formatted(Formatting.LIGHT_PURPLE), false);
         }
     }
 
@@ -84,11 +81,11 @@ public class NextMistakeCommand {
                literal(command).executes( c -> {
                    StrongholdTrainer.IS_REVIEWING = true;
                    if ((mistakes == null || mistakes.size() == 0) && (inaccuracies == null || inaccuracies.size() == 0))
-                       c.getSource().getPlayer().sendMessage(new LiteralText("Nothing left to review!").formatted(Formatting.GREEN), false);
+                       c.getSource().getPlayer().sendMessage(new LiteralText("Nothing left to review!").formatted(Formatting.LIGHT_PURPLE), false);
                    else  if (mistakes != null && mistakes.size() == 0 && numMistakesReviewed > 0) {
                        teleportPlayerToNextMistake(c);
-                       c.getSource().getPlayer().sendMessage(new LiteralText("Now reviewing Inaccuracies").styled(
-                               (style) -> style.withColor(Formatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + command)).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("Review next inaccuracy")))),false);
+                       c.getSource().getPlayer().sendMessage(Texts.bracketed(new LiteralText("Reviewing Inaccuracies").formatted(Formatting.LIGHT_PURPLE)).styled(
+                               (style) -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + command)).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("Review next inaccuracy")))),false);
                    } else {
                        teleportPlayerToNextMistake(c);
                    }

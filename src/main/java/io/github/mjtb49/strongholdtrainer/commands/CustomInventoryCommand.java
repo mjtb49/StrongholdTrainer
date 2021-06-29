@@ -2,7 +2,7 @@ package io.github.mjtb49.strongholdtrainer.commands;
 
 import com.google.gson.JsonPrimitive;
 import com.mojang.brigadier.CommandDispatcher;
-import io.github.mjtb49.strongholdtrainer.util.InventoryUtils;
+import io.github.mjtb49.strongholdtrainer.util.InventoryHelper;
 import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.command.ServerCommandSource;
@@ -31,7 +31,7 @@ public class CustomInventoryCommand {
                 })).then(
                         literal("save").executes(context -> {
                             try {
-                                InventoryUtils.saveInventoryToFile(SAVED_INVENTORY, context.getSource().getPlayer());
+                                InventoryHelper.saveInventoryToFile(SAVED_INVENTORY, context.getSource().getPlayer());
                                 return 0;
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -40,7 +40,7 @@ public class CustomInventoryCommand {
                 })).then(
                         literal("load").executes(context -> {
                             try {
-                                InventoryUtils.loadInventoryFromFile(SAVED_INVENTORY, context.getSource().getPlayer());
+                                InventoryHelper.loadInventoryFromFile(SAVED_INVENTORY, context.getSource().getPlayer());
                                 return 0;
                             } catch (IOException e) {
                                 e.printStackTrace();
