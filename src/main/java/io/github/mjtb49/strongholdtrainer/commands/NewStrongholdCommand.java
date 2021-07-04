@@ -33,25 +33,32 @@ public class NewStrongholdCommand {
                     int x = (int) (c.getSource().getPlayer().getX() + GAP * 8) / 16 / GAP;
                     int z = (int) (c.getSource().getPlayer().getZ() + GAP * 8) / 16 / GAP;
 
-                    if (x * GAP * 16 + GAP * 16 > 30000000) {
-                        x -= (60000000 / (GAP * 16) - 1);
-                        z += 1;
-                    }
-                    if (z * GAP * 16 + GAP * 16 > 30000000)
-                        z -= (60000000 / (GAP * 16) - 1);
+                    int attemptedStrongholdLocations = 0;
+                    Optional<? extends StructureStart<?>> start;
+                    StrongholdGenerator.Start strongholdStart = null;
 
-                    x += 1;
+                    do {
+                        if (x * GAP * 16 + GAP * 16 > 30000000) {
+                            x -= (60000000 / (GAP * 16) - 1);
+                            z += 1;
+                        }
+                        if (z * GAP * 16 + GAP * 16 > 30000000)
+                            z -= (60000000 / (GAP * 16) - 1);
+                        x += 1;
+                        start = c.getSource().getWorld().getStructureAccessor().getStructuresWithChildren(ChunkSectionPos.from(x * GAP, 0, z * GAP), StructureFeature.STRONGHOLD).findFirst();
+                        if(start.isPresent()) {
+                            strongholdStart = ((StartAccessor) start.get()).getStart();
+                        }
+                    } while ((!start.isPresent() || strongholdStart == null) && attemptedStrongholdLocations++ < 100);
+
                     double blockX = x * GAP * 16 + 4.5;
                     double blockZ = z * GAP * 16 + 4.5;
 
-                    Optional<? extends StructureStart<?>> start = c.getSource().getWorld().getStructureAccessor().getStructuresWithChildren(ChunkSectionPos.from(x * GAP, 0, z * GAP), StructureFeature.STRONGHOLD).findFirst();
-                    if (start.isPresent()) {
-                        StrongholdGenerator.Start strongholdStart = ((StartAccessor) start.get()).getStart();
+                    if (start.isPresent() && strongholdStart != null) {
                         double yFinal = strongholdStart.getBoundingBox().getCenter().getY() - 4;
 
                         float yaw = 0;
                         switch (Objects.requireNonNull((strongholdStart.getFacing()))) {
-
                             case NORTH:
                                 yaw = 180;
                                 break;
@@ -75,6 +82,7 @@ public class NewStrongholdCommand {
                         c.getSource().getPlayer().teleport(c.getSource().getWorld(), blockX, 90, blockZ, 0, 0);
                         c.getSource().getPlayer().setSpawnPoint(c.getSource().getWorld().getWorld().getRegistryKey(), new BlockPos(blockX, 90, blockZ), true, false);
                     }
+                    c.getSource().getPlayer().extinguish();
                     c.getSource().getPlayer().heal(20);
                     c.getSource().getPlayer().getHungerManager().setSaturationLevelClient(5.0f);
                     c.getSource().getPlayer().getHungerManager().setFoodLevel(20);
