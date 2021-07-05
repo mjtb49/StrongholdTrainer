@@ -3,6 +3,7 @@ package io.github.mjtb49.strongholdtrainer.mixin;
 import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import io.github.mjtb49.strongholdtrainer.api.MinecraftServerAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
+import io.github.mjtb49.strongholdtrainer.path.DimensionPathListener;
 import io.github.mjtb49.strongholdtrainer.path.RenderingPathListener;
 import io.github.mjtb49.strongholdtrainer.path.StatsPathListener;
 import io.github.mjtb49.strongholdtrainer.path.StrongholdPath;
@@ -51,6 +52,7 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
     private boolean shouldRefreshRooms = false;
     private static StrongholdPath currentPath;
     private static final RenderingPathListener renderListener = new RenderingPathListener();
+    private static final DimensionPathListener dimListener = new DimensionPathListener();
     @Shadow
     @Final
     protected LevelStorage.Session session;
@@ -70,10 +72,12 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
                     if(currentPath != null){
                         renderListener.detach();
                         listener.detach();
+                        dimListener.detach();
                     }
                     currentPath = new StrongholdPath(start, player);
                     renderListener.attach(currentPath);
                     listener.attach(currentPath);
+                    dimListener.attach(currentPath);
                     lastStart = start;
                     ticksInStronghold = -1;
                 }
@@ -181,4 +185,6 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
     public void refreshRooms()  {
         shouldRefreshRooms = true;
     }
+
+
 }

@@ -87,22 +87,24 @@ public class PlayerPathData {
         allPlayerPathData.add(this);
     }
 
-    public void updateAndPrintAllStats(ServerPlayerEntity playerEntity, @Nullable String realtime) {
+    public void updateAndPrintAllStats(ServerPlayerEntity playerEntity, @Nullable String realtime, boolean invalidRun) {
+        if(!invalidRun){
+            StrongholdTrainerStats.updateStrongholdTimeStats(playerEntity, ticksInStronghold);
+            updateRoomStats(playerEntity);
 
-        StrongholdTrainerStats.updateStrongholdTimeStats(playerEntity, ticksInStronghold);
-        updateRoomStats(playerEntity);
+            playerEntity.increaseStat(StrongholdTrainerStats.NUM_REVIEWED_ROOMS, roomsReviewed);
+            playerEntity.increaseStat(StrongholdTrainerStats.NUM_BEST_ROOMS, bestMoveCount);
+            playerEntity.increaseStat(StrongholdTrainerStats.NUM_INACCURACIES, inaccuracyCount);
+            playerEntity.increaseStat(StrongholdTrainerStats.NUM_MISTAKES, mistakeCount);
 
-        playerEntity.increaseStat(StrongholdTrainerStats.NUM_REVIEWED_ROOMS, roomsReviewed);
-        playerEntity.increaseStat(StrongholdTrainerStats.NUM_BEST_ROOMS, bestMoveCount);
-        playerEntity.increaseStat(StrongholdTrainerStats.NUM_INACCURACIES, inaccuracyCount);
-        playerEntity.increaseStat(StrongholdTrainerStats.NUM_MISTAKES, mistakeCount);
+            playerEntity.resetStat(Stats.CUSTOM.getOrCreateStat(StrongholdTrainerStats.MEDIAN_TIME));
+            playerEntity.increaseStat(StrongholdTrainerStats.MEDIAN_TIME, computeMedianTimeTaken());
+        }
 
-        playerEntity.resetStat(Stats.CUSTOM.getOrCreateStat(StrongholdTrainerStats.MEDIAN_TIME));
-        playerEntity.increaseStat(StrongholdTrainerStats.MEDIAN_TIME, computeMedianTimeTaken());
 
         playerEntity.sendMessage(new LiteralText(" "), false);
 
-        playerEntity.sendMessage(new LiteralText("Time of " + TimerHelper.ticksToTime(ticksInStronghold) + " IGT" + (realtime != null ? "/" + realtime + " RT " : " ") + "(" + TimerHelper.ticksToTime(wastedTime) + " wasted)").formatted(Formatting.AQUA, Formatting.BOLD), false);
+        playerEntity.sendMessage(new LiteralText("Time of " + TimerHelper.ticksToTime(ticksInStronghold) + " IGT" + (realtime != null ? "/" + realtime + " RT " : " ") + "(" + TimerHelper.ticksToTime(wastedTime) + " wasted)").formatted(Formatting.AQUA, Formatting.BOLD, invalidRun ? Formatting.STRIKETHROUGH : Formatting.BOLD), false);
         playerEntity.sendMessage(new LiteralText("Time Loss/Gain Against Feinberg " + (this.ticksLostAgainstFeinberg > 0 ? "+" : "") + this.ticksLostAgainstFeinberg / 20.0 + "s").formatted(this.ticksLostAgainstFeinberg > 0 ? Formatting.RED : Formatting.GREEN).styled(
                 style -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("This is calculated by taking the sum of the time you spent in each room minus Feinberg's average time in that room.")))
         ), false);

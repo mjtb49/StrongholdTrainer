@@ -5,13 +5,11 @@ import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import io.github.mjtb49.strongholdtrainer.commands.NextMistakeCommand;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdMachineLearning;
 import io.github.mjtb49.strongholdtrainer.stats.PlayerPathData;
+import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import io.github.mjtb49.strongholdtrainer.util.TimerHelper;
-import jdk.internal.vm.annotation.ForceInline;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.LiteralText;
 import net.minecraft.util.Pair;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -60,6 +58,7 @@ public class StatsPathListener implements StrongholdPathListener {
     private ServerPlayerEntity playerEntity;
     private boolean completed;
     private Instant start;
+    private boolean invalidRun;
 
     public StatsPathListener() {
         this.playerEntity = null;
@@ -122,7 +121,7 @@ public class StatsPathListener implements StrongholdPathListener {
     public void update(boolean completed) {
         this.completed = completed;
         if (this.completed) {
-            this.populateStats().updateAndPrintAllStats(playerEntity, null);
+            this.populateStats().updateAndPrintAllStats(playerEntity, null, invalidRun);
         }
     }
 
@@ -131,13 +130,23 @@ public class StatsPathListener implements StrongholdPathListener {
         if (event == StrongholdPath.PathEvent.PATH_COMPLETE) {
             Instant end = Instant.now();
             this.completed = true;
-            this.populateStats().updateAndPrintAllStats(playerEntity, TimerHelper.millisToTime(Duration.between(start, end).toMillis()));
+
+            this.populateStats().updateAndPrintAllStats(playerEntity, TimerHelper.millisToTime(Duration.between(start, end).toMillis()), invalidRun);
             NextMistakeCommand.submitMistakesAndInaccuracies(getMistakes(), getInaccuracies(), getBlunders());
             NextMistakeCommand.sendInitialMessage(playerEntity);
             ((StartAccessor) strongholdPath.getStructureStart()).setHasBeenRouted(true);
-//            playerEntity.sendMessage(new LiteralText("splits").styled(style -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, strongholdPath.sendSplits()))), false);
+
+            //            playerEntity.sendMessage(new LiteralText("splits").styled(style -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, strongholdPath.sendSplits()))), false);
         } else if (event == StrongholdPath.PathEvent.PATH_START) {
+            this.invalidRun = false;
+
             start = Instant.now();
+        }
+        this.playerEntity = strongholdPath.getPlayerEntity();
+        if(event == StrongholdPath.PathEvent.PATH_TICK){
+            this.invalidRun |= playerEntity.isSpectator()
+                    || playerEntity.isCreative()
+                    || OptionTracker.getOption(OptionTracker.Option.HINTS).getAsBoolean();
         }
 
     }
