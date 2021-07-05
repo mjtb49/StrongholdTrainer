@@ -46,6 +46,10 @@ public class StatsPathListener implements StrongholdPathListener {
     int roomsReviewed = 0;
     List<StrongholdGenerator.Piece> mistakes;
     List<StrongholdGenerator.Piece> inaccuracies;
+    private static final int BLUNDER_THRESHOLD = 20 * 10;
+    private static final int MISTAKE_THRESHOLD = 20 * 5;
+    private static final int INACCURACY_THRESHOLD = 20 * 2;
+    List<StrongholdGenerator.Piece> blunders;
     private StrongholdPath strongholdPath;
     private ServerPlayerEntity playerEntity;
     private boolean completed;
@@ -71,11 +75,12 @@ public class StatsPathListener implements StrongholdPathListener {
         }
         double maxWeight = Collections.max(Arrays.asList(ArrayUtils.toObject(policy)));
 
-        int wastedTickCounter = 0;
+        int wastedTickCounter = entry.getTicksSpentInPiece().get();
         while (!solution.contains(history.get(j).getCurrentPiece())) {
             wastedTickCounter += history.get(j).getTicksSpentInPiece().get();
             j++;
         }
+        System.out.println("Loss for " + entry.toString() + ": " + (wastedTickCounter) * (maxWeight - chosenWeight));
         return (wastedTickCounter) * (maxWeight - chosenWeight);
     }
 
@@ -95,10 +100,6 @@ public class StatsPathListener implements StrongholdPathListener {
         }
 
     }
-
-//    public void setAlertingPlayer(ServerPlayerEntity player){
-//        this.playerEntity = player;
-//    }
 
     protected static boolean areAdjacent(StrongholdGenerator.Piece piece1, StrongholdGenerator.Piece piece2, StrongholdTreeAccessor strongholdTreeAccessor) {
         if (piece1 == null || piece2 == null || (strongholdTreeAccessor.getTree().get(piece2)) == null || (strongholdTreeAccessor.getTree().get(piece1) == null)) {
@@ -125,10 +126,9 @@ public class StatsPathListener implements StrongholdPathListener {
             case OUTSIDE_TICK:
                 break;
             case PATH_COMPLETE:
-
                 this.completed = true;
                 this.populateStats().updateAndPrintAllStats(playerEntity);
-                NextMistakeCommand.submitMistakesAndInaccuracies(getMistakes(), getInaccuracies());
+                NextMistakeCommand.submitMistakesAndInaccuracies(getMistakes(), getInaccuracies(), getBlunders());
                 NextMistakeCommand.sendInitialMessage(playerEntity);
                 ((StartAccessor)strongholdPath.getStructureStart()).setHasBeenRouted(true);
                 //playerEntity.sendMessage(new LiteralText("splits").styled(style -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, strongholdPath.sendSplits()))), false);
@@ -157,6 +157,10 @@ public class StatsPathListener implements StrongholdPathListener {
         return new ArrayList<>(inaccuracies);
     }
 
+    public ArrayList<StrongholdGenerator.Piece> getBlunders() {
+        return new ArrayList<>(blunders);
+    }
+
     public boolean isCompleted() {
         return completed;
     }
@@ -165,15 +169,15 @@ public class StatsPathListener implements StrongholdPathListener {
         this.playerEntity = strongholdPath.getPlayerEntity();
         StrongholdGenerator.Start start = this.strongholdPath.getStart();
         StrongholdTreeAccessor treeAccessor = (StrongholdTreeAccessor) start;
-
+        List<StrongholdPathEntry> history = this.strongholdPath.getHistory();
         ArrayList<StructurePiece> solution = new ArrayList<>();
         StrongholdGenerator.Piece current = this.strongholdPath.getHistory().get(strongholdPath.getHistory().size() - 1).getCurrentPiece();
+
+
         while (current != null) {
             solution.add(current);
             current = (StrongholdGenerator.Piece) treeAccessor.getParents().get(current);
         }
-        List<StrongholdPathEntry> history = this.strongholdPath.getHistory();
-
         int ticksInStronghold = strongholdPath.getTotalTime();
         this.roomsReviewed = history.stream().map(StrongholdPathEntry::getCurrentPiece).collect(Collectors.toSet()).size() - 1;
         this.wastedTime = history.stream()
@@ -181,35 +185,34 @@ public class StatsPathListener implements StrongholdPathListener {
                 .map(StrongholdPathEntry::getTicksSpentInPiece)
                 .mapToInt(AtomicInteger::get)
                 .sum();
-        // TODO: don't calculate loss twice
-        List<StrongholdPathEntry> validEntries = history.stream().filter(entry -> validateEntryForLoss(strongholdPath, strongholdPath.getNextEntry(entry))).collect(Collectors.toList());
-        List<StrongholdPathEntry> incorrectDecisions = validEntries.stream()
+        List<StrongholdPathEntry> validEntries = history.stream()
+                .filter(entry -> validateEntryForLoss(strongholdPath, strongholdPath.getNextEntry(entry)))
                 .filter(entry -> !solution.contains(strongholdPath.getNextEntry(entry).getCurrentPiece()) && solution.contains(entry.getCurrentPiece()))
                 .collect(Collectors.toList());
-        List<StrongholdPathEntry> mistakesAndInaccuracies = incorrectDecisions.stream()
-                .filter(entry -> loss(strongholdPath, strongholdPath.getNextEntry(entry), solution) >= 100)
-                .collect(Collectors.toList());
-        List<StrongholdPathEntry> mistakes = mistakesAndInaccuracies.stream()
-                .filter(entry -> loss(strongholdPath, strongholdPath.getNextEntry(entry), solution) >= 200)
-                .collect(Collectors.toList());
-        mistakesAndInaccuracies.removeAll(mistakes);
-        this.mistakes = mistakes.stream().map(StrongholdPathEntry::getCurrentPiece).collect(Collectors.toList());
-        this.inaccuracies = mistakesAndInaccuracies.stream().map(StrongholdPathEntry::getCurrentPiece).collect(Collectors.toList());
-        this.mistakeCount = this.mistakes.size();
-        this.inaccuracyCount = this.inaccuracies.size();
+        List<Pair<StrongholdPathEntry, Double>> losses = new ArrayList<>();
+        validEntries.forEach(strongholdPathEntry -> losses.add(new Pair<>(strongholdPathEntry, loss(strongholdPath, strongholdPath.getNextEntry(strongholdPathEntry), solution))));
+        this.inaccuracies = losses.stream().filter(pair -> pair.getRight() >= INACCURACY_THRESHOLD).map(Pair::getLeft).map(StrongholdPathEntry::getCurrentPiece).collect(Collectors.toList());
+        this.mistakes = losses.stream().filter(pair -> pair.getRight() >= MISTAKE_THRESHOLD).map(Pair::getLeft).map(StrongholdPathEntry::getCurrentPiece).collect(Collectors.toList());
+        this.blunders = losses.stream().filter(pair -> pair.getRight() >= BLUNDER_THRESHOLD).map(Pair::getLeft).map(StrongholdPathEntry::getCurrentPiece).collect(Collectors.toList());
+        inaccuracies.removeAll(this.mistakes);
+        mistakes.removeAll(this.blunders);
         this.bestMoveCount = (int) validEntries.stream()
                 .map(entry -> strongholdPath.getNextEntry(entry))
                 .map(StrongholdPathEntry::getCurrentPiece)
                 .filter(solution::contains)
                 .count();
         this.difficulty = computeDifficulty(solution);
-        this.wormholeCount = (int) history.stream().filter(entry -> !(entry.getCurrentPiece() instanceof StrongholdGenerator.PortalRoom)).filter(entry -> !areAdjacent(entry.getCurrentPiece(), strongholdPath.getNextEntry(entry).getCurrentPiece(), treeAccessor)).count();
+        this.wormholeCount = (int) history.stream()
+                .filter(entry -> !(entry.getCurrentPiece() instanceof StrongholdGenerator.PortalRoom))
+                .filter(entry -> !areAdjacent(entry.getCurrentPiece(), strongholdPath.getNextEntry(entry).getCurrentPiece(), treeAccessor))
+                .count();
 
         ArrayList<Pair<StrongholdGenerator.Piece, Integer>> rooms = new ArrayList<>();
         history.forEach(pathEntry -> {
             Pair<StrongholdGenerator.Piece, Integer> pair = new Pair<>(pathEntry.getCurrentPiece(), pathEntry.getTicksSpentInPiece().get());
             rooms.add(pair);
         });
+
         int tickLossAgainstFeinberg = history.stream().filter(entry -> FEINBERG_AVG_ROOM_TIMES.containsKey(entry.getCurrentPiece().getClass())).mapToInt(value -> value.getTicksSpentInPiece().get() - FEINBERG_AVG_ROOM_TIMES.get(value.getCurrentPiece().getClass())).sum();
         return new PlayerPathData(
                 rooms,
@@ -217,8 +220,9 @@ public class StatsPathListener implements StrongholdPathListener {
                 difficulty,
                 wastedTime,
                 bestMoveCount,
-                inaccuracyCount,
-                mistakeCount,
+                this.inaccuracies.size(),
+                this.mistakes.size(),
+                this.blunders.size(),
                 wormholeCount,
                 roomsReviewed,
                 tickLossAgainstFeinberg
@@ -229,7 +233,6 @@ public class StatsPathListener implements StrongholdPathListener {
         double difficulty = 1.0;
         //Loop starts at 2 because the portal room and the room before it have messed up policy but are always trivial
         for (int i = 2; i < solution.size(); i++) {
-            //difficulty *= 0.5;
             difficulty *= getWeightOfCorrectDoor(solution, (StrongholdGenerator.Piece) solution.get(i),
                     StrongholdMachineLearning.MODEL_REGISTRY.getModel("basic-classifier-nobacktracking").getPredictions(this.strongholdPath.getStart(), (StrongholdGenerator.Piece) solution.get(i)));
 

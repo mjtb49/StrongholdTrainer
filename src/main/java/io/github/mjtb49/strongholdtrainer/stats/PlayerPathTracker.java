@@ -155,6 +155,7 @@ public class PlayerPathTracker {
                     bestMoveCount,
                     inaccuracyCount,
                     mistakeCount,
+                    0,
                     wormholeCount,
                     roomsReviewed,
                     0
