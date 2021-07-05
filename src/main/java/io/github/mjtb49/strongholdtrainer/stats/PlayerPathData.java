@@ -13,6 +13,7 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -86,7 +87,7 @@ public class PlayerPathData {
         allPlayerPathData.add(this);
     }
 
-    public void updateAndPrintAllStats(ServerPlayerEntity playerEntity) {
+    public void updateAndPrintAllStats(ServerPlayerEntity playerEntity, @Nullable String realtime) {
 
         StrongholdTrainerStats.updateStrongholdTimeStats(playerEntity, ticksInStronghold);
         updateRoomStats(playerEntity);
@@ -100,7 +101,8 @@ public class PlayerPathData {
         playerEntity.increaseStat(StrongholdTrainerStats.MEDIAN_TIME, computeMedianTimeTaken());
 
         playerEntity.sendMessage(new LiteralText(" "), false);
-        playerEntity.sendMessage(new LiteralText("Time of " + TimerHelper.ticksToTime(ticksInStronghold) + " (" + TimerHelper.ticksToTime(wastedTime) + " wasted)").formatted(Formatting.AQUA, Formatting.BOLD), false);
+
+        playerEntity.sendMessage(new LiteralText("Time of " + TimerHelper.ticksToTime(ticksInStronghold) + " IGT" + (realtime != null ? "/" + realtime + " RT " : " ") + "(" + TimerHelper.ticksToTime(wastedTime) + " wasted)").formatted(Formatting.AQUA, Formatting.BOLD), false);
         playerEntity.sendMessage(new LiteralText("Time Loss/Gain Against Feinberg " + (this.ticksLostAgainstFeinberg > 0 ? "+" : "") + this.ticksLostAgainstFeinberg / 20.0 + "s").formatted(this.ticksLostAgainstFeinberg > 0 ? Formatting.RED : Formatting.GREEN).styled(
                 style -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("This is calculated by taking the sum of the time you spent in each room minus Feinberg's average time in that room.")))
         ), false);

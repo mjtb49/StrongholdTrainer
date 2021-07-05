@@ -161,7 +161,7 @@ public class PlayerPathTracker {
                     0
             );
 
-            playerPathData.updateAndPrintAllStats(playerEntity);
+            playerPathData.updateAndPrintAllStats(playerEntity, null);
         }
     }
 

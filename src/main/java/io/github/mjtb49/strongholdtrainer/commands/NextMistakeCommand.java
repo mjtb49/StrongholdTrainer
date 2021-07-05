@@ -23,7 +23,8 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class NextMistakeCommand {
 
     private static final ArrayDeque<Pair<StrongholdGenerator.Piece, DecisionType>> badDecisions = new ArrayDeque<>();
-    private final static String command = "⨒strongholdTrainer#nextMistake";
+    // this character will render as a box
+    private final static String command = "\uffff";
 
     private final static Text NEXT_INACCURACY = Texts.bracketed(new LiteralText("Next Inaccuracy").formatted(Formatting.YELLOW)).styled(
             (style) -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + command)).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("Review next inaccuracy"))));
@@ -60,7 +61,7 @@ public class NextMistakeCommand {
 
     public static void sendInitialMessage(ServerPlayerEntity playerEntity) {
         if (badDecisions.size() == 0) {
-            playerEntity.sendMessage(new LiteralText("No significant errors to review! ").formatted(Formatting.LIGHT_PURPLE), false);
+            playerEntity.sendMessage(new LiteralText("No significant errors to review! ").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC), false);
         } else if (badDecisions.peek() != null) {
             switch (badDecisions.peek().getRight()) {
                 case INACCURACY:
@@ -83,7 +84,7 @@ public class NextMistakeCommand {
                literal(command).executes( c -> {
                    StrongholdTrainer.IS_REVIEWING = true;
                    if (badDecisions.size() == 0)
-                       c.getSource().getPlayer().sendMessage(new LiteralText("Nothing left to review!").formatted(Formatting.LIGHT_PURPLE), false);
+                       c.getSource().getPlayer().sendMessage(new LiteralText("Nothing left to review!").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC), false);
                    else if (badDecisions.peek() != null) {
                        switch (badDecisions.peek().getRight()) {
                            case INACCURACY:

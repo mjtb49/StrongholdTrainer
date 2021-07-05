@@ -70,18 +70,12 @@ public class StrongholdPath {
 
     public void add(StrongholdGenerator.Piece current, StrongholdGenerator.Piece previous) {
         this.history.add(new StrongholdPathEntry(current, previous, new AtomicInteger()));
-        if (this.listeners.size() != 0) {
-            this.notifyListeners(PathEvent.PATH_UPDATE);
-        } else {
-            System.out.println("No listeners listening to " + this.getClass().getSimpleName() + "@" + Integer.toHexString(this.hashCode()));
-        }
+        this.notifyListeners(PathEvent.PATH_UPDATE);
         if (current instanceof StrongholdGenerator.PortalRoom && !this.finished) {
             this.finished = true;
-            if (this.listeners.size() != 0) {
-                this.notifyListeners(PathEvent.PATH_COMPLETE);
-            } else {
-                System.out.println("No listeners listening to " + this.getClass().getSimpleName() + "@" + Integer.toHexString(this.hashCode()));
-            }
+            this.notifyListeners(PathEvent.PATH_COMPLETE);
+        } else if (this.history.size() == 2) { // TODO: better check
+            this.notifyListeners(PathEvent.PATH_START);
         }
     }
 
@@ -94,7 +88,11 @@ public class StrongholdPath {
     }
 
     public StrongholdPathEntry getLatest() {
-        return history.get(history.size() - 1);
+        if (this.history.size() >= 1) {
+            return history.get(history.size() - 1);
+        } else {
+            return null;
+        }
     }
 
     public List<StrongholdPathEntry> getHistory() {
@@ -146,6 +144,10 @@ public class StrongholdPath {
     }
 
     public void notifyListeners(PathEvent event) {
+        if (this.listeners.size() == 0) {
+            System.out.println("No listeners listening to " + this.getClass().getSimpleName() + "@" + Integer.toHexString(this.hashCode()));
+            return;
+        }
         listeners.forEach(listener1 -> listener1.update(event));
     }
 
@@ -158,6 +160,7 @@ public class StrongholdPath {
             return;
         }
         this.getLatest().incrementTicks();
+        this.notifyListeners(PathEvent.PATH_TICK);
     }
 
     @Override
@@ -170,7 +173,9 @@ public class StrongholdPath {
 
     public enum PathEvent {
         PATH_COMPLETE,
+        PATH_START,
         PATH_UPDATE,
-        OUTSIDE_TICK
+        OUTSIDE_TICK,
+        PATH_TICK
     }
 }

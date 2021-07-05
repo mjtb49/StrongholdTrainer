@@ -3,12 +3,12 @@ package io.github.mjtb49.strongholdtrainer.mixin;
 import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import io.github.mjtb49.strongholdtrainer.api.MinecraftServerAccessor;
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
+import io.github.mjtb49.strongholdtrainer.path.RenderingPathListener;
+import io.github.mjtb49.strongholdtrainer.path.StatsPathListener;
 import io.github.mjtb49.strongholdtrainer.path.StrongholdPath;
 import io.github.mjtb49.strongholdtrainer.render.Color;
 import io.github.mjtb49.strongholdtrainer.render.Line;
 import io.github.mjtb49.strongholdtrainer.stats.PlayerPathData;
-import io.github.mjtb49.strongholdtrainer.path.RenderingPathListener;
-import io.github.mjtb49.strongholdtrainer.path.StatsPathListener;
 import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import io.github.mjtb49.strongholdtrainer.util.TimerHelper;
 import net.minecraft.server.MinecraftServer;
@@ -119,23 +119,23 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
                 String outside = TimerHelper.ticksToTime(currentPath.getTicksOutside());
                 Formatting formatting = Formatting.ITALIC;
                 StrongholdGenerator.Piece currentPiece = currentPath.getLatest().getCurrentPiece();
-                if(currentPiece instanceof StrongholdGenerator.PortalRoom || currentPiece instanceof StrongholdGenerator.Start || currentPath.isFinished()){
+                if (currentPiece instanceof StrongholdGenerator.PortalRoom || currentPiece instanceof StrongholdGenerator.Start || currentPath.isFinished()) {
                     formatting = Formatting.GRAY;
                     current = "-:--.--";
-                    if(currentPath.isFinished()){
+                    if (currentPath.isFinished()) {
                         total = "|" + total + "|";
                     }
-                }else {
-                    if(StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(currentPiece.getClass()) == 0){
+                } else {
+                    if (StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(currentPiece.getClass()) == 0) {
                         formatting = Formatting.GRAY;
                     } else {
-                        if(currentTicks > StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(currentPath.getLatest().getCurrentPiece().getClass())){
+                        if (currentTicks > StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(currentPath.getLatest().getCurrentPiece().getClass())) {
                             formatting = Formatting.RED;
                             current = "⁽⁺⁾" + current;
-                        } else if(currentTicks < StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(currentPath.getLatest().getCurrentPiece().getClass())) {
+                        } else if (currentTicks < StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(currentPath.getLatest().getCurrentPiece().getClass())) {
                             formatting = Formatting.GREEN;
                             current = "⁽⁻⁾" + current;
-                        } else if(currentTicks == StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(currentPiece.getClass())){
+                        } else if (currentTicks == StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(currentPiece.getClass())) {
                             formatting = Formatting.GOLD;
                             current = "⁽⁼⁾" + current;
                         }
