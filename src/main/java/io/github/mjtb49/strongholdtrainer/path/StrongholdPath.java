@@ -29,6 +29,7 @@ public class StrongholdPath {
     private final AtomicInteger ticksOutside;
     private final List<StrongholdPathListener> listeners;
     private boolean finished = false;
+    private final StrongholdTreeAccessor treeAccessor;
 
     public StrongholdPath(StructureStart<?> start2, ServerPlayerEntity entity) {
         this.start = ((StartAccessor) start2).getStart();
@@ -37,6 +38,7 @@ public class StrongholdPath {
         this.listeners = Collections.synchronizedList(new LinkedList<>());
         this.structureStart = start2;
         this.playerEntity = entity;
+        this.treeAccessor = (StrongholdTreeAccessor) this.start;
     }
 
     public StructureStart<?> getStructureStart() {
@@ -56,7 +58,7 @@ public class StrongholdPath {
         for(StrongholdPathEntry entry : history){
             int r = entry.getTicksSpentInPiece().get();
             String str = RoomFormatter.getStrongholdPieceAsString(entry.getCurrentPiece().getClass()) + " - " ;
-            int i = (int) RoomData.DOWNWARDS.roomDataFunction.apply((StrongholdTreeAccessor) getStart(), entry.getCurrentPiece(), entry.getPreviousPiece());
+            int i = (int) RoomData.DOWNWARDS.roomDataFunction.apply(treeAccessor, entry.getCurrentPiece(), entry.getPreviousPiece());
             if (i == 0) {
                 str += " ←";
             } else {
@@ -66,6 +68,10 @@ public class StrongholdPath {
             text.append(new LiteralText("\n"+str).append(new LiteralText(TimerHelper.ticksToTime(r)).formatted(Formatting.GOLD)));
         }
         return text;
+    }
+
+    public StrongholdTreeAccessor getTreeAccessor() {
+        return treeAccessor;
     }
 
     public void add(StrongholdGenerator.Piece current, StrongholdGenerator.Piece previous) {
@@ -169,6 +175,10 @@ public class StrongholdPath {
                 "start=" + start +
                 ", history=" + history +
                 '}';
+    }
+
+    public List<StrongholdPathListener> getListeners() {
+        return listeners;
     }
 
     public enum PathEvent {

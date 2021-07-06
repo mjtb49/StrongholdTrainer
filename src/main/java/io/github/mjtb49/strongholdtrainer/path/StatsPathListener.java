@@ -23,6 +23,9 @@ import java.util.stream.Collectors;
 public class StatsPathListener implements StrongholdPathListener {
 
     public static final HashMap<Class<? extends StrongholdGenerator.Piece>, Integer> FEINBERG_AVG_ROOM_TIMES = new HashMap<>();
+    private static final int BLUNDER_THRESHOLD = 20 * 10;
+    private static final int MISTAKE_THRESHOLD = 20 * 5;
+    private static final int INACCURACY_THRESHOLD = 20 * 2;
 
     static {
         FEINBERG_AVG_ROOM_TIMES.put(StrongholdGenerator.ChestCorridor.class, 25);
@@ -41,19 +44,10 @@ public class StatsPathListener implements StrongholdPathListener {
         FEINBERG_AVG_ROOM_TIMES.put(StrongholdGenerator.SmallCorridor.class, 0);
     }
 
-    double difficulty;
-    int wastedTime;
-    int wormholeCount;
-    int bestMoveCount = 0;
-    int inaccuracyCount = 0;
-    int mistakeCount = 0;
-    int roomsReviewed = 0;
     List<StrongholdGenerator.Piece> mistakes;
     List<StrongholdGenerator.Piece> inaccuracies;
-    private static final int BLUNDER_THRESHOLD = 20 * 10;
-    private static final int MISTAKE_THRESHOLD = 20 * 5;
-    private static final int INACCURACY_THRESHOLD = 20 * 2;
     List<StrongholdGenerator.Piece> blunders;
+
     private StrongholdPath strongholdPath;
     private ServerPlayerEntity playerEntity;
     private boolean completed;
@@ -143,7 +137,7 @@ public class StatsPathListener implements StrongholdPathListener {
             start = Instant.now();
         }
         this.playerEntity = strongholdPath.getPlayerEntity();
-        if(event == StrongholdPath.PathEvent.PATH_TICK){
+        if (event == StrongholdPath.PathEvent.PATH_TICK) {
             this.invalidRun |= playerEntity.isSpectator()
                     || playerEntity.isCreative()
                     || OptionTracker.getOption(OptionTracker.Option.HINTS).getAsBoolean();
@@ -154,12 +148,14 @@ public class StatsPathListener implements StrongholdPathListener {
     @Override
     public void attach(StrongholdPath path) {
         this.strongholdPath = path;
+        this.playerEntity = path.getPlayerEntity();
         path.addListener(this);
     }
 
     @Override
     public void detach() {
         this.strongholdPath.removeListener(this);
+        this.playerEntity = null;
         this.strongholdPath = null;
     }
 
@@ -183,19 +179,10 @@ public class StatsPathListener implements StrongholdPathListener {
         List<StrongholdPathEntry> history = this.strongholdPath.getHistory();
         ArrayList<StructurePiece> solution = new ArrayList<>();
         StrongholdGenerator.Piece current = this.strongholdPath.getHistory().get(strongholdPath.getHistory().size() - 1).getCurrentPiece();
-
-
         while (current != null) {
             solution.add(current);
             current = (StrongholdGenerator.Piece) treeAccessor.getParents().get(current);
         }
-        int ticksInStronghold = strongholdPath.getTotalTime();
-        this.roomsReviewed = history.stream().map(StrongholdPathEntry::getCurrentPiece).collect(Collectors.toSet()).size() - 1;
-        this.wastedTime = history.stream()
-                .filter(pathEntry -> !solution.contains(pathEntry.getCurrentPiece()))
-                .map(StrongholdPathEntry::getTicksSpentInPiece)
-                .mapToInt(AtomicInteger::get)
-                .sum();
         List<StrongholdPathEntry> validEntries = history.stream()
                 .filter(entry -> validateEntryForLoss(strongholdPath, strongholdPath.getNextEntry(entry)))
                 .filter(entry -> !solution.contains(strongholdPath.getNextEntry(entry).getCurrentPiece()) && solution.contains(entry.getCurrentPiece()))
@@ -207,36 +194,38 @@ public class StatsPathListener implements StrongholdPathListener {
         this.blunders = losses.stream().filter(pair -> pair.getRight() >= BLUNDER_THRESHOLD).map(Pair::getLeft).map(StrongholdPathEntry::getCurrentPiece).collect(Collectors.toList());
         inaccuracies.removeAll(this.mistakes);
         mistakes.removeAll(this.blunders);
-        this.bestMoveCount = (int) validEntries.stream()
-                .map(entry -> strongholdPath.getNextEntry(entry))
-                .map(StrongholdPathEntry::getCurrentPiece)
-                .filter(solution::contains)
-                .count();
-        this.difficulty = computeDifficulty(solution);
-        this.wormholeCount = (int) history.stream()
-                .filter(entry -> !(entry.getCurrentPiece() instanceof StrongholdGenerator.PortalRoom))
-                .filter(entry -> !areAdjacent(entry.getCurrentPiece(), strongholdPath.getNextEntry(entry).getCurrentPiece(), treeAccessor))
-                .count();
-
         ArrayList<Pair<StrongholdGenerator.Piece, Integer>> rooms = new ArrayList<>();
         history.forEach(pathEntry -> {
             Pair<StrongholdGenerator.Piece, Integer> pair = new Pair<>(pathEntry.getCurrentPiece(), pathEntry.getTicksSpentInPiece().get());
             rooms.add(pair);
         });
 
-        int tickLossAgainstFeinberg = history.stream().filter(entry -> FEINBERG_AVG_ROOM_TIMES.containsKey(entry.getCurrentPiece().getClass())).mapToInt(value -> value.getTicksSpentInPiece().get() - FEINBERG_AVG_ROOM_TIMES.get(value.getCurrentPiece().getClass())).sum();
         return new PlayerPathData(
                 rooms,
-                ticksInStronghold,
-                difficulty,
-                wastedTime,
-                bestMoveCount,
+                strongholdPath.getTotalTime(),
+                computeDifficulty(solution),
+                history.stream()
+                        .filter(pathEntry -> !solution.contains(pathEntry.getCurrentPiece()))
+                        .map(StrongholdPathEntry::getTicksSpentInPiece)
+                        .mapToInt(AtomicInteger::get)
+                        .sum(),
+                (int) validEntries.stream()
+                        .map(entry -> strongholdPath.getNextEntry(entry))
+                        .map(StrongholdPathEntry::getCurrentPiece)
+                        .filter(solution::contains)
+                        .count(),
                 this.inaccuracies.size(),
                 this.mistakes.size(),
                 this.blunders.size(),
-                wormholeCount,
-                roomsReviewed,
-                tickLossAgainstFeinberg
+                (int) history.stream()
+                        .filter(entry -> !(entry.getCurrentPiece() instanceof StrongholdGenerator.PortalRoom))
+                        .filter(entry -> !areAdjacent(entry.getCurrentPiece(), strongholdPath.getNextEntry(entry).getCurrentPiece(), treeAccessor))
+                        .count(),
+                history.stream().map(StrongholdPathEntry::getCurrentPiece).collect(Collectors.toSet()).size() - 1,
+                history.stream()
+                        .filter(entry -> FEINBERG_AVG_ROOM_TIMES.containsKey(entry.getCurrentPiece().getClass()))
+                        .mapToInt(value -> value.getTicksSpentInPiece().get() - FEINBERG_AVG_ROOM_TIMES.get(value.getCurrentPiece().getClass()))
+                        .sum()
         );
     }
 
