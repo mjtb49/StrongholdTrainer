@@ -15,7 +15,8 @@ public abstract class MixinClientPlayNetworkHandler {
     @Inject(method = "onGameJoin", at = @At(value = "TAIL"))
     public void onGameJoin(GameJoinS2CPacket packet, CallbackInfo ci) {
         assert MinecraftClient.getInstance().player != null;
-        MinecraftClient.getInstance().player.sendMessage(new LiteralText("Loaded Stronghold Trainer (use /newStronghold to go to a new stronghold, /stinfo for more help)").formatted(Formatting.AQUA), false); }
-
+        MinecraftClient.getInstance().player.sendMessage(new LiteralText("Loaded Stronghold Trainer (use /newStronghold to go to a new stronghold, /stinfo for more help)").formatted(Formatting.AQUA), false);
+        MinecraftClient.getInstance().getServer().getCommandManager().execute(MinecraftClient.getInstance().player.getCommandSource().withLevel(2), "/tp @s 4 ~ 4");
+    }
 }
 

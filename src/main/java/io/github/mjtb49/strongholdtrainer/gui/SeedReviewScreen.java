@@ -1,0 +1,142 @@
+package io.github.mjtb49.strongholdtrainer.gui;
+
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.SaveLevelScreen;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.world.CreateWorldScreen;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.toast.SystemToast;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.structure.StrongholdGenerator;
+import net.minecraft.structure.StructurePiece;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.math.BlockBox;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.GameMode;
+import net.minecraft.world.GameRules;
+import net.minecraft.world.gen.ChunkRandom;
+import net.minecraft.world.gen.GeneratorOptions;
+import net.minecraft.world.level.LevelInfo;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+public class SeedReviewScreen extends Screen {
+    private static final Text TITLE_TEXT = new LiteralText("Review Seed");
+    Screen parent;
+    long seed;
+    LevelInfo levelInfo;
+    StrongholdMapWidget mapWidget;
+
+    public SeedReviewScreen(Screen parent, LevelInfo levelInfo) {
+        super(TITLE_TEXT);
+        this.levelInfo = levelInfo;
+        this.parent = parent;
+    }
+
+    private static long chunkSeed(long world, ChunkPos pos) {
+        return new ChunkRandom().setCarverSeed(world, pos.x, pos.z);
+    }
+    // Possibly unnecessary
+    private static long calculateStrongholdCarverSeed(long seed, ChunkPos pos) {
+        ChunkRandom random = new ChunkRandom();
+        long ret;
+        int var7 = 0;
+        List<StructurePiece> children = new ArrayList<>();
+        net.minecraft.structure.StrongholdGenerator.Start start;
+        BlockBox boundingBox;
+        do {
+            boundingBox = BlockBox.empty();
+            children.clear();
+            ret = random.setCarverSeed(seed + (var7++), pos.x, pos.z);
+            StrongholdGenerator.init();
+            start = new net.minecraft.structure.StrongholdGenerator.Start(random, (pos.x << 4) + 2, (pos.z << 4) + 2);
+            children.add(start);
+            start.placeJigsaw(start, children, random);
+            List list = start.field_15282;
+            while (!list.isEmpty()) {
+                int l = random.nextInt(list.size());
+                StructurePiece structurePiece = (StructurePiece) list.remove(l);
+                structurePiece.placeJigsaw(start, children, random);
+            }
+        } while (children.isEmpty() || start.field_15283 == null);
+        return ret;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        int mapSize = (int) (0.3 * this.width);
+        int oneThird = this.width / 3;
+        int twoThirds = (2 * this.width) / 3;
+        int halfHeight = this.height / 2;
+        this.addButton(new ButtonWidget(this.width / 2 - 100, this.height - 27, 200, 20, new LiteralText("Cancel"), button -> client.openScreen(parent)));
+        this.addButton(new ButtonWidget(twoThirds - 75, halfHeight, 150, 20, new LiteralText("Create World"), button -> this.createLevel()));
+        TextFieldWidget seedTextField = this.addButton(new TextFieldWidget(this.textRenderer, twoThirds - 75, this.height / 2 - 50, 150, 20, new LiteralText(this.seed + "")));
+        this.addButton(new ButtonWidget(twoThirds - 30, halfHeight - 25, 60, 20, new LiteralText("Load Seed"), button -> {
+            try {
+                this.seed = Long.parseLong(seedTextField.getText());
+                this.mapWidget.refresh(Long.parseLong(seedTextField.getText()));
+            } catch (Exception e) {
+                this.seed = seedTextField.getText().hashCode();
+                seedTextField.setText(seedTextField.getText().hashCode() + "");
+                this.mapWidget.refresh(Long.parseLong(seedTextField.getText()));
+            }
+        }));
+        mapWidget = this.addButton(new StrongholdMapWidget(oneThird - ((3 * mapSize) / 4), this.height / 2 - mapSize / 2, mapSize, seed));
+    }
+
+    @Override
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        this.renderBackground(matrices);
+        this.drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 20, -1);
+        String ind = mapWidget.getSelected() == null ? "Select a stronghold!" : "Selected (C): " + mapWidget.getSelected();
+        String se = mapWidget.getSelected() == null ? "" : "Chunk seed: " + chunkSeed(this.seed, mapWidget.getSelected());
+        this.drawCenteredString(matrices, this.textRenderer, ind, (2 * this.width) / 3, height / 2 + 30, -1);
+        this.drawCenteredString(matrices, this.textRenderer, se, (2 * this.width) / 3, height / 2 + 40, -1);
+        super.render(matrices, mouseX, mouseY, delta);
+//        this.drawCenteredString(matrices, textRenderer, mouseX + "," +mouseY, mouseX, mouseY, -1);
+    }
+
+    private void createLevel() {
+        assert this.client != null;
+        this.client.method_29970(new SaveLevelScreen(new TranslatableText("createWorld.preparing")));
+        if (this.parent instanceof CreateWorldScreen) {
+            GeneratorOptions options = ((CreateWorldScreen) parent).moreOptionsDialog.getGeneratorOptions(false);
+            if (this.mapWidget.getSelected() != null) {
+                String name = "rev-" + UUID.randomUUID().toString().split("-")[0];
+                GeneratorOptions newOptions = new GeneratorOptions(chunkSeed(seed, mapWidget.getSelected()), true, false, options.getDimensionMap());
+                this.levelInfo = new LevelInfo(name, GameMode.SPECTATOR, false, Difficulty.EASY, false, new GameRules(), this.levelInfo.method_29558());
+                client.method_29607(name, this.levelInfo, ((CreateWorldScreen) parent).moreOptionsDialog.method_29700(), newOptions);
+                // TODO: find a nicer way to do this
+                (new Thread(() -> {
+                    while (true) {
+                        System.out.println(client.getServer().getPlayerManager().getPlayerList());
+                        if (!client.getServer().getPlayerManager().getPlayerList().isEmpty()) {
+                            client.getServer().getCommandManager().execute(client.getServer().getPlayerManager().getPlayerList().get(0).getCommandSource().withLevel(4), "/tp @s " + 0 + " 90 " + 0);
+                            break;
+                        }
+                    }
+                })).start();
+            } else {
+                this.client.openScreen(this);
+                this.client.getToastManager().add(new SystemToast(SystemToast.Type.WORLD_ACCESS_FAILURE, new LiteralText("Choose a stronghold!"), new LiteralText("")));
+            }
+        }
+    }
+
+    @Override
+    public void onClose() {
+        this.client.openScreen(parent);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+}
