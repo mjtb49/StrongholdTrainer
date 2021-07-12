@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 // TODO: Thread safety, cleanup, optimization
 public class StrongholdPath {
-    private static final DecimalFormat df2 = new DecimalFormat("00.00");
 
     private final StrongholdGenerator.Start start;
     private final StructureStart<?> structureStart;

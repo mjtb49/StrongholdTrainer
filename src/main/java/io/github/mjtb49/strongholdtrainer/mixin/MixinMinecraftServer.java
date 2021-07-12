@@ -99,10 +99,9 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
                         }
 
                         if (lastPiece != piece) {
-                            if (
-                                    lastPiece == null
-                                            || !lastPiece.getBoundingBox().contains(player.getBlockPos())
-                                            || (lastPiece instanceof StrongholdGenerator.SmallCorridor && !(piece instanceof StrongholdGenerator.SmallCorridor))) {
+                            if (lastPiece == null
+                                    || !lastPiece.getBoundingBox().contains(player.getBlockPos())
+                                    || (lastPiece instanceof StrongholdGenerator.SmallCorridor && !(piece instanceof StrongholdGenerator.SmallCorridor))) {
                                 currentPath.add((StrongholdGenerator.Piece) piece, (StrongholdGenerator.Piece) lastPiece);
                                 lastPiece = piece;
                             }
@@ -118,7 +117,7 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
             }
             if (currentPath != null) {
                 String total = TimerHelper.ticksToTime(currentPath.getTotalTime());
-                int currentTicks = currentPath.getLatest().getTicksSpentInPiece().get();
+                int currentTicks = currentPath.getLatest() != null ? currentPath.getLatest().getTicksSpentInPiece().get() : 0;
                 String current = TimerHelper.ticksToTime(currentTicks);
                 String outside = TimerHelper.ticksToTime(currentPath.getTicksOutside());
                 Formatting formatting = Formatting.ITALIC;

@@ -37,11 +37,6 @@ public class StatsPathListener implements StrongholdPathListener {
         FEINBERG_AVG_ROOM_TIMES.put(StrongholdGenerator.FiveWayCrossing.class, 60);
         FEINBERG_AVG_ROOM_TIMES.put(StrongholdGenerator.LeftTurn.class, 20);
         FEINBERG_AVG_ROOM_TIMES.put(StrongholdGenerator.RightTurn.class, 18);
-        FEINBERG_AVG_ROOM_TIMES.put(StrongholdGenerator.PortalRoom.class, 0);
-        FEINBERG_AVG_ROOM_TIMES.put(StrongholdGenerator.Start.class, 0);
-        FEINBERG_AVG_ROOM_TIMES.put(null, 0);
-        FEINBERG_AVG_ROOM_TIMES.put(StrongholdGenerator.Library.class, 0);
-        FEINBERG_AVG_ROOM_TIMES.put(StrongholdGenerator.SmallCorridor.class, 0);
     }
 
     List<StrongholdGenerator.Piece> mistakes;
@@ -209,8 +204,10 @@ public class StatsPathListener implements StrongholdPathListener {
                         .map(StrongholdPathEntry::getTicksSpentInPiece)
                         .mapToInt(AtomicInteger::get)
                         .sum(),
-                (int) validEntries.stream()
-                        .map(entry -> strongholdPath.getNextEntry(entry))
+                // TODO: don't count entering the first Five-Way
+                (int) history.stream()
+                        .map(strongholdPathEntry -> strongholdPath.getNextEntry(strongholdPathEntry))
+                        .filter(Objects::nonNull)
                         .map(StrongholdPathEntry::getCurrentPiece)
                         .filter(solution::contains)
                         .count(),

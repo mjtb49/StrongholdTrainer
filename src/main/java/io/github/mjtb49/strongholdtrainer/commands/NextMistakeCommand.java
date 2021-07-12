@@ -85,23 +85,26 @@ public class NextMistakeCommand {
                    StrongholdTrainer.IS_REVIEWING = true;
                    if (badDecisions.size() == 0)
                        c.getSource().getPlayer().sendMessage(new LiteralText("Nothing left to review!").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC), false);
-                   else if (badDecisions.peek() != null) {
-                       switch (badDecisions.peek().getRight()) {
-                           case INACCURACY:
-                               teleportPlayerToNextMistake(c);
-                               c.getSource().getPlayer().sendMessage(NEXT_INACCURACY, false);
-                               break;
-                           case MISTAKE:
-                               teleportPlayerToNextMistake(c);
-                               c.getSource().getPlayer().sendMessage(NEXT_MISTAKE, false);
-                               break;
-                           case BLUNDER:
-                               teleportPlayerToNextMistake(c);
-                               c.getSource().getPlayer().sendMessage(NEXT_BLUNDER, false);
-                               break;
-                           default:
-                               System.err.println("How?");
+                   else{
+                       teleportPlayerToNextMistake(c);
+                       if(badDecisions.size() == 0){
+                           c.getSource().getPlayer().sendMessage(new LiteralText("Nothing left to review!").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC), false);
+                       } else{
+                           switch (badDecisions.peek().getRight()) {
+                               case INACCURACY:
+                                   c.getSource().getPlayer().sendMessage(NEXT_INACCURACY, false);
+                                   break;
+                               case MISTAKE:
+                                   c.getSource().getPlayer().sendMessage(NEXT_MISTAKE, false);
+                                   break;
+                               case BLUNDER:
+                                   c.getSource().getPlayer().sendMessage(NEXT_BLUNDER, false);
+                                   break;
+                               default:
+                                   System.err.println("How?");
+                           }
                        }
+
                    }
                    return 1;
                })
