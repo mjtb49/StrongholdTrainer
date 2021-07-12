@@ -58,7 +58,7 @@ public class StrongholdPath {
         for(StrongholdPathEntry entry : history){
             int r = entry.getTicksSpentInPiece().get();
             String str = RoomFormatter.getStrongholdPieceAsString(entry.getCurrentPiece().getClass()) + " - " ;
-            int i = (int) RoomData.DOWNWARDS.roomDataFunction.apply(treeAccessor, entry.getCurrentPiece(), entry.getPreviousPiece());
+            int i = (Integer) RoomData.DOWNWARDS.roomDataFunction.apply(treeAccessor, entry.getCurrentPiece(), entry.getPreviousPiece());
             if (i == 0) {
                 str += " ←";
             } else {

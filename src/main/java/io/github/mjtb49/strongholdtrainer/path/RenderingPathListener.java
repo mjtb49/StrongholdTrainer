@@ -188,12 +188,12 @@ public class RenderingPathListener implements StrongholdPathListener {
             }
 
             if (node.pointer != null) {
-                String text = df.format(this.percents.getOrDefault(node.pointer, 0.0) * 100) + "%";
+                String text = df.format(this.percents.getOrDefault(node.pointer, 0.0));
                 TextRenderer.add(door.getVec(), text);
             } else if (node.type == EntryNode.Type.BACKWARDS) {
                 if (loadedModelSupportsBacktracking) {
                     StructurePiece parent = ((StrongholdTreeAccessor) strongholdStart).getParents().get(piece);
-                    String text = df.format(this.percents.getOrDefault(parent, 0.0) * 100) + "%";
+                    String text = df.format(this.percents.getOrDefault(parent, 0.0));
                     TextRenderer.add(door.getVec(), text);
                 } else {
                     TextRenderer.add(door.getVec(), "not supported", 0.01f);
