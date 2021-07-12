@@ -1,8 +1,8 @@
 package io.github.mjtb49.strongholdtrainer.ml.model;
 
 import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
-import io.github.mjtb49.strongholdtrainer.ml.StrongholdPath;
-import io.github.mjtb49.strongholdtrainer.ml.StrongholdPathEntry;
+import io.github.mjtb49.strongholdtrainer.path.StrongholdPath;
+import io.github.mjtb49.strongholdtrainer.path.StrongholdPathEntry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
@@ -205,10 +205,6 @@ public class StrongholdModel {
         } else {
             throw new IllegalArgumentException("Models must have only one output!");
         }
-//        System.out.println(this.outputName);
-//        System.out.println(this.outputShape);
-//        System.out.println(this.inputName);
-//        System.out.println(this.inputShape);
     }
 
     protected Tensor int3ArrayToInputTensor(int[][] data) {
@@ -341,6 +337,7 @@ public class StrongholdModel {
                 predictions = processOutput(out);
             }
         }
+        path.getLatest().updatePolicy(predictions);
         return predictions;
     }
 
