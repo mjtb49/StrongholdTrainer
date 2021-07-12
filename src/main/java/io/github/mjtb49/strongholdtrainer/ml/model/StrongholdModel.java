@@ -9,7 +9,6 @@ import net.minecraft.structure.StructurePiece;
 import net.minecraft.util.math.Direction;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.jetbrains.annotations.Nullable;
 import org.tensorflow.SavedModelBundle;
 import org.tensorflow.Session;
 import org.tensorflow.Tensor;
@@ -23,6 +22,7 @@ import org.tensorflow.proto.framework.TensorInfo;
 import org.tensorflow.proto.framework.TensorShapeProto;
 import org.tensorflow.types.TFloat32;
 import org.tensorflow.types.TInt64;
+import org.tensorflow.types.family.TType;
 
 import java.io.*;
 import java.net.URLConnection;
@@ -42,6 +42,11 @@ public class StrongholdModel {
         put(Direction.NORTH, new int[]{0, 0, 1, 0});
         put(Direction.SOUTH, new int[]{0, 0, 0, 1});
     }};
+    private final Map<String, Class<? extends TType>> typeMap = new HashMap<String, Class<? extends TType>>() {{
+        put("int64", TInt64.class);
+        put("float32", TFloat32.class);
+    }};
+    private Class<? extends TType> input_type;
     // Metadata
     private String identifier;
     private String creator;
@@ -127,23 +132,32 @@ public class StrongholdModel {
         return Shape.of(dimensionSizes);
     }
 
-    static protected Tensor intArrayToInputTensor(int[][] data) {
-        LongNdArray input = NdArrays.ofLongs(Shape.of(1, data[0].length));
-        long[][] toInt64 = new long[1][data[0].length];
-        for (int i = 0; i < toInt64[0].length; ++i) {
-            toInt64[0][i] = data[0][i];
+    protected Tensor intArrayToInputTensor(int[][] data) {
+        if (this.input_type == TFloat32.class) {
+            FloatNdArray input = NdArrays.ofFloats(Shape.of(1, data[0].length));
+            float[][] toInt64 = new float[1][data[0].length];
+            for (int i = 0; i < toInt64[0].length; ++i) {
+                toInt64[0][i] = data[0][i];
+            }
+            input.set(NdArrays.vectorOf(toInt64[0]), 0);
+            return TFloat32.tensorOf(input);
+        } else {
+            LongNdArray input = NdArrays.ofLongs(Shape.of(1, data[0].length));
+            long[][] toInt64 = new long[1][data[0].length];
+            for (int i = 0; i < toInt64[0].length; ++i) {
+                toInt64[0][i] = data[0][i];
+            }
+            input.set(NdArrays.vectorOf(toInt64[0]), 0);
+            return TInt64.tensorOf(input);
         }
-        input.set(NdArrays.vectorOf(toInt64[0]), 0);
-        return TInt64.tensorOf(input);
     }
+
 
     public void forceReload() throws IOException {
         FileUtils.deleteDirectory(new File(this.path));
         initialize();
     }
 
-    protected void initialize(){
-        if(this.isInternal){
             this.creator = creator;
             try {
                 this.path = unzipAndGetPath(path, path).toString();
@@ -196,19 +210,34 @@ public class StrongholdModel {
 //        System.out.println(this.inputShape);
     }
 
-    static protected Tensor int3ArrayToInputTensor(int[][] data) {
-        FloatNdArray input = NdArrays.ofFloats(Shape.of(1, data.length, data[0].length));
-        float[][][] toFloat32 = new float[1][data.length][data[0].length];
-        for(int i = 0; i < data.length; ++i){
-            for(int j = 0; j < data[0].length; ++j){
-                toFloat32[0][i][j] = data[i][j];
+    protected Tensor int3ArrayToInputTensor(int[][] data) {
+        if (this.input_type.equals(TInt64.class)) {
+            LongNdArray input = NdArrays.ofLongs(Shape.of(1, data.length, data[0].length));
+            long[][][] toFloat32 = new long[1][data.length][data[0].length];
+            for (int i = 0; i < data.length; ++i) {
+                for (int j = 0; j < data[0].length; ++j) {
+                    toFloat32[0][i][j] = data[i][j];
+                }
             }
-        }
-        for(int k = 0; k < data.length; ++k){
-            input.set(NdArrays.vectorOf(toFloat32[0][k]), 0, k);
+            for (int k = 0; k < data.length; ++k) {
+                input.set(NdArrays.vectorOf(toFloat32[0][k]), 0, k);
+            }
+
+            return TInt64.tensorOf(input);
+        } else {
+            FloatNdArray input = NdArrays.ofFloats(Shape.of(1, data.length, data[0].length));
+            float[][][] toFloat32 = new float[1][data.length][data[0].length];
+            for (int i = 0; i < data.length; ++i) {
+                for (int j = 0; j < data[0].length; ++j) {
+                    toFloat32[0][i][j] = data[i][j];
+                }
+            }
+            for (int k = 0; k < data.length; ++k) {
+                input.set(NdArrays.vectorOf(toFloat32[0][k]), 0, k);
+            }
+            return TFloat32.tensorOf(input);
         }
 
-        return TFloat32.tensorOf(input);
     }
 
     private static <T> HashMap<T, int[]> encodingOrderToFullMap(LinkedList<T> list) {
@@ -538,6 +567,9 @@ public class StrongholdModel {
                         } else if (args[0].equals("output_vec_order")) {
                             this.outputOrder = parseVecOrder(args[1], line);
                             flags |= 1 << 5;
+                        } else if (args[0].equals("input_type")) {
+                            this.input_type = typeMap.get(args[1]);
+                            flags |= 1 << 6;
                         }
                     }
                 }
@@ -563,18 +595,22 @@ public class StrongholdModel {
             warn("Identifier not defined!", 0);
             this.identifier = UUID.randomUUID().toString();
         }
-        if(((flags >> 2) & 1) != 1){
+        if (((flags >> 2) & 1) != 1) {
             warn("Input shape not defined!", 0);
             this.identifier = UUID.randomUUID().toString();
         }
-        if(((flags >> 3) & 1) != 1){
+        if (((flags >> 3) & 1) != 1) {
             warn("Input vector order not defined, using default!", 0);
         }
-        if(((flags >> 4) & 1) != 1){
+        if (((flags >> 4) & 1) != 1) {
             warn("Output shape not defined, using default!", 0);
         }
-        if(((flags >> 5) & 1) != 1){
+        if (((flags >> 5) & 1) != 1) {
             warn("Output vector order not defined, but it doesn't matter!", 0);
+        }
+        if (((flags >> 6) & 1) != 1) {
+            warn("Input type not defined, defaulting to Int64/Float32!", 0);
+            this.input_type = this.inputShape.numDimensions() == 3 ? TFloat32.class : TInt64.class;
         }
 
     }

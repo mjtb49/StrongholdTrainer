@@ -84,6 +84,8 @@ size 5 vector output as exits 1-5 and size 6 as backtracking then the ordered ex
   
 - _Optional EOF:_ `eof`. A quick way to terminate parsing before the actual end of the file.
 
+- Input Data Type - The data type of the input. Currently only supports `int64` and `float32`.
+
 ## Example: The STMETA for rnn_8, with comments
 ```
 stmeta 1.0
