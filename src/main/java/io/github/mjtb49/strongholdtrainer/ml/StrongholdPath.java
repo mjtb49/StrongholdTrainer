@@ -26,7 +26,11 @@ public class StrongholdPath {
     }
 
     public StrongholdPathEntry getLatest(){
-        return history.get(history.size() - 1);
+        if(history.size() > 1){
+            return history.get(history.size() - 1);
+        } else {
+            return null;
+        }
     }
 
     public List<StrongholdPathEntry> getHistory() {

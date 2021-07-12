@@ -157,7 +157,8 @@ public class StrongholdModel {
         FileUtils.deleteDirectory(new File(this.path));
         initialize();
     }
-
+    protected void initialize(){
+        if(this.isInternal){
             this.creator = creator;
             try {
                 this.path = unzipAndGetPath(path, path).toString();
