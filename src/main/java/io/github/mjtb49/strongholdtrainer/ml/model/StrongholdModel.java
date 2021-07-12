@@ -172,7 +172,6 @@ public class StrongholdModel {
         if(this.identifier.contains("rnn")){
             this.batchInput = true;
         }
-
         // Force models to have one input and output
         if (inputMap.size() == 1) {
             TensorInfo info = inputMap.values().toArray()[0] instanceof TensorInfo ? ((TensorInfo) inputMap.values().toArray()[0]) : null;
@@ -348,7 +347,7 @@ public class StrongholdModel {
 
     public Tensor getMLInputFromStrongholdPath(StrongholdPath strongholdPath) {
         //TODO looks like start is null here sometimes
-        int[][] input = new int[strongholdPath.getHistory().size()][];
+        int[][] input = new int[this.batchInput ? strongholdPath.getHistory().size() : 1][];
 //        this.roomVectorMap.forEach((key, value) -> System.out.println(key + Arrays.toString(value)));
         StrongholdTreeAccessor castStart = (StrongholdTreeAccessor) strongholdPath.getStart();
 
@@ -397,7 +396,7 @@ public class StrongholdModel {
     public double[] processOutput(Tensor output) {
         if (!output.shape().isCompatibleWith(this.outputShape)) {
             output.close();
-            throw new IllegalArgumentException("Output tensor doesn't match shape");
+            throw new IllegalArgumentException("Output tensor doesn't match shape " + output.shape());
         } else {
             double[] predictions = new double[(int) this.outputShape.size(1)];
             if (output instanceof TFloat32) {

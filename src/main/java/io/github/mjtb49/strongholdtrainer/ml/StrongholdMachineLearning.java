@@ -45,6 +45,7 @@ public class StrongholdMachineLearning {
             if(MinecraftClient.getInstance().player != null){
                 MinecraftClient.getInstance().player.sendMessage(ERROR_MSG, false);
             }
+            e.printStackTrace();
             return ERROR_POLICY;
         }
 
