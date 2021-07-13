@@ -114,8 +114,7 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
                         listener.detach();
                         dimListener.detach();
                     }
-                    currentPath = new StrongholdPath(start, player, Collections.emptyList()
-                    );
+                    currentPath = new StrongholdPath(start, player, Collections.emptyList());
                     renderListener.attach(currentPath);
                     listener.attach(currentPath);
                     dimListener.attach(currentPath);
@@ -129,6 +128,7 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
                     if (!this.visitedNull.contains(start)) {
                         this.visitedNull.add(start);
                         player.sendMessage(new LiteralText("Please visit a new stronghold!").formatted(Formatting.RED), false);
+                        currentPath = null;
                     }
                     continue;
                 }
