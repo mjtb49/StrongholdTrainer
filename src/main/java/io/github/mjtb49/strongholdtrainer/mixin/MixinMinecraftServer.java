@@ -21,6 +21,7 @@ import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructureStart;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.UserCache;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.gen.feature.StructureFeature;
 import net.minecraft.world.level.storage.LevelStorage;
@@ -56,6 +57,8 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
     @Shadow
     @Final
     protected LevelStorage.Session session;
+
+    @Shadow public abstract UserCache getUserCache();
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void inject(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
@@ -122,23 +125,25 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
                 String outside = TimerHelper.ticksToTime(currentPath.getTicksOutside());
                 Formatting formatting = Formatting.ITALIC;
                 StrongholdGenerator.Piece currentPiece = currentPath.getLatest().getCurrentPiece();
-                if (currentPiece instanceof StrongholdGenerator.PortalRoom || currentPiece instanceof StrongholdGenerator.Start || currentPath.isFinished()) {
+                if (!StatsPathListener.FEINBERG_AVG_ROOM_TIMES.containsKey(currentPiece.getClass())
+                        || currentPath.isFinished()) {
                     formatting = Formatting.GRAY;
                     current = "-:--.--";
                     if (currentPath.isFinished()) {
                         total = "|" + total + "|";
                     }
                 } else {
-                    if (StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(currentPiece.getClass()) == 0) {
+                    Class<? extends StrongholdGenerator.Piece> curr = currentPiece.getClass();
+                    if (StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(curr) == 0) {
                         formatting = Formatting.GRAY;
                     } else {
-                        if (currentTicks > StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(currentPath.getLatest().getCurrentPiece().getClass())) {
+                        if (currentTicks > StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(curr)) {
                             formatting = Formatting.RED;
                             current = "⁽⁺⁾" + current;
-                        } else if (currentTicks < StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(currentPath.getLatest().getCurrentPiece().getClass())) {
+                        } else if (currentTicks < StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(curr)) {
                             formatting = Formatting.GREEN;
                             current = "⁽⁻⁾" + current;
-                        } else if (currentTicks == StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(currentPiece.getClass())) {
+                        } else if (currentTicks == StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(curr)) {
                             formatting = Formatting.GOLD;
                             current = "⁽⁼⁾" + current;
                         }
