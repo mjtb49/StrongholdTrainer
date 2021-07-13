@@ -14,13 +14,11 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 
-import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 // TODO: Thread safety, cleanup, optimization
 public class StrongholdPath {
-    private static final DecimalFormat df2 = new DecimalFormat("00.00");
 
     private final StrongholdGenerator.Start start;
     private final StructureStart<?> structureStart;
@@ -29,9 +27,11 @@ public class StrongholdPath {
     private final AtomicInteger ticksOutside;
     private final List<StrongholdPathListener> listeners;
     private boolean finished = false;
+    private final Map<Class<? extends StrongholdGenerator.Piece>, Boolean> winConditions;
     private final StrongholdTreeAccessor treeAccessor;
+    private boolean started;
 
-    public StrongholdPath(StructureStart<?> start2, ServerPlayerEntity entity) {
+    public StrongholdPath(StructureStart<?> start2, ServerPlayerEntity entity, List<Class<? extends StrongholdGenerator.Piece>> reqRooms) {
         this.start = ((StartAccessor) start2).getStart();
         history = new ArrayList<>();
         ticksOutside = new AtomicInteger();
@@ -39,6 +39,9 @@ public class StrongholdPath {
         this.structureStart = start2;
         this.playerEntity = entity;
         this.treeAccessor = (StrongholdTreeAccessor) this.start;
+        this.winConditions = new HashMap<>();
+        this.started = false;
+        reqRooms.forEach(piece -> winConditions.put(piece, false));
     }
 
     public StructureStart<?> getStructureStart() {
@@ -77,11 +80,17 @@ public class StrongholdPath {
     public void add(StrongholdGenerator.Piece current, StrongholdGenerator.Piece previous) {
         this.history.add(new StrongholdPathEntry(current, previous, new AtomicInteger()));
         this.notifyListeners(PathEvent.PATH_UPDATE);
-        if (current instanceof StrongholdGenerator.PortalRoom && !this.finished) {
+        if (winConditions.containsKey(current.getClass())) {
+            winConditions.put(current.getClass(), true);
+        }
+        if (current instanceof StrongholdGenerator.PortalRoom
+                && !this.finished
+                && !this.winConditions.containsValue(Boolean.FALSE)) {
             this.finished = true;
             this.notifyListeners(PathEvent.PATH_COMPLETE);
         } else if (this.history.size() == 2) { // TODO: better check
             this.notifyListeners(PathEvent.PATH_START);
+            this.started = true;
         }
     }
 
@@ -113,6 +122,10 @@ public class StrongholdPath {
         }
     }
 
+    public Map<Class<? extends StrongholdGenerator.Piece>, Boolean> getExtraTasks() {
+        return winConditions;
+    }
+
     public StrongholdPathEntry getNextEntry(StrongholdPathEntry entry) {
         if (this.history.contains(entry) && this.history.indexOf(entry) + 1 < this.history.size()) {
             return this.history.get(this.history.indexOf(entry) + 1);
@@ -127,13 +140,18 @@ public class StrongholdPath {
         }
         return history.stream()
                 .skip(history.get(0).getCurrentPiece() instanceof StrongholdGenerator.Start ? 1 : 0) // Skip initial starter for timing.
-                .filter(entry -> !(entry.getCurrentPiece() instanceof StrongholdGenerator.PortalRoom))
+//                .filter(entry -> !(entry.getCurrentPiece() instanceof StrongholdGenerator.PortalRoom))
                 .map(StrongholdPathEntry::getTicksSpentInPiece)
                 .mapToInt(AtomicInteger::get)
                 .sum() + this.getTicksOutside();
     }
 
     public void tickOutside() {
+        if (!this.started) {
+            this.started = true;
+            this.notifyListeners(PathEvent.PATH_START);
+        }
+        notifyListeners(PathEvent.OUTSIDE_TICK);
         ticksOutside.incrementAndGet();
     }
 

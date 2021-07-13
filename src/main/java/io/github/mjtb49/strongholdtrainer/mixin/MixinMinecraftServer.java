@@ -11,6 +11,7 @@ import io.github.mjtb49.strongholdtrainer.render.Color;
 import io.github.mjtb49.strongholdtrainer.render.Line;
 import io.github.mjtb49.strongholdtrainer.stats.PlayerPathData;
 import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
+import io.github.mjtb49.strongholdtrainer.util.RoomFormatter;
 import io.github.mjtb49.strongholdtrainer.util.TimerHelper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
@@ -20,7 +21,9 @@ import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructureStart;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.UserCache;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.gen.feature.StructureFeature;
 import net.minecraft.world.level.storage.LevelStorage;
@@ -34,7 +37,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 
 @Mixin(MinecraftServer.class)
@@ -57,102 +62,13 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
     @Final
     protected LevelStorage.Session session;
 
-    @Inject(method = "tick", at = @At("HEAD"))
-    private void inject(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
-        for (ServerPlayerEntity player : this.playerManager.getPlayerList()) {
+    @Shadow public abstract UserCache getUserCache();
 
-            tracePlayer(player);
-            ServerWorld world = player.getServerWorld();
-
-            StructureStart<?> start = world.getStructureAccessor().method_28388(player.getBlockPos(), true, StructureFeature.STRONGHOLD);
-
-            if (start != StructureStart.DEFAULT) {
-                //Lazy check if we've changed strongholds
-                if (lastStart != start) {
-                    if(currentPath != null){
-                        renderListener.detach();
-                        listener.detach();
-                        dimListener.detach();
-                    }
-                    currentPath = new StrongholdPath(start, player);
-                    renderListener.attach(currentPath);
-                    listener.attach(currentPath);
-                    dimListener.attach(currentPath);
-                    lastStart = start;
-                    ticksInStronghold = -1;
-                }
-
-                StrongholdGenerator.Start strongholdStart = ((StartAccessor)start).getStart();
-
-                if (strongholdStart == null) {
-                    if (!this.visitedNull.contains(start)) {
-                        this.visitedNull.add(start);
-                        player.sendMessage(new LiteralText("Please visit a new stronghold!").formatted(Formatting.RED), false);
-                    }
-                    continue;
-                }
-                for (StructurePiece piece : start.getChildren()) {
-                    if (piece.getBoundingBox().contains(player.getBlockPos())) {
-                        if (shouldRefreshRooms) {
-                            currentPath.forceEvent(StrongholdPath.PathEvent.PATH_UPDATE);
-                            shouldRefreshRooms = false;
-                        }
-
-                        if (lastPiece != piece) {
-                            if (
-                                    lastPiece == null
-                                            || !lastPiece.getBoundingBox().contains(player.getBlockPos())
-                                            || (lastPiece instanceof StrongholdGenerator.SmallCorridor && !(piece instanceof StrongholdGenerator.SmallCorridor))) {
-                                currentPath.add((StrongholdGenerator.Piece) piece, (StrongholdGenerator.Piece) lastPiece);
-                                lastPiece = piece;
-                            }
-                        } else {
-                            currentPath.tickLatest();
-                        }
-                    }
-                }
-            } else {
-                if (currentPath != null && !currentPath.isFinished()) {
-                    currentPath.tickOutside();
-                }
-            }
-            if (currentPath != null) {
-                String total = TimerHelper.ticksToTime(currentPath.getTotalTime());
-                int currentTicks = currentPath.getLatest().getTicksSpentInPiece().get();
-                String current = TimerHelper.ticksToTime(currentTicks);
-                String outside = TimerHelper.ticksToTime(currentPath.getTicksOutside());
-                Formatting formatting = Formatting.ITALIC;
-                StrongholdGenerator.Piece currentPiece = currentPath.getLatest().getCurrentPiece();
-                if (currentPiece instanceof StrongholdGenerator.PortalRoom || currentPiece instanceof StrongholdGenerator.Start || currentPath.isFinished()) {
-                    formatting = Formatting.GRAY;
-                    current = "-:--.--";
-                    if (currentPath.isFinished()) {
-                        total = "|" + total + "|";
-                    }
-                } else {
-                    if (StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(currentPiece.getClass()) == 0) {
-                        formatting = Formatting.GRAY;
-                    } else {
-                        if (currentTicks > StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(currentPath.getLatest().getCurrentPiece().getClass())) {
-                            formatting = Formatting.RED;
-                            current = "⁽⁺⁾" + current;
-                        } else if (currentTicks < StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(currentPath.getLatest().getCurrentPiece().getClass())) {
-                            formatting = Formatting.GREEN;
-                            current = "⁽⁻⁾" + current;
-                        } else if (currentTicks == StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(currentPiece.getClass())) {
-                            formatting = Formatting.GOLD;
-                            current = "⁽⁼⁾" + current;
-                        }
-                    }
-                }
-                player.sendMessage(new LiteralText(outside + "   " + total).formatted(currentPath.isFinished() ? Formatting.BOLD : Formatting.RESET)
-                        .append(new LiteralText("   " + current).formatted(formatting)), true);
-            }
-
-            if (ticksInStronghold >= 0) {
-                ticksInStronghold++;
-            }
-        }
+    private static MutableText getGoalFromList(StrongholdPath path) {
+        Set<Class<? extends StrongholdGenerator.Piece>> extras = path.getExtraTasks().keySet();
+        MutableText text = new LiteralText("Goals: " + RoomFormatter.getStrongholdPieceAsString(StrongholdGenerator.PortalRoom.class)).formatted(path.isFinished() ? Formatting.STRIKETHROUGH : Formatting.RESET);
+        extras.forEach(e -> text.append(new LiteralText(", ").formatted(Formatting.RESET)).append(new LiteralText(RoomFormatter.getStrongholdPieceAsString(e)).formatted(path.getExtraTasks().get(e) ? Formatting.STRIKETHROUGH : Formatting.RESET)));
+        return text;
     }
 
     @Inject(method = "loadWorld()V", at = @At("TAIL"))
@@ -181,10 +97,110 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
         }
     }
 
-    @Override
-    public void refreshRooms()  {
-        shouldRefreshRooms = true;
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void inject(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
+        for (ServerPlayerEntity player : this.playerManager.getPlayerList()) {
+
+            tracePlayer(player);
+            ServerWorld world = player.getServerWorld();
+
+            StructureStart<?> start = world.getStructureAccessor().method_28388(player.getBlockPos(), true, StructureFeature.STRONGHOLD);
+
+            if (start != StructureStart.DEFAULT) {
+                //Lazy check if we've changed strongholds
+                if (lastStart != start) {
+                    if (currentPath != null) {
+                        renderListener.detach();
+                        listener.detach();
+                        dimListener.detach();
+                    }
+                    currentPath = new StrongholdPath(start, player, Collections.emptyList()
+                    );
+                    renderListener.attach(currentPath);
+                    listener.attach(currentPath);
+                    dimListener.attach(currentPath);
+                    lastStart = start;
+                    ticksInStronghold = -1;
+                }
+
+                StrongholdGenerator.Start strongholdStart = ((StartAccessor)start).getStart();
+
+                if (strongholdStart == null) {
+                    if (!this.visitedNull.contains(start)) {
+                        this.visitedNull.add(start);
+                        player.sendMessage(new LiteralText("Please visit a new stronghold!").formatted(Formatting.RED), false);
+                    }
+                    continue;
+                }
+                for (StructurePiece piece : start.getChildren()) {
+                    if (piece.getBoundingBox().contains(player.getBlockPos())) {
+                        if (shouldRefreshRooms) {
+                            currentPath.forceEvent(StrongholdPath.PathEvent.PATH_UPDATE);
+                            shouldRefreshRooms = false;
+                        }
+                        if (lastPiece != piece) {
+                            if (lastPiece == null
+                                    || !lastPiece.getBoundingBox().contains(player.getBlockPos())
+                                    || (lastPiece instanceof StrongholdGenerator.SmallCorridor
+                                    && !(piece instanceof StrongholdGenerator.SmallCorridor))) {
+                                currentPath.add((StrongholdGenerator.Piece) piece, (StrongholdGenerator.Piece) lastPiece);
+                                lastPiece = piece;
+                            }
+                        } else {
+                            currentPath.tickLatest();
+                        }
+                    }
+                }
+            } else {
+                if (currentPath != null && !currentPath.isFinished()) {
+                    currentPath.tickOutside();
+                }
+            }
+            if (currentPath != null) {
+                String total = TimerHelper.ticksToTime(currentPath.getTotalTime());
+                int currentTicks = currentPath.getLatest() != null ? currentPath.getLatest().getTicksSpentInPiece().get() : 0;
+                String current = TimerHelper.ticksToTime(currentTicks);
+                String outside = TimerHelper.ticksToTime(currentPath.getTicksOutside());
+                Formatting formatting = Formatting.ITALIC;
+                StrongholdGenerator.Piece currentPiece = currentPath.getLatest().getCurrentPiece();
+                if (!StatsPathListener.FEINBERG_AVG_ROOM_TIMES.containsKey(currentPiece.getClass())
+                        || currentPath.isFinished()) {
+                    formatting = Formatting.GRAY;
+//                    current = "-:--.--";
+                    if (currentPath.isFinished()) {
+                        total = "|" + total + "|";
+                    }
+                } else {
+                    Class<? extends StrongholdGenerator.Piece> curr = currentPiece.getClass();
+                    if (StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(curr) == 0) {
+                        formatting = Formatting.GRAY;
+                    } else {
+                        if (currentTicks > StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(curr)) {
+                            formatting = Formatting.RED;
+                            current = "⁽⁺⁾" + current;
+                        } else if (currentTicks < StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(curr)) {
+                            formatting = Formatting.GREEN;
+                            current = "⁽⁻⁾" + current;
+                        } else if (currentTicks == StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(curr)) {
+                            formatting = Formatting.GOLD;
+                            current = "⁽⁼⁾" + current;
+                        }
+                    }
+                }
+                player.sendMessage(new LiteralText(outside).formatted(currentPath.isFinished() ? Formatting.BOLD : Formatting.RESET)
+                        .append(new LiteralText("   " + total))
+                        .append(new LiteralText("   " + current).formatted(formatting)), true);
+            }
+
+            if (ticksInStronghold >= 0) {
+                ticksInStronghold++;
+            }
+        }
     }
 
+    @Override
+    public void refreshRooms() {
+        shouldRefreshRooms = true;
+    }
 
 }
