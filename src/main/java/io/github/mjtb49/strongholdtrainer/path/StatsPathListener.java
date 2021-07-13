@@ -119,7 +119,6 @@ public class StatsPathListener implements StrongholdPathListener {
         if (event == StrongholdPath.PathEvent.PATH_COMPLETE) {
             Instant end = Instant.now();
             this.completed = true;
-
             this.populateStats().updateAndPrintAllStats(playerEntity, TimerHelper.millisToTime(Duration.between(start, end).toMillis()), invalidRun);
             NextMistakeCommand.submitMistakesAndInaccuracies(getMistakes(), getInaccuracies(), getBlunders());
             NextMistakeCommand.sendInitialMessage(playerEntity);
@@ -128,7 +127,6 @@ public class StatsPathListener implements StrongholdPathListener {
             //            playerEntity.sendMessage(new LiteralText("splits").styled(style -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, strongholdPath.sendSplits()))), false);
         } else if (event == StrongholdPath.PathEvent.PATH_START) {
             this.invalidRun = false;
-
             start = Instant.now();
         }
         this.playerEntity = strongholdPath.getPlayerEntity();
@@ -137,7 +135,6 @@ public class StatsPathListener implements StrongholdPathListener {
                     || playerEntity.isCreative()
                     || OptionTracker.getOption(OptionTracker.Option.HINTS).getAsBoolean();
         }
-
     }
 
     @Override
