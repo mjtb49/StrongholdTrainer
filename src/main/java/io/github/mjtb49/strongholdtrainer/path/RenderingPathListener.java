@@ -46,6 +46,7 @@ public class RenderingPathListener implements StrongholdPathListener {
             }
         } catch (Exception e) {
             System.out.println("Failed to update " + this.toString() + ": " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -80,7 +81,7 @@ public class RenderingPathListener implements StrongholdPathListener {
 
         this.percents.clear();
         int idx = -1;
-        double min = 0;
+        double min = Double.NEGATIVE_INFINITY;
         if (policy.length == 5) {
             this.loadedModelSupportsBacktracking = false;
             for (int i = 0; i < policy.length; i++) {
