@@ -134,16 +134,6 @@ public class PlayerPathData {
         return (times.get(index) + times.get(index2)) / 2;
     }
 
-    /**
-     * @deprecated in favor of sendSplits() or using getHistory().forEach(System::println) in StrongholdPath
-     */
-    @Deprecated
-    private void printTheTravel() {
-        for (Pair<StrongholdGenerator.Piece, Integer> pair : rooms) {
-            System.out.println(pair.getLeft().getClass().getSimpleName() + " " + pair.getRight());
-        }
-    }
-
     public static void loadAllPriorPaths(Path path) {
         STATS_PATH = path.resolve("stats.json");
         Gson gson = new GsonBuilder()

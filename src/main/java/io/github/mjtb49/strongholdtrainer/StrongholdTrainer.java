@@ -7,10 +7,13 @@ import io.github.mjtb49.strongholdtrainer.render.*;
 import io.github.mjtb49.strongholdtrainer.stats.StrongholdTrainerStats;
 import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.fabricmc.api.ModInitializer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class StrongholdTrainer implements ModInitializer  {
 
     public static final String modID = "stronghold-trainer";
+    private static final Logger LOGGER = LogManager.getLogger();
 
     static RendererGroup<Cuboid> cuboidRendererGroup = new RendererGroup<>(1, RendererGroup.RenderOption.RENDER_FRONT);
     static RendererGroup<Cuboid> doorRendererGroup = new RendererGroup<>(6, RendererGroup.RenderOption.RENDER_FRONT);
@@ -33,12 +36,14 @@ public class StrongholdTrainer implements ModInitializer  {
     public void onInitialize() {
         OptionTracker.init();
         StrongholdTrainerStats.register();
-        System.out.println(System.getProperty("os.arch"));
+
+        LOGGER.info("Checking if TensorFlow Java supports this architecture...");
         if(!(System.getProperty("os.arch").contains("64") || !System.getProperty("os.arch").contains("arm"))){
-            System.out.println(System.getProperty("os.arch") + " not supported. Disabling ML operations.");
+            LOGGER.error(System.getProperty("os.arch") + " not supported! Disabling ML operations.");
             ML_DISABLED = true;
         }
         StrongholdMachineLearning.init("models/model2.zip", "models/rnn.zip", "models/rnn_4.zip", "models/rl_stateless.zip", "models/rl_rnn_1l.zip");
+        LOGGER.info(System.getProperty("os.arch") + " is supported! Initializing ML... ");
         RenderQueue.get().add("hand", matrixStack -> {
             RenderSystem.pushMatrix();
             RenderSystem.multMatrix(matrixStack.peek().getModel());

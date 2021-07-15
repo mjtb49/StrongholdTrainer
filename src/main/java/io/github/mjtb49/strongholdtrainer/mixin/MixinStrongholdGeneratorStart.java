@@ -4,6 +4,8 @@ import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.util.math.Direction;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 
 import java.util.*;
@@ -13,6 +15,7 @@ public class MixinStrongholdGeneratorStart implements StrongholdTreeAccessor {
     private Map<StructurePiece, List<StructurePiece>> tree = new HashMap<>();
     private ArrayList<StructurePiece> pieces = new ArrayList<>();
     Map<StructurePiece, StructurePiece> parents = new HashMap<>();
+    private static Logger LOGGER = LogManager.getLogger();
 
     public void addPiece(StructurePiece piece) {
         if (pieces.size() != 0) {
@@ -111,7 +114,7 @@ public class MixinStrongholdGeneratorStart implements StrongholdTreeAccessor {
                     result += " " + index.get(piece);
                 }
             }
-            System.out.println(result);
+            LOGGER.debug(result);
         }
     }
 }

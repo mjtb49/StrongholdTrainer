@@ -9,6 +9,8 @@ import net.minecraft.structure.StructurePiece;
 import net.minecraft.util.math.Direction;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tensorflow.SavedModelBundle;
 import org.tensorflow.Session;
 import org.tensorflow.Tensor;
@@ -35,7 +37,7 @@ import java.util.zip.ZipInputStream;
 public class StrongholdModel {
 
     public static Path CONFIG_DIRECTORY = FabricLoader.getInstance().getConfigDir().resolve("stronghold-trainer");
-
+    private static Logger LOGGER = LogManager.getLogger();
     private Map<Direction, int[]> directionMap = new HashMap<Direction, int[]>() {{
         put(Direction.EAST, new int[]{1, 0, 0, 0});
         put(Direction.WEST, new int[]{0, 1, 0, 0});
@@ -159,12 +161,10 @@ public class StrongholdModel {
     }
     protected void initialize(){
         if(this.isInternal){
-            this.creator = creator;
             try {
                 this.path = unzipAndGetPath(path, path).toString();
             } catch (TensorFlowException | IOException ioException) {
-                System.err.println("Failed to create model at "+ this.path + " because of " + ioException.toString());
-                ioException.printStackTrace();
+                LOGGER.error("Failed to create model at "+ this.path + " because of " + ioException.toString(), ioException);
                 return;
             }
         }
@@ -173,10 +173,9 @@ public class StrongholdModel {
 
         try {
             parseSTMeta();
-            System.out.println("Successfully parsed STMETA for model!");
+            LOGGER.info("Successfully parsed STMETA for model " + this.identifier + "!");
         } catch (Exception e) {
-            System.out.println("Failed to parse STMETA file, using default initializer.");
-            e.printStackTrace();
+            LOGGER.error("Failed to parse STMETA file!", e);
             initializeDefault();
         }
 
@@ -271,10 +270,10 @@ public class StrongholdModel {
     private static void unzipModel(ZipInputStream f, String targetInternal) throws IOException {
         Path targetDirectory = CONFIG_DIRECTORY.resolve(targetInternal + "/");
         if ((new File(targetDirectory.toString())).exists()) {
-            System.out.println("Model folder " + targetInternal + " already exists!");
+            LOGGER.warn("Model folder " + targetInternal + " already exists!");
             return;
         }
-        System.out.println("Unzipping model to " + targetDirectory);
+        LOGGER.info("Unzipping model to " + targetDirectory);
         ZipEntry e;
         while ((e = f.getNextEntry()) != null) {
             if (e.isDirectory()) {
@@ -286,7 +285,6 @@ public class StrongholdModel {
     }
 
     private void initializeDefault() {
-
         this.inputOrder = new LinkedList<RoomData>() {{
             add(RoomData.DEPTH); // 1
             add(RoomData.PREVIOUS_ROOM); // 14
@@ -405,7 +403,7 @@ public class StrongholdModel {
     private Tensor getMLInputDirectly(StrongholdTreeAccessor castStart, StrongholdGenerator.Piece piece) {
         //TODO looks like start is null here sometimes
         int[][] input = new int[1][];
-        input[0] = getInputForRooms(piece, null, castStart);
+        input[0] = getInputForRooms(piece, castStart);
         Tensor inputTensor;
         if (this.inputShape.numDimensions() == 3) {
             inputTensor = int3ArrayToInputTensor(input);
@@ -439,58 +437,60 @@ public class StrongholdModel {
     private int[] getInputForOneEntry(StrongholdPathEntry pathEntry, StrongholdTreeAccessor castStart){
         StrongholdGenerator.Piece piece = pathEntry.getCurrentPiece();
         StrongholdGenerator.Piece previous = pathEntry.getPreviousPiece();
-
+        LOGGER.debug("Generating ML input for entry: " + pathEntry + "!");
         int[] input = new int[0];
         for (RoomData type : this.inputOrder) {
-//            System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous));
+            LOGGER.debug(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous));
             if(type.roomDataType == RoomData.RoomDataType.INT_SCALAR){
-//                System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous));
+               LOGGER.debug(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous));
                 input = ArrayUtils.add(input, (Integer) type.roomDataFunction.apply(castStart, piece, previous));
             } else if(type.roomDataType == RoomData.RoomDataType.STRUCTURE_PIECE_VECTOR){
                 StructurePiece result = (StructurePiece) type.roomDataFunction.apply(castStart, piece, previous);
                 if(result == null){
-//                    System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous) + "->" + Arrays.toString(roomVectorMap.get(null)));
+                    LOGGER.debug(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous) + "->" + Arrays.toString(roomVectorMap.get(null)));
                     input = ArrayUtils.addAll(input, roomVectorMap.get(null));
                 } else {
-//                    System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous) + "->" + Arrays.toString(roomVectorMap.get(result.getClass())));
+                    LOGGER.debug(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous) + "->" + Arrays.toString(roomVectorMap.get(result.getClass())));
                     input = ArrayUtils.addAll(input, roomVectorMap.get(result.getClass()));
                 }
             } else if(type.roomDataType == RoomData.RoomDataType.DIRECTION_VECTOR){
                 Direction result = (Direction) type.roomDataFunction.apply(castStart, piece, previous);
-//                System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous) + "->" + Arrays.toString(directionMap.get(result)));
+                LOGGER.debug(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous) + "->" + Arrays.toString(directionMap.get(result)));
                 input = ArrayUtils.addAll(input, directionMap.get(result));
             } else if(type.roomDataType == RoomData.RoomDataType.INDEX_VECTOR){
-//                System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous) + "->" + Arrays.toString(indexVectorMap.get(type.roomDataFunction.apply(castStart,piece,previous))));
+                LOGGER.debug(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous) + "->" + Arrays.toString(indexVectorMap.get(type.roomDataFunction.apply(castStart,piece,previous))));
                 input = ArrayUtils.addAll(input, indexVectorMap.get(type.roomDataFunction.apply(castStart, piece, previous)));
             }
         }
         return input;
     }
     // For statistics
-    private int[] getInputForRooms(StrongholdGenerator.Piece piece, StrongholdGenerator.Piece previous, StrongholdTreeAccessor castStart){
+    private int[] getInputForRooms(StrongholdGenerator.Piece piece, StrongholdTreeAccessor castStart){
 
         int[] input = new int[0];
+        LOGGER.debug("Generating ML input for statistics!");
+
         for (RoomData type : this.inputOrder) {
-//            System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous));
+            LOGGER.debug(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, null));
             if(type.roomDataType == RoomData.RoomDataType.INT_SCALAR){
-//                System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous));
-                input = ArrayUtils.add(input, (Integer) type.roomDataFunction.apply(castStart, piece, previous));
+                LOGGER.debug(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, null));
+                input = ArrayUtils.add(input, (Integer) type.roomDataFunction.apply(castStart, piece, null));
             } else if(type.roomDataType == RoomData.RoomDataType.STRUCTURE_PIECE_VECTOR){
-                StructurePiece result = (StructurePiece) type.roomDataFunction.apply(castStart, piece, previous);
+                StructurePiece result = (StructurePiece) type.roomDataFunction.apply(castStart, piece, null);
                 if(result == null){
-//                    System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous) + "->" + Arrays.toString(roomVectorMap.get(null)));
+                    LOGGER.debug(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, null) + "->" + Arrays.toString(roomVectorMap.get(null)));
                     input = ArrayUtils.addAll(input, roomVectorMap.get(null));
                 } else {
-//                    System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous) + "->" + Arrays.toString(roomVectorMap.get(result.getClass())));
+                    LOGGER.debug(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, null) + "->" + Arrays.toString(roomVectorMap.get(result.getClass())));
                     input = ArrayUtils.addAll(input, roomVectorMap.get(result.getClass()));
                 }
             } else if(type.roomDataType == RoomData.RoomDataType.DIRECTION_VECTOR){
-                Direction result = (Direction) type.roomDataFunction.apply(castStart, piece, previous);
-//                System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous) + "->" + Arrays.toString(directionMap.get(result)));
+                Direction result = (Direction) type.roomDataFunction.apply(castStart, piece, null);
+                LOGGER.debug(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, null) + "->" + Arrays.toString(directionMap.get(result)));
                 input = ArrayUtils.addAll(input, directionMap.get(result));
             } else if(type.roomDataType == RoomData.RoomDataType.INDEX_VECTOR){
-//                System.out.println(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, previous) + "->" + Arrays.toString(indexVectorMap.get(type.roomDataFunction.apply(castStart,piece,previous))));
-                input = ArrayUtils.addAll(input, indexVectorMap.get(type.roomDataFunction.apply(castStart, piece, previous)));
+                LOGGER.debug(type.name() + ": " + type.roomDataFunction.apply(castStart, piece, null) + "->" + Arrays.toString(indexVectorMap.get(type.roomDataFunction.apply(castStart,piece, null))));
+                input = ArrayUtils.addAll(input, indexVectorMap.get(type.roomDataFunction.apply(castStart, piece, null)));
             }
         }
         return input;
@@ -645,7 +645,7 @@ public class StrongholdModel {
     }
 
     private static void warn(String message, int line){
-        System.out.println("\u001b[33mSTMETA WARN at line " + line + ": " + message + "\u001b[0m");
+        LOGGER.warn("STMETA WARN at line " + line + ": " + message);
     }
 
     private String parseStringLiteral(String literal, int line) throws STMetaSyntaxException {
