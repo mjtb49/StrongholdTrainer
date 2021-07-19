@@ -15,6 +15,7 @@
     "MixinGameRenderer",
     "MixinMinecraftServer",
     "MixinMineshaftFeature",
+    "MixinOptionsScreen",
     "MixinPortalRoom",
     "MixinStrongholdFeature",
     "MixinStrongholdFeatureStart",

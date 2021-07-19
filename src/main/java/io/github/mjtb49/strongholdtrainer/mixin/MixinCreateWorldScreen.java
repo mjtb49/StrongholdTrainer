@@ -38,7 +38,7 @@ public abstract class MixinCreateWorldScreen {
         int height = ((Screen) (Object) this).height;
         MinecraftClient client = MinecraftClient.getInstance();
         // TODO: make this work with small resolutions
-        this.addButton(new ButtonWidget(x - 100, 5 * (height / 6), 200, 20, new LiteralText("Review Stronghold From Seed").formatted(Formatting.BOLD),
+        this.addButton(new ButtonWidget(x - 100, ((Screen)(Object) this).height - 56, 200, 20, new LiteralText("Review Stronghold From Seed").formatted(Formatting.BOLD),
                 button -> client
                         .openScreen(
                                 new SeedReviewScreen(
