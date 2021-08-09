@@ -43,29 +43,6 @@ public class SeedReviewScreen extends Screen {
     private static long chunkSeed(long world, ChunkPos pos) {
         return new ChunkRandom().setCarverSeed(world, pos.x, pos.z);
     }
-    // Possibly unnecessary
-    private static long calculateStrongholdCarverSeed(long seed, ChunkPos pos) {
-        ChunkRandom random = new ChunkRandom();
-        long ret;
-        int var7 = 0;
-        List<StructurePiece> children = new ArrayList<>();
-        net.minecraft.structure.StrongholdGenerator.Start start;
-        do {
-            children.clear();
-            ret = random.setCarverSeed(seed + (var7++), pos.x, pos.z);
-            StrongholdGenerator.init();
-            start = new net.minecraft.structure.StrongholdGenerator.Start(random, (pos.x << 4) + 2, (pos.z << 4) + 2);
-            children.add(start);
-            start.placeJigsaw(start, children, random);
-            List list = start.field_15282;
-            while (!list.isEmpty()) {
-                int l = random.nextInt(list.size());
-                StructurePiece structurePiece = (StructurePiece) list.remove(l);
-                structurePiece.placeJigsaw(start, children, random);
-            }
-        } while (children.isEmpty() || start.field_15283 == null);
-        return ret;
-    }
 
     @Override
     protected void init() {
