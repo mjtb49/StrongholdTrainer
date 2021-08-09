@@ -3,6 +3,8 @@ package io.github.mjtb49.strongholdtrainer.util;
 import com.google.gson.*;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdMachineLearning;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -13,12 +15,12 @@ import java.util.Map;
 public class OptionTracker {
 
     public enum Option {
-        TRACE("trace", true),
-        HINTS("hints", true),
-        DOOR_LABELS("doorLabels", false),
-        ALLOW_SCUFFED("allowScuffed", true),
-        CUSTOM_INVENTORY("customInventory", false),
-        MODEL("model", new JsonPrimitive(StrongholdMachineLearning.MODEL_REGISTRY.getDefaultModelIdentifier()));
+        TRACE("trace", true, "Player Trace"),
+        HINTS("hints", true, "Hints"),
+        DOOR_LABELS("doorLabels", false, "Door Labels"),
+        ALLOW_SCUFFED("allowScuffed", true, "Allow Scuffed"),
+        CUSTOM_INVENTORY("customInventory", false, "Custom Inventory"),
+        MODEL("model", new JsonPrimitive(StrongholdMachineLearning.MODEL_REGISTRY.getDefaultModelIdentifier()), "Loaded Model");
 
         private static final HashMap<String, Option> strToOption = new HashMap<>();
         static {
@@ -33,14 +35,15 @@ public class OptionTracker {
 
         public final String id;
         public final JsonElement defaultValue;
-
-        Option(String id, boolean defaultValue){
-            this(id, new JsonPrimitive(defaultValue));
+        public final String label;
+        Option(String id, boolean defaultValue, String s){
+            this(id, new JsonPrimitive(defaultValue), s);
         }
 
-        Option(String id, JsonElement defaultValue) {
+        Option(String id, JsonElement defaultValue, String s) {
             this.id = id;
             this.defaultValue = defaultValue;
+            this.label = s;
         }
     }
 

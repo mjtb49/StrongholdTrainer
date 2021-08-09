@@ -15,7 +15,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static net.minecraft.server.command.CommandManager.literal;
@@ -39,26 +38,23 @@ public class STInfoCommand {
         authors = builder.toString();
     }
 
-    public final static Text GITHUB_LINK = new LiteralText(" https://github.com/mjtb49/StrongholdTrainer/").styled((style ->
+    public final static Text GITHUB_LINK = new LiteralText("https://github.com/mjtb49/StrongholdTrainer/").styled((style ->
             style.withBold(true)
                     .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/mjtb49/StrongholdTrainer/"))
                     .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Go to the GitHub repository")))));
-    private final static Text[] aboutInfo = new Text[]{
-            new LiteralText("\nStrongholdTrainer alpha-1.0\n").formatted(Formatting.BOLD, Formatting.YELLOW),
-            new LiteralText("This mod is intended to help speedrunners practice stronghold navigation.\n" +
-                    "It's also intended (with the included model) to potentially discover new things or " +
-                    "confirm existing strategies."),
-            new LiteralText("This is an alpha testing version of the mod. Please report bugs by opening an issue on the GitHub repository.").append(GITHUB_LINK).formatted(Formatting.BOLD, Formatting.RED)
+    private final static Text[] ABOUT_INFO = new Text[]{
+            new LiteralText("\nStrongholdTrainer beta 1.0").formatted(Formatting.BOLD, Formatting.YELLOW),
+            new LiteralText("This mod is designed to help speedrunners navigate strongholds efficiently. It also has a machine learning component to help the community research stronghold navigation, as well as for fun!"),
+            new LiteralText("This is a beta testing version of the mod. Please report bugs by opening an issue on the GitHub repository.").append(GITHUB_LINK).formatted(Formatting.RED)
     };
 
-    private final static Text[] creditsInfo = new Text[]{
-            new LiteralText("\nCredits\n").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.YELLOW),
-            new LiteralText("Mod Development").formatted().append(new LiteralText(authors).formatted(Formatting.RESET)),
-            new LiteralText("\"basic-classifier-nobacktracking\"").formatted().append(new LiteralText("- Geosquare, Matthew Bolan, XeroOl\n").formatted(Formatting.RESET)),
+    private final static Text[] CREDITS_INFO = new Text[]{
+            new LiteralText("\nCredits").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.YELLOW),
+            new LiteralText("Mod Authors - ").formatted().append(new LiteralText(authors).formatted(Formatting.RESET)),
     };
 
-    private final static Text[] licenseInfo = new Text[]{
-            new LiteralText("\nLicense Info\n").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.YELLOW),
+    private final static Text[] LICENSE_INFO = new Text[]{
+            new LiteralText("\nLicense Info").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.YELLOW),
             new LiteralText("© 2021 Matthew Bolan, All rights reserved."),
             new LiteralText("This mod and its source code are licensed under the MIT license.\n" +
                     "See the full license at "),
@@ -69,33 +65,28 @@ public class STInfoCommand {
             new LiteralText("TensorFlow for Java licensed under the Apache 2.0 license.")
     };
 
-    private final static Text[] hintsInfo = new Text[]{
+    private final static Text[] HINTS_INFO = new Text[]{
             new LiteralText("\nHelp\n").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.YELLOW),
             new LiteralText("Hints").formatted(Formatting.BOLD),
-            new LiteralText("Hints can be toggled using /hints.\n" +
-                    "Hints will show you all of the " +
-                    "entrances and exits in a stronghold room " +
-                    "via an outline around the entrance.").styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/hints"))
+            new LiteralText("Hints will show you all of the entrances and exits in a stronghold room via an outline around the entrance.")
+                    .styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/hints"))
                     .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("/hints")))),
             new LiteralText("• Blue hints indicate the perfect path to the portal room.").formatted(Formatting.BLUE),
             new LiteralText("• Green hints indicate the best judgement of the nav model.").formatted(Formatting.GREEN),
-            new LiteralText("   ◦ The numbers in doorways indicate the weight that the model " +
-                    "gives to that entrance.").formatted(Formatting.GREEN, Formatting.ITALIC),
+            new LiteralText("   ◦ The numbers in doorways indicate the weight that the model gives to that entrance. General rule is higher = better").formatted(Formatting.GREEN, Formatting.ITALIC),
             new LiteralText("• The yellow hints indicate the backtracking path.").formatted(Formatting.YELLOW),
             new LiteralText("======"),
             new LiteralText("Traces").formatted(Formatting.BOLD),
-            new LiteralText("Player traces can be turned on/off using /trace. " +
-                    " The player trace shows the exact path you took during a stronghold run.").formatted(Formatting.RED),
+            new LiteralText("The player trace shows the exact path you took during a stronghold run. This will only display when hints are on.").formatted(Formatting.RED),
             new LiteralText("======"),
-            new LiteralText("Helpful Commands").formatted(Formatting.BOLD),
-            new LiteralText("/doorLabels - adds labels to doors denoting anything with a color indicator")
-                    .styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/doorLabels"))
-                    .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("/doorLabels")))),
-            new LiteralText("/newStronghold - teleports you to a new stronghold").styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/newStronghold"))
-                    .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("/newStronghold"))))
+            new LiteralText("Scuffed Strongholds").formatted(Formatting.BOLD),
+            new LiteralText("Disabling 'Allow Scuffed' will disable cave, ravine, and mineshaft generation."),
+            new LiteralText("======"),
+            new LiteralText("Custom Inventory").formatted(Formatting.BOLD),
+            new LiteralText("You can save your current inventory using /inventory save. Then if 'Custom Inventory' is enabled, any time you go to a new stronghold your inventory will be cleared and this one will be loaded.")
     };
 
-    private static final Text[] modelInfo = new Text[]{
+    private static final Text[] MODEL_INFO = new Text[]{
             new LiteralText("\nModel\n").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.YELLOW),
             new LiteralText("This mod includes machine learning models for navigating strongholds." +
                     " (If you're curious, the models in SavedModel format are stored in <gamedir>/config/stronghold-trainer).\n" +
@@ -103,9 +94,23 @@ public class STInfoCommand {
             new LiteralText("Support for external models may come soon").formatted(Formatting.RED, Formatting.BOLD)
     };
 
-    private static final Text[] statsInfo = new Text[]{
+    private static final Text[] STATS_INFO = new Text[]{
             new LiteralText("\nStatistics & Timing\n").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.YELLOW),
-            new LiteralText("TODO: write-up on stats").formatted(Formatting.OBFUSCATED)
+            new LiteralText("One of the main functions of the mod is to record and analyze stronghold runs and provide feedback."),
+            new LiteralText("Timing").formatted(Formatting.BOLD),
+            new LiteralText("The timer above the hotbar and the times recorded in your player stats are IGT. We also provide an RT (including pauses!) time at the end of a run."),
+            new LiteralText("There are three hotbar timers. The leftmost is the total time spent outside of the stronghold, middle is total run time, rightmost is the time spend in the current room. The +/=/- are comparing against Feinberg's average time in that room."),
+            new LiteralText("======"),
+            new LiteralText("Statistics").formatted(Formatting.BOLD),
+            new LiteralText("• Time Loss/Gain Against Feinberg: The sum of your time in each room against Feinberg's average time there.").formatted(Formatting.GREEN),
+            new LiteralText("• Estimated Difficulty: This a measure of how difficult Geo's model thinks the stronghold is to route. With some exceptions, < 10 is very easy, 10-50 is medium/easy, 50+ is bad RNG.").formatted(Formatting.DARK_GREEN),
+            new LiteralText("• Number of decisions: The number of decisions you made.").formatted(Formatting.DARK_GREEN),
+            new LiteralText("• Best Moves: Any perfect decision that goes deeper into the stronghold (no backtracking).").formatted(Formatting.GOLD),
+            new LiteralText("? Inaccuracies: Mildly bad/incorrect decisions that cost a bit of time.").formatted(Formatting.YELLOW),
+            new LiteralText("⁈ Mistakes: Bad decisions that were pretty easy to avoid and/or led to a notable time loss.").formatted(Formatting.RED),
+            new LiteralText("⁇ Blunders: Terrible decisions that were obviously terrible and/or led to a disastrous time loss.").formatted(Formatting.DARK_RED),
+            new LiteralText("• Wormholes: Moves that weren't moving between two adjacent rooms (ocean travel, SmallCorridors).").formatted(Formatting.DARK_PURPLE),
+            new LiteralText("• Review: Allows you to review your mistakes.").formatted(Formatting.LIGHT_PURPLE)
     };
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher){
         dispatcher.register(
@@ -115,7 +120,8 @@ public class STInfoCommand {
                             if(playerEntity == null){
                                 return -1;
                             }
-                            for(Text t : aboutInfo){
+
+                            for(Text t : ABOUT_INFO){
                                 playerEntity.sendMessage(t, false);
                             }
                             return 0;
@@ -126,7 +132,7 @@ public class STInfoCommand {
                             if(playerEntity == null){
                                 return -1;
                             }
-                            for(Text t : hintsInfo){
+                            for(Text t : HINTS_INFO){
                                 playerEntity.sendMessage(t, false);
                             }
                             return 0;
@@ -137,7 +143,7 @@ public class STInfoCommand {
                             if(playerEntity == null){
                                 return -1;
                             }
-                            for(Text t : creditsInfo){
+                            for(Text t : CREDITS_INFO){
                                 playerEntity.sendMessage(t, false);
                             }
                             return 0;
@@ -148,7 +154,7 @@ public class STInfoCommand {
                             if(playerEntity == null){
                                 return -1;
                             }
-                            for(Text t : licenseInfo){
+                            for(Text t : LICENSE_INFO){
                                 playerEntity.sendMessage(t, false);
                             }
                             return 0;
@@ -159,7 +165,7 @@ public class STInfoCommand {
                             if(playerEntity == null){
                                 return -1;
                             }
-                            for(Text t : modelInfo){
+                            for(Text t : MODEL_INFO){
                                 playerEntity.sendMessage(t, false);
                             }
                             return 0;
@@ -170,7 +176,7 @@ public class STInfoCommand {
                             if(playerEntity == null){
                                 return -1;
                             }
-                            for(Text t : statsInfo){
+                            for(Text t : STATS_INFO){
                                 playerEntity.sendMessage(t, false);
                             }
                             return 0;

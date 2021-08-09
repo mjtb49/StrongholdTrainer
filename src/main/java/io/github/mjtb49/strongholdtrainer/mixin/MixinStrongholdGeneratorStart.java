@@ -17,6 +17,7 @@ public class MixinStrongholdGeneratorStart implements StrongholdTreeAccessor {
     public void addPiece(StructurePiece piece) {
         tree.get(pieces.get(pieces.size() - 1)).add(piece);
         parents.put(piece, pieces.get(pieces.size() - 1));
+
     }
 
     public void registerPiece(StructurePiece piece) {
