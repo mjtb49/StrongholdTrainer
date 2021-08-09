@@ -34,20 +34,9 @@ public abstract class MixinCreateWorldScreen {
 
     @Inject(at = @At("TAIL"), method = "init()V")
     public void init(CallbackInfo ci) {
-        int x = ((Screen) (Object) this).width / 2;
-        int height = ((Screen) (Object) this).height;
         MinecraftClient client = MinecraftClient.getInstance();
-        // TODO: make this work with small resolutions
-        this.addButton(new ButtonWidget(x - 100, ((Screen)(Object) this).height - 56, 200, 20, new LiteralText("Review Stronghold From Seed").formatted(Formatting.BOLD),
-                button -> client
-                        .openScreen(
-                                new SeedReviewScreen(
-                                        ((CreateWorldScreen) (Object) this),
-                                        new LevelInfo(UUID.randomUUID().toString(),
-                                                GameMode.CREATIVE,
-                                                true, Difficulty.EASY,
-                                                false, this.gameRules,
-                                                this.field_25479)))));
+        this.addButton(new ButtonWidget(((Screen) (Object) this).width - 60, 10, 50, 20, new LiteralText("Review").formatted(Formatting.BOLD),
+                button -> client.openScreen(new SeedReviewScreen(((CreateWorldScreen) (Object) this), new LevelInfo(UUID.randomUUID().toString(), GameMode.CREATIVE, true, Difficulty.EASY, false, this.gameRules, this.field_25479)))));
 
     }
 

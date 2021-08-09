@@ -212,11 +212,12 @@ public class StrongholdMapWidget extends AbstractButtonWidget implements Drawabl
         textureLock.set(true);
         Color color;
         Biome biome;
+        int constSize = size;
         int cx, cz;
-        for (int x = 0; x < size; ++x) {
-            for (int z = 0; z < size; ++z) {
-                cx = (x * SCALE) - 16*(size/2);
-                cz = (z * SCALE) - 16*(size/2);
+        for (int x = 0; x < constSize; ++x) {
+            for (int z = 0; z < constSize; ++z) {
+                cx = (x * SCALE) - 16 * (constSize / 2);
+                cz = (z * SCALE) - 16 * (constSize / 2);
                 biome = biomeSource.getBiomeForNoiseGen(cx, 0, cz);
                 if (BIOME_COLORS.containsKey(biome) && this.textureLock.get()) {
                     color = BIOME_COLORS.get(biome);
@@ -224,8 +225,8 @@ public class StrongholdMapWidget extends AbstractButtonWidget implements Drawabl
                 }
             }
         }
-        backedTexture.upload();
         textureLock.set(false);
+        backedTexture.upload();
     }
 
     @Override
