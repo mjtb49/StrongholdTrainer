@@ -25,7 +25,7 @@ public class STOptionsScreen extends Screen {
     }
 
     private static final HashMap<Boolean, Text> ON_OFF_MAP = new HashMap();
-
+    // TODO: do side-by-side buttons to prevent overflow
     @Override
     protected void init() {
         int y = 30;

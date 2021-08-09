@@ -58,6 +58,7 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
     private static StrongholdPath currentPath;
     private static final RenderingPathListener renderListener = new RenderingPathListener();
     private static final DimensionPathListener dimListener = new DimensionPathListener();
+    private static final List<Class<? extends StrongholdGenerator.Piece>> PRE19_GOALS = new ArrayList<>();
     @Shadow
     @Final
     protected LevelStorage.Session session;
@@ -114,7 +115,7 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
                         listener.detach();
                         dimListener.detach();
                     }
-                    currentPath = new StrongholdPath(start, player, Collections.emptyList());
+                    currentPath = new StrongholdPath(start, player, OptionTracker.getBoolean(OptionTracker.Option.PRE19_MODE) ? PRE19_GOALS : Collections.emptyList());
                     renderListener.attach(currentPath);
                     listener.attach(currentPath);
                     dimListener.attach(currentPath);
@@ -203,4 +204,8 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
         shouldRefreshRooms = true;
     }
 
+    static {
+        PRE19_GOALS.add(StrongholdGenerator.Library.class);
+        PRE19_GOALS.add(StrongholdGenerator.ChestCorridor.class);
+    }
 }

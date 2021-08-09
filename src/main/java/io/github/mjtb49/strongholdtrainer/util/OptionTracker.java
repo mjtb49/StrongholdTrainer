@@ -21,6 +21,7 @@ public class OptionTracker {
         ALLOW_SCUFFED("allowScuffed", true, "Allow Scuffed"),
         CUSTOM_INVENTORY("customInventory", false, "Custom Inventory"),
         FILL_PORTAL("fillPortal", false, "Fill Portal"),
+        PRE19_MODE("oldMode", false, "Unprepared Pre-1.9 Mode"),
         MODEL("model", new JsonPrimitive(StrongholdMachineLearning.MODEL_REGISTRY.getDefaultModelIdentifier()), "Loaded Model");
 
         private static final HashMap<String, Option> strToOption = new HashMap<>();
