@@ -30,9 +30,11 @@ public abstract class MixinClientPlayNetworkHandler {
     @Inject(method = "onGameJoin", at = @At(value = "TAIL"))
     public void onGameJoin(GameJoinS2CPacket packet, CallbackInfo ci) {
         assert MinecraftClient.getInstance().player != null;
-        client.player.sendMessage(new LiteralText("Loaded Stronghold Trainer (use /newStronghold to go to a new stronghold, /stinfo for more help)").formatted(Formatting.AQUA), false);
+        client.player.sendMessage(new LiteralText("Loaded Stronghold Trainer (use /newStronghold to go to a new stronghold, /stinfo help for more help)").formatted(Formatting.AQUA), false);
+        client.getServer().getCommandManager().execute(client.getServer().getCommandSource(), "/stinfo licenses");
         Optional<? extends StructureStart<?>> start = client.getServer().getWorld(World.OVERWORLD).getStructureAccessor().getStructuresWithChildren(ChunkSectionPos.from(0, 0, 0), StructureFeature.STRONGHOLD).findFirst();
         start.ifPresent(structureStart -> client.getServer().getCommandManager().execute(client.getServer().getCommandSource(), "/tp @p 4 " + (((StartAccessor) structureStart).getStart().getBoundingBox().getCenter().getY() - 4) + " 4"));
+
     }
 
 }

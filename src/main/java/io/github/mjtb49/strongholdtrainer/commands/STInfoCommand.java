@@ -55,14 +55,17 @@ public class STInfoCommand {
 
     private final static Text[] LICENSE_INFO = new Text[]{
             new LiteralText("\nLicense Info").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.YELLOW),
-            new LiteralText("© 2021 Matthew Bolan, All rights reserved."),
+            new LiteralText("© 2021 Matthew Bolan, All rights reserved.").formatted(Formatting.YELLOW),
             new LiteralText("This mod and its source code are licensed under the MIT license.\n" +
-                    "See the full license at "),
-            new LiteralText("https://github.com/mjtb49/StrongholdTrainer/blob/master/LICENSE").styled((style ->
-                    style.withBold(true)
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/mjtb49/StrongholdTrainer/blob/master/LICENSE"))
-                            .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Go to license on GitHub"))))),
-            new LiteralText("TensorFlow for Java licensed under the Apache 2.0 license.")
+                    "See the full license at ").formatted(Formatting.BLUE).append(new LiteralText("https://github.com/mjtb49/StrongholdTrainer/blob/master/LICENSE").styled((style ->
+                    style.withFormatting(Formatting.UNDERLINE).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/mjtb49/StrongholdTrainer/blob/master/LICENSE"))
+                            .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Go to license on GitHub")))))),
+            new LiteralText("This mod includes TensorFlow for Java (© 2021 The TensorFlow Authors) which is licensed under the Apache 2.0 license, available at ").formatted(Formatting.GOLD)
+                    .append(new LiteralText("https://www.apache.org/licenses/LICENSE-2.0").styled((style ->
+                    style.withFormatting(Formatting.UNDERLINE).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.apache.org/licenses/LICENSE-2.0"))
+                            .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Go to the Apache 2.0 license")))))
+                    .append(new LiteralText("\n Find the library here: https://www.github.com/tensorflow/java").formatted(Formatting.UNDERLINE).styled(
+                            style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.github.com/tensorflow/java")).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Go to the TensorFlow Java repository."))))))
     };
 
     private final static Text[] HINTS_INFO = new Text[]{
@@ -149,7 +152,7 @@ public class STInfoCommand {
                             return 0;
                         })
                 ).then(
-                        literal("legal").executes(c -> {
+                        literal("licenses").executes(c -> {
                             PlayerEntity playerEntity = MinecraftClient.getInstance().player;
                             if(playerEntity == null){
                                 return -1;
