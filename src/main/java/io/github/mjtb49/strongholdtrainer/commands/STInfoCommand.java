@@ -43,9 +43,9 @@ public class STInfoCommand {
                     .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/mjtb49/StrongholdTrainer/"))
                     .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Go to the GitHub repository")))));
     private final static Text[] ABOUT_INFO = new Text[]{
-            new LiteralText("\nStrongholdTrainer beta 1.0").formatted(Formatting.BOLD, Formatting.YELLOW),
+            new LiteralText("\nStrongholdTrainer " + container.getMetadata().getVersion().getFriendlyString()).formatted(Formatting.BOLD, Formatting.YELLOW),
             new LiteralText("This mod is designed to help speedrunners navigate strongholds efficiently. It also has a machine learning component to help the community research stronghold navigation, as well as for fun!"),
-            new LiteralText("This is a beta testing version of the mod. Please report bugs by opening an issue on the GitHub repository.").append(GITHUB_LINK).formatted(Formatting.RED)
+            new LiteralText("This is a beta testing version of the mod. Please report bugs by opening an issue on the GitHub repository. ").append(GITHUB_LINK).formatted(Formatting.RED)
     };
 
     private final static Text[] CREDITS_INFO = new Text[]{
