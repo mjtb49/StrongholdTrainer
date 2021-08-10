@@ -5,6 +5,9 @@ import io.github.mjtb49.strongholdtrainer.StrongholdTrainer;
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
 import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructureStart;
@@ -14,8 +17,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.gen.feature.StructureFeature;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -46,7 +51,7 @@ public class NewStrongholdCommand {
                             z -= (60000000 / (GAP * 16) - 1);
                         x += 1;
                         start = c.getSource().getWorld().getStructureAccessor().getStructuresWithChildren(ChunkSectionPos.from(x * GAP, 0, z * GAP), StructureFeature.STRONGHOLD).findFirst();
-                        if(start.isPresent()) {
+                        if (start.isPresent()) {
                             strongholdStart = ((StartAccessor) start.get()).getStart();
                         }
                     } while ((!start.isPresent() || strongholdStart == null) && attemptedStrongholdLocations++ < 100);
@@ -86,7 +91,12 @@ public class NewStrongholdCommand {
                     c.getSource().getPlayer().heal(20);
                     c.getSource().getPlayer().getHungerManager().setSaturationLevelClient(5.0f);
                     c.getSource().getPlayer().getHungerManager().setFoodLevel(20);
-                    if(OptionTracker.getOption(OptionTracker.Option.CUSTOM_INVENTORY).getAsBoolean()){
+
+                    Collection<StatusEffect> types = c.getSource().getPlayer().getStatusEffects().stream().map(StatusEffectInstance::getEffectType).filter(statusEffect -> statusEffect != StatusEffects.NIGHT_VISION).collect(Collectors.toList());
+                    for (StatusEffect statusEffect : types) {
+                        c.getSource().getPlayer().removeStatusEffect(statusEffect);
+                    }
+                    if (OptionTracker.getOption(OptionTracker.Option.CUSTOM_INVENTORY).getAsBoolean()) {
                         c.getSource().getPlayer().inventory.clear();
                         c.getSource().getMinecraftServer().getCommandManager().execute(c.getSource(), "/inventory load");
                     }
