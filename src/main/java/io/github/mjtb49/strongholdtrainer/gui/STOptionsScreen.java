@@ -3,7 +3,6 @@ package io.github.mjtb49.strongholdtrainer.gui;
 import com.google.gson.JsonPrimitive;
 import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -38,9 +37,12 @@ public class STOptionsScreen extends Screen {
                         new LiteralText(option.label + ": ")
                                 .append(ON_OFF_MAP.get(OptionTracker.getBoolean(option))),
                         buttonWidget -> {
-                    OptionTracker.setOption(option, new JsonPrimitive(!OptionTracker.getBoolean(option)));
-                    buttonWidget.setMessage(new LiteralText(option.label + ": ").append(ON_OFF_MAP.get(OptionTracker.getBoolean(option))));
-                });
+                            OptionTracker.setOption(option, new JsonPrimitive(!OptionTracker.getBoolean(option)));
+                            buttonWidget.setMessage(new LiteralText(option.label + ": ").append(ON_OFF_MAP.get(OptionTracker.getBoolean(option))));
+
+                        }, ((button, matrices, mouseX, mouseY) -> {
+                    this.renderTooltip(matrices, textRenderer.wrapLines(new LiteralText(option.tooltip), 128), mouseX, mouseY);
+                }));
                 this.addButton(widget);
             }
         }
@@ -60,6 +62,7 @@ public class STOptionsScreen extends Screen {
     public void onClose() {
         this.client.openScreen(this.parent);
     }
+
 
     static {
         ON_OFF_MAP.put(false, new LiteralText("OFF").formatted(Formatting.RED));
