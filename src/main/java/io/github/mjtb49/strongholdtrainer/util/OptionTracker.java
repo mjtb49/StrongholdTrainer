@@ -19,7 +19,7 @@ public class OptionTracker {
         ALLOW_SCUFFED("allowScuffed", true, "Allow Scuffed", "Allows caves, ravines, etc. to intersect strongholds."),
         CUSTOM_INVENTORY("customInventory", false, "Custom Inventory", "Clears and loads a custom inventory (set with /inventory save) before each run."),
         FILL_PORTAL("fillPortal", false, "Fill Portal", "Fills the end portal. Turn off for pie-ray.\nTip: the end portal will take you to a new stronghold."),
-        PRE19_MODE("oldMode", false, "Unprepared Pre-1.9 Mode", "When enabled, a run won't end until you've entered a chest corridor and a library."),
+        PRE19_MODE("oldMode", false, "Pre-1.9 Mode", "When enabled, a run won't end until you've entered a chest corridor and a library."),
         MODEL("model", new JsonPrimitive(StrongholdMachineLearning.MODEL_REGISTRY.getDefaultModelIdentifier()), "Loaded Model", "The machine learning model used in hints and analysis.");
 
         private static final HashMap<String, Option> strToOption = new HashMap<>();

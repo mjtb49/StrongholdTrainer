@@ -16,8 +16,7 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -57,22 +56,21 @@ public class ModelOptionCommand extends OptionCommand {
                 ).then(
                         literal("list").executes(c -> {
                             PlayerEntity playerEntity = MinecraftClient.getInstance().player;
-                            if(playerEntity == null){
+                            if (playerEntity == null) {
                                 return -1;
                             }
                             playerEntity.sendMessage(new LiteralText("---------------- models ----------------"), false);
 
-                            Set<String> registeredModels = StrongholdMachineLearning.MODEL_REGISTRY.getRegisteredIdentifiers();
-                            registeredModels = registeredModels.stream().sorted().collect(Collectors.toCollection(LinkedHashSet::new));
+                            List<String> registeredModels = StrongholdMachineLearning.MODEL_REGISTRY.getRegisteredIdentifiers();
+                            registeredModels = registeredModels.stream().sorted().collect(Collectors.toList());
                             registeredModels.forEach(s -> {
                                 boolean isActive = StrongholdMachineLearning.MODEL_REGISTRY.isActiveModel(s);
                                 StrongholdModel model = StrongholdMachineLearning.MODEL_REGISTRY.getModel(s);
 
                                 StringBuilder stringBuilder = new StringBuilder();
-                                if(isActive){
+                                if (isActive) {
                                     stringBuilder.append(" *");
-                                }
-                                else {
+                                } else {
                                     stringBuilder.append("•");
                                 }
                                 stringBuilder.append(" \"").append(s).append("\" | by: ").append(model.getCreator()).append(" | external: ").append(!model.isInternal());
