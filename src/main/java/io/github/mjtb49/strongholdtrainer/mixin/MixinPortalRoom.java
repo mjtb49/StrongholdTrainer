@@ -1,5 +1,6 @@
 package io.github.mjtb49.strongholdtrainer.mixin;
 
+import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.EndPortalFrameBlock;
@@ -40,15 +41,18 @@ public class MixinPortalRoom {
         ((StructurePiece) (Object) this).addBlock(serverWorldAccess, (BlockState)blockState6.with(EndPortalFrameBlock.EYE, true), 3, 3, 11, boundingBox);
         ((StructurePiece) (Object) this).addBlock(serverWorldAccess, (BlockState)blockState7.with(EndPortalFrameBlock.EYE, true), 7, 3, 9, boundingBox);
         ((StructurePiece) (Object) this).addBlock(serverWorldAccess, (BlockState)blockState7.with(EndPortalFrameBlock.EYE, true), 7, 3, 10, boundingBox);
-        ((StructurePiece) (Object) this).addBlock(serverWorldAccess, (BlockState)blockState7.with(EndPortalFrameBlock.EYE, true), 7, 3, 11, boundingBox);
-        ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 4, 3, 9, boundingBox);
-        ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 5, 3, 9, boundingBox);
-        ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 6, 3, 9, boundingBox);
-        ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 4, 3, 10, boundingBox);
-        ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 5, 3, 10, boundingBox);
-        ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 6, 3, 10, boundingBox);
-        ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 4, 3, 11, boundingBox);
-        ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 5, 3, 11, boundingBox);
-        ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 6, 3, 11, boundingBox);
+        ((StructurePiece) (Object) this).addBlock(serverWorldAccess, (BlockState)blockState7.with(EndPortalFrameBlock.EYE, OptionTracker.getBoolean(OptionTracker.Option.FILL_PORTAL)), 7, 3, 11, boundingBox);
+        if(OptionTracker.getBoolean(OptionTracker.Option.FILL_PORTAL)){
+            ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 4, 3, 9, boundingBox);
+            ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 5, 3, 9, boundingBox);
+            ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 6, 3, 9, boundingBox);
+            ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 4, 3, 10, boundingBox);
+            ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 5, 3, 10, boundingBox);
+            ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 6, 3, 10, boundingBox);
+            ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 4, 3, 11, boundingBox);
+            ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 5, 3, 11, boundingBox);
+            ((StructurePiece) (Object) this).addBlock(serverWorldAccess, blockState8, 6, 3, 11, boundingBox);
+        }
+
     }
 }

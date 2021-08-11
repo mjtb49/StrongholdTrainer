@@ -10,6 +10,8 @@ import io.github.mjtb49.strongholdtrainer.util.TimerHelper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
+import net.minecraft.text.*;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -123,8 +125,8 @@ public class StatsPathListener implements StrongholdPathListener {
             NextMistakeCommand.submitMistakesAndInaccuracies(getMistakes(), getInaccuracies(), getBlunders());
             NextMistakeCommand.sendInitialMessage(playerEntity);
             ((StartAccessor) strongholdPath.getStructureStart()).setHasBeenRouted(true);
-
-            //            playerEntity.sendMessage(new LiteralText("splits").styled(style -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, strongholdPath.sendSplits()))), false);
+            playerEntity.sendMessage(Texts.bracketed(new LiteralText("New Stronghold").formatted(Formatting.BOLD, Formatting.DARK_AQUA)).styled(
+                    (style) -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/newStronghold")).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("Go to a new stronghold")))), false);
         } else if (event == StrongholdPath.PathEvent.PATH_START) {
             this.invalidRun = false;
             start = Instant.now();

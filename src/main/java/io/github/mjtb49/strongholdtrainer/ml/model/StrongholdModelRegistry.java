@@ -2,9 +2,9 @@ package io.github.mjtb49.strongholdtrainer.ml.model;
 
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Hashtable;
-import java.util.Optional;
-import java.util.Set;
+import java.util.List;
 
 /**
  * A class that can store and load StrongholdModels. The models are registered with their identifiers and stored in
@@ -63,10 +63,11 @@ public class StrongholdModelRegistry{
 
     /**
      * Gets a set of the currently registered identifiers.
+     *
      * @return The currently registered identifiers.
      */
-    public Set<String> getRegisteredIdentifiers(){
-        return this.modelRegistry.keySet();
+    public List<String> getRegisteredIdentifiers() {
+        return Collections.list(this.modelRegistry.keys());
     }
 
     /**

@@ -3,8 +3,6 @@ package io.github.mjtb49.strongholdtrainer.util;
 import com.google.gson.*;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdMachineLearning;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -15,35 +13,41 @@ import java.util.Map;
 public class OptionTracker {
 
     public enum Option {
-        TRACE("trace", true, "Player Trace"),
-        HINTS("hints", true, "Hints"),
-        DOOR_LABELS("doorLabels", false, "Door Labels"),
-        ALLOW_SCUFFED("allowScuffed", true, "Allow Scuffed"),
-        CUSTOM_INVENTORY("customInventory", false, "Custom Inventory"),
-        MODEL("model", new JsonPrimitive(StrongholdMachineLearning.MODEL_REGISTRY.getDefaultModelIdentifier()), "Loaded Model");
+        TRACE("trace", true, "Player Trace", "When hints are on, the trace shows the path you took."),
+        HINTS("hints", true, "Hints", "Shows outlines and text around/in exits with perfect travel and ML output."),
+        DOOR_LABELS("doorLabels", false, "Door Labels", "When hints are on, shows labels for hints."),
+        ALLOW_SCUFFED("allowScuffed", true, "Allow Scuffed", "Allows caves, ravines, etc. to intersect strongholds."),
+        CUSTOM_INVENTORY("customInventory", false, "Custom Inventory", "Clears and loads a custom inventory (set with /inventory save) before each run."),
+        FILL_PORTAL("fillPortal", false, "Fill Portal", "Fills the end portal. Turn off for pie-ray.\nTip: the end portal will take you to a new stronghold."),
+        PRE19_MODE("oldMode", false, "Pre-1.9 Mode", "When enabled, a run won't end until you've entered a chest corridor and a library."),
+        MODEL("model", new JsonPrimitive(StrongholdMachineLearning.MODEL_REGISTRY.getDefaultModelIdentifier()), "Loaded Model", "The machine learning model used in hints and analysis.");
 
         private static final HashMap<String, Option> strToOption = new HashMap<>();
+
         static {
-            for(Option option : Option.values()){
+            for (Option option : Option.values()) {
                 strToOption.put(option.id, option);
             }
         }
 
-        public static Option getOption(String str){
-            return strToOption.get(str);
-        }
+        public final String tooltip;
 
         public final String id;
         public final JsonElement defaultValue;
         public final String label;
-        Option(String id, boolean defaultValue, String s){
-            this(id, new JsonPrimitive(defaultValue), s);
+        Option(String id, boolean defaultValue, String s, String tooltip) {
+            this(id, new JsonPrimitive(defaultValue), s, tooltip);
         }
 
-        Option(String id, JsonElement defaultValue, String s) {
+        Option(String id, JsonElement defaultValue, String s, String tooltip) {
             this.id = id;
             this.defaultValue = defaultValue;
             this.label = s;
+            this.tooltip = tooltip;
+        }
+
+        public static Option getOption(String str) {
+            return strToOption.get(str);
         }
     }
 
