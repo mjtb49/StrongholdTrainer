@@ -7,8 +7,6 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.toast.SystemToast;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.structure.StrongholdGenerator;
-import net.minecraft.structure.StructurePiece;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -21,8 +19,6 @@ import net.minecraft.world.gen.ChunkRandom;
 import net.minecraft.world.gen.GeneratorOptions;
 import net.minecraft.world.level.LevelInfo;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 public class SeedReviewScreen extends Screen {
@@ -52,7 +48,9 @@ public class SeedReviewScreen extends Screen {
         int twoThirds = (2 * this.width) / 3;
         int halfHeight = this.height / 2;
         this.addButton(new ButtonWidget(this.width / 2 - 100, this.height - 27, 200, 20, new LiteralText("Cancel"), button -> client.openScreen(parent)));
-        this.addButton(new ButtonWidget(twoThirds - 80, halfHeight, 160, 20, new LiteralText("Create World"), button -> this.createLevel()));
+        ButtonWidget createWorldButton = new ButtonWidget(twoThirds - 80, halfHeight, 160, 20, new LiteralText("Create World"), button -> this.createLevel());
+        createWorldButton.active = false;
+        this.addButton(createWorldButton);
         TextFieldWidget seedTextField = this.addButton(new TextFieldWidget(this.textRenderer, twoThirds - 75, this.height / 2 - 50, 150, 20, new LiteralText(this.seed + "")));
         this.addButton(new ButtonWidget(twoThirds - 40, halfHeight - 25, 80, 20, new LiteralText("Load Seed"), button -> {
             try {
@@ -63,6 +61,7 @@ public class SeedReviewScreen extends Screen {
                 seedTextField.setText(seedTextField.getText().hashCode() + "");
                 this.mapWidget.refresh(Long.parseLong(seedTextField.getText()));
             }
+            createWorldButton.active = true;
         }));
         mapWidget = this.addButton(new StrongholdMapWidget(oneThird - ((3 * mapSize) / 4), this.height / 2 - mapSize / 2, mapSize, seed));
     }

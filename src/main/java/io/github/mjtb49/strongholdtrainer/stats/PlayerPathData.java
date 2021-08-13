@@ -109,7 +109,7 @@ public class PlayerPathData {
                 style -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("This is calculated by taking the sum of the time you spent in each room minus Feinberg's average time in that room.")))
         ), false);
         playerEntity.sendMessage(new LiteralText("Estimated Difficulty " + DF.format(1 / difficulty)).formatted(Formatting.DARK_GREEN), false);
-        playerEntity.sendMessage(new LiteralText("№ Rooms Reviewed " + roomsReviewed + "").formatted(Formatting.DARK_GREEN), false);
+        playerEntity.sendMessage(new LiteralText("№ Choices Reviewed " + roomsReviewed + "").formatted(Formatting.DARK_GREEN), false);
         playerEntity.sendMessage(new LiteralText("! Best Moves " + bestMoveCount).formatted(Formatting.GOLD), false);
         playerEntity.sendMessage(new LiteralText("? Inaccuracies " + inaccuracyCount).formatted(Formatting.YELLOW), false);
         playerEntity.sendMessage(new LiteralText("⁈ Mistakes " + mistakeCount).formatted(Formatting.RED), false);

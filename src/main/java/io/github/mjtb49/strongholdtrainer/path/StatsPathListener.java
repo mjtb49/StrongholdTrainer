@@ -76,7 +76,7 @@ public class StatsPathListener extends AbstractPathListener {
             wastedTickCounter += history.get(j).getTicksSpentInPiece().get();
             j++;
         }
-        System.out.println("Loss for " + entry.toString() + ": " + (wastedTickCounter) * (maxWeight - chosenWeight));
+        System.out.println("Loss for " + entry + ": " + (wastedTickCounter) * (maxWeight - chosenWeight));
         return (wastedTickCounter) * (maxWeight - chosenWeight);
     }
 
@@ -203,7 +203,7 @@ public class StatsPathListener extends AbstractPathListener {
                         .filter(entry -> !(entry.getCurrentPiece() instanceof StrongholdGenerator.PortalRoom))
                         .filter(entry -> !areAdjacent(entry.getCurrentPiece(), strongholdPath.getNextEntry(entry).getCurrentPiece(), treeAccessor))
                         .count(),
-                history.stream().map(StrongholdPathEntry::getCurrentPiece).collect(Collectors.toSet()).size() - 1,
+                history.size() - 1,
                 history.stream()
                         .filter(entry -> FEINBERG_AVG_ROOM_TIMES.containsKey(entry.getCurrentPiece().getClass()))
                         .mapToInt(value -> value.getTicksSpentInPiece().get() - FEINBERG_AVG_ROOM_TIMES.get(value.getCurrentPiece().getClass()))
