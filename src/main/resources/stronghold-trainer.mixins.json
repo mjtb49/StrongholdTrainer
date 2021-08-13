@@ -26,7 +26,6 @@
     "MixinStrongholdGeneratorStart",
     "MixinStrongholdPiece",
     "ScreenInvoker",
-    "StructurePieceInvoker",
     "WorldSavePathAccessor"
   ],
   "client": [
