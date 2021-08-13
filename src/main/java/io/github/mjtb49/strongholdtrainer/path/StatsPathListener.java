@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 // TODO: Cleanup, optimization, thread-safety
-public class StatsPathListener implements StrongholdPathListener {
+public class StatsPathListener extends AbstractPathListener {
 
     public static final HashMap<Class<? extends StrongholdGenerator.Piece>, Integer> FEINBERG_AVG_ROOM_TIMES = new HashMap<>();
     private static final int BLUNDER_THRESHOLD = 20 * 10;
@@ -45,7 +45,6 @@ public class StatsPathListener implements StrongholdPathListener {
     List<StrongholdGenerator.Piece> inaccuracies;
     List<StrongholdGenerator.Piece> blunders;
 
-    private StrongholdPath strongholdPath;
     private ServerPlayerEntity playerEntity;
     private boolean completed;
     private Instant start;
@@ -118,6 +117,7 @@ public class StatsPathListener implements StrongholdPathListener {
 
     @Override
     public void update(StrongholdPath.PathEvent event) {
+        playerEntity = this.strongholdPath.getPlayerEntity();
         if (event == StrongholdPath.PathEvent.PATH_COMPLETE) {
             Instant end = Instant.now();
             this.completed = true;
@@ -137,20 +137,6 @@ public class StatsPathListener implements StrongholdPathListener {
                     || playerEntity.isCreative()
                     || OptionTracker.getOption(OptionTracker.Option.HINTS).getAsBoolean();
         }
-    }
-
-    @Override
-    public void attach(StrongholdPath path) {
-        this.strongholdPath = path;
-        this.playerEntity = path.getPlayerEntity();
-        path.addListener(this);
-    }
-
-    @Override
-    public void detach() {
-        this.strongholdPath.removeListener(this);
-        this.playerEntity = null;
-        this.strongholdPath = null;
     }
 
     public ArrayList<StrongholdGenerator.Piece> getMistakes() {

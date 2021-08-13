@@ -102,7 +102,7 @@ public class PlayerPathData {
         }
 
 
-        playerEntity.sendMessage(new LiteralText(" "), false);
+//        playerEntity.sendMessage(new LiteralText(" "), false);
 
         playerEntity.sendMessage(new LiteralText("Time of " + TimerHelper.ticksToTime(ticksInStronghold) + " IGT" + (realtime != null ? "/" + realtime + " RT " : " ") + "(" + TimerHelper.ticksToTime(wastedTime) + " wasted)").formatted(Formatting.AQUA, Formatting.BOLD, invalidRun ? Formatting.STRIKETHROUGH : Formatting.BOLD), false);
         playerEntity.sendMessage(new LiteralText("Time Loss/Gain Against Feinberg " + (this.ticksLostAgainstFeinberg > 0 ? "+" : "") + this.ticksLostAgainstFeinberg / 20.0 + "s").formatted(this.ticksLostAgainstFeinberg > 0 ? Formatting.RED : Formatting.GREEN).styled(
