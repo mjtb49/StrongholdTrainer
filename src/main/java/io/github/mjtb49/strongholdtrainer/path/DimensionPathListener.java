@@ -7,9 +7,8 @@ import net.minecraft.util.Formatting;
 
 import java.util.Random;
 
-public class DimensionPathListener implements StrongholdPathListener{
+public class DimensionPathListener extends AbstractPathListener{
 
-    private StrongholdPath strongholdPath;
     private final Random random = new Random();
 
     @Override
@@ -28,17 +27,5 @@ public class DimensionPathListener implements StrongholdPathListener{
                 }
             }
         }
-    }
-
-    @Override
-    public void attach(StrongholdPath path) {
-        this.strongholdPath = path;
-        strongholdPath.addListener(this);
-    }
-
-    @Override
-    public void detach() {
-        this.strongholdPath.removeListener(this);
-        this.strongholdPath = null;
     }
 }

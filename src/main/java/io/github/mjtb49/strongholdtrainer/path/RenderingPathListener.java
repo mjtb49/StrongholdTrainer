@@ -24,12 +24,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RenderingPathListener implements StrongholdPathListener {
+public class RenderingPathListener extends AbstractPathListener {
 
     private static final DecimalFormat df = new DecimalFormat("0.00");
     private final Map<StructurePiece, Double> percents;
     private StructurePiece mlChosen;
-    private StrongholdPath strongholdPath;
     private boolean loadedModelSupportsBacktracking;
 
     public RenderingPathListener() {
@@ -48,18 +47,6 @@ public class RenderingPathListener implements StrongholdPathListener {
             System.out.println("Failed to update " + this.toString() + ": " + e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void attach(StrongholdPath path) {
-        this.strongholdPath = path;
-        strongholdPath.addListener(this);
-    }
-
-    @Override
-    public void detach() {
-        this.strongholdPath.removeListener(this);
-        this.strongholdPath = null;
     }
 
     private void updateMLChoice(StructureStart<?> start, StructurePiece piece) {
