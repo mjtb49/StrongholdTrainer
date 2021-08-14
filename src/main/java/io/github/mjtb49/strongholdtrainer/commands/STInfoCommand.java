@@ -106,10 +106,10 @@ public class STInfoCommand {
             new LiteralText("Hints will show you all of the entrances and exits in a stronghold room via an outline around the entrance.")
                     .styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/hints"))
                     .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("/hints")))),
-            new LiteralText("• Blue hints indicate the perfect path to the portal room.").formatted(Formatting.BLUE),
-            new LiteralText("• Green hints indicate the best judgement of the nav model.").formatted(Formatting.GREEN),
-            new LiteralText("   ◦ The numbers in doorways indicate the weight that the model gives to that entrance. General rule is higher = better").formatted(Formatting.GREEN, Formatting.ITALIC),
-            new LiteralText("• The yellow hints indicate the backtracking path.").formatted(Formatting.YELLOW),
+            new LiteralText("\u2022 Blue hints indicate the perfect path to the portal room.").formatted(Formatting.BLUE),
+            new LiteralText("\u2022 Green hints indicate the best judgement of the nav model.").formatted(Formatting.GREEN),
+            new LiteralText("   \u25E6 The numbers in doorways indicate the weight that the model gives to that entrance. General rule is higher = better").formatted(Formatting.GREEN, Formatting.ITALIC),
+            new LiteralText("\u2022 The yellow hints indicate the backtracking path.").formatted(Formatting.YELLOW),
             new LiteralText("======"),
             new LiteralText("Traces").formatted(Formatting.BOLD),
             new LiteralText("The player trace shows the exact path you took during a stronghold run. This will only display when hints are on.").formatted(Formatting.RED),
@@ -137,15 +137,15 @@ public class STInfoCommand {
             new LiteralText("There are three hotbar timers. The leftmost is the total time spent outside of the stronghold, middle is total run time, rightmost is the time spend in the current room. The +/=/- are comparing against Feinberg's average time in that room."),
             new LiteralText("======"),
             new LiteralText("Statistics").formatted(Formatting.BOLD),
-            new LiteralText("• Time Loss/Gain Against Feinberg: The sum of your time in each room against Feinberg's average time there.").formatted(Formatting.GREEN),
-            new LiteralText("• Estimated Difficulty: This a measure of how difficult Geo's model thinks the stronghold is to route. With some exceptions, < 10 is very easy, 10-50 is medium/easy, 50+ is bad RNG.").formatted(Formatting.DARK_GREEN),
-            new LiteralText("• Number of decisions: The number of decisions you made.").formatted(Formatting.DARK_GREEN),
-            new LiteralText("• Best Moves: Any perfect decision that goes deeper into the stronghold (no backtracking).").formatted(Formatting.GOLD),
+            new LiteralText("\u2022 Time Loss/Gain Against Feinberg: The sum of your time in each room against Feinberg's average time there.").formatted(Formatting.GREEN),
+            new LiteralText("\u2022 Estimated Difficulty: This a measure of how difficult Geo's model thinks the stronghold is to route. With some exceptions, < 10 is very easy, 10-50 is medium/easy, 50+ is bad RNG.").formatted(Formatting.DARK_GREEN),
+            new LiteralText("\u2022 Number of decisions: The number of decisions you made.").formatted(Formatting.DARK_GREEN),
+            new LiteralText("\u2022 Best Moves: Any perfect decision that goes deeper into the stronghold (no backtracking).").formatted(Formatting.GOLD),
             new LiteralText("? Inaccuracies: Mildly bad/incorrect decisions that cost a bit of time.").formatted(Formatting.YELLOW),
-            new LiteralText("⁈ Mistakes: Bad decisions that were pretty easy to avoid and/or led to a notable time loss.").formatted(Formatting.RED),
-            new LiteralText("⁇ Blunders: Terrible decisions that were obviously terrible and/or led to a disastrous time loss.").formatted(Formatting.DARK_RED),
-            new LiteralText("• Wormholes: Moves that weren't moving between two adjacent rooms (ocean travel, SmallCorridors).").formatted(Formatting.DARK_PURPLE),
-            new LiteralText("• Review: Allows you to review your mistakes.").formatted(Formatting.LIGHT_PURPLE)
+            new LiteralText("\u2048 Mistakes: Bad decisions that were pretty easy to avoid and/or led to a notable time loss.").formatted(Formatting.RED),
+            new LiteralText("\u2047 Blunders: Terrible decisions that were obviously terrible and/or led to a disastrous time loss.").formatted(Formatting.DARK_RED),
+            new LiteralText("\u2194 Wormholes: Moves that weren't moving between two adjacent rooms (ocean travel, SmallCorridors).").formatted(Formatting.DARK_PURPLE),
+            new LiteralText("\u2022 Review: Allows you to review your mistakes.").formatted(Formatting.LIGHT_PURPLE)
     };
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher){
         dispatcher.register(
