@@ -109,12 +109,12 @@ public class PlayerPathData {
                 style -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("This is calculated by taking the sum of the time you spent in each room minus Feinberg's average time in that room.")))
         ), false);
         playerEntity.sendMessage(new LiteralText("Estimated Difficulty " + DF.format(1 / difficulty)).formatted(Formatting.DARK_GREEN), false);
-        playerEntity.sendMessage(new LiteralText("№ Choices Reviewed " + roomsReviewed + "").formatted(Formatting.DARK_GREEN), false);
+        playerEntity.sendMessage(new LiteralText("\u2116 Choices Reviewed " + roomsReviewed + "").formatted(Formatting.DARK_GREEN), false);
         playerEntity.sendMessage(new LiteralText("! Best Moves " + bestMoveCount).formatted(Formatting.GOLD), false);
         playerEntity.sendMessage(new LiteralText("? Inaccuracies " + inaccuracyCount).formatted(Formatting.YELLOW), false);
-        playerEntity.sendMessage(new LiteralText("⁈ Mistakes " + mistakeCount).formatted(Formatting.RED), false);
-        playerEntity.sendMessage(new LiteralText("⁇ Blunders " + blunderCount).formatted(Formatting.DARK_RED), false);
-        playerEntity.sendMessage(new LiteralText("↔ Wormholes " + wormholeCount).formatted(Formatting.DARK_PURPLE), false);
+        playerEntity.sendMessage(new LiteralText("\u2048 Mistakes " + mistakeCount).formatted(Formatting.RED), false);
+        playerEntity.sendMessage(new LiteralText("\u2047 Blunders " + blunderCount).formatted(Formatting.DARK_RED), false);
+        playerEntity.sendMessage(new LiteralText("\u2194 Wormholes " + wormholeCount).formatted(Formatting.DARK_PURPLE), false);
     }
 
     private void updateRoomStats(ServerPlayerEntity playerEntity) {

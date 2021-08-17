@@ -178,13 +178,13 @@ public abstract class MixinMinecraftServer implements MinecraftServerAccessor {
                     } else {
                         if (currentTicks > StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(curr)) {
                             formatting = Formatting.RED;
-                            current = "⁽⁺⁾" + current;
+                            current = "\u207D\u207A\u207E" + current;
                         } else if (currentTicks < StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(curr)) {
                             formatting = Formatting.GREEN;
-                            current = "⁽⁻⁾" + current;
+                            current = "\u207D\u207B\u207E" + current;
                         } else if (currentTicks == StatsPathListener.FEINBERG_AVG_ROOM_TIMES.get(curr)) {
                             formatting = Formatting.GOLD;
-                            current = "⁽⁼⁾" + current;
+                            current = "\u207D\u207C\u207E" + current;
                         }
                     }
                 }
