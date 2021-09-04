@@ -3,6 +3,7 @@ package io.github.mjtb49.strongholdtrainer.gui;
 import com.google.gson.JsonPrimitive;
 import io.github.mjtb49.strongholdtrainer.api.MinecraftServerAccessor;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdMachineLearning;
+import io.github.mjtb49.strongholdtrainer.ml.model.StrongholdModel;
 import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
@@ -48,7 +49,10 @@ public class STOptionsScreen extends Screen {
                 ((MinecraftServerAccessor) client.getServer()).refreshRooms();
             }
             buttonWidget.setMessage(new LiteralText("Loaded Model: " + selectedModel));
-        }, ((button, matrices, mouseX, mouseY) -> this.renderTooltip(matrices, textRenderer.wrapLines(new LiteralText(OptionTracker.Option.MODEL.tooltip), 128), mouseX, mouseY)));
+        }, ((button, matrices, mouseX, mouseY) -> {
+            StrongholdModel model = StrongholdMachineLearning.MODEL_REGISTRY.getModel(selectedModel);
+            this.renderTooltip(matrices, textRenderer.wrapLines(new LiteralText(OptionTracker.Option.MODEL.tooltip).append(new LiteralText("\n" + selectedModel + " by: " + model.getCreator()).formatted(Formatting.GOLD)), 256), mouseX, mouseY);
+        }));
         for (OptionTracker.Option option : OPTIONS) {
             if (option != OptionTracker.Option.MODEL) {
                 ButtonWidget widget = new ButtonWidget((this.width / 2) - (row ? -5 : 155),
