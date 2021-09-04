@@ -11,7 +11,6 @@ import net.minecraft.util.Formatting;
 
 import java.util.Arrays;
 
-// TODO: rename better
 public class StrongholdMachineLearning {
     public static final StrongholdModelRegistry MODEL_REGISTRY = new StrongholdModelRegistry();
     private static final Text ERROR_MSG = new LiteralText("An error occurred querying the ML. See logs for more").formatted(Formatting.BOLD, Formatting.RED);

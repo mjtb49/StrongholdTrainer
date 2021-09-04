@@ -47,7 +47,7 @@ public class RenderingPathListener extends AbstractPathListener {
                 drawRoomsAndDoors(strongholdPath.getStructureStart(), strongholdPath.getStart(), strongholdPath.getLatest().getCurrentPiece());
             }
         } catch (Exception e) {
-            LOGGER.error("Failed to update " + this.toString() + ": ", e);
+            LOGGER.error("Failed to update " + this + ": ", e);
         }
     }
 

@@ -24,7 +24,7 @@ public class MixinEndPortalBlock {
                 !entity.hasVehicle() &&
                 !entity.hasPassengers() &&
                 entity.canUsePortals() &&
-                VoxelShapes.matchesAnywhere(VoxelShapes.cuboid(entity.getBoundingBox().offset((double) (-pos.getX()), (double) (-pos.getY()), (double) (-pos.getZ()))), state.getOutlineShape(world, pos), BooleanBiFunction.AND) &&
+                VoxelShapes.matchesAnywhere(VoxelShapes.cuboid(entity.getBoundingBox().offset(-pos.getX(), -pos.getY(), -pos.getZ())), state.getOutlineShape(world, pos), BooleanBiFunction.AND) &&
                 entity instanceof ServerPlayerEntity) {
             if(world.getServer().getCommandManager() == null){
                 return;

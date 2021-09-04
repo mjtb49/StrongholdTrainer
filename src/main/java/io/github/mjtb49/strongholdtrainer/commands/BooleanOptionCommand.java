@@ -1,9 +1,7 @@
 package io.github.mjtb49.strongholdtrainer.commands;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.context.CommandContext;
 import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;

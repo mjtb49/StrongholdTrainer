@@ -23,7 +23,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-// TODO: Cleanup, optimization, thread-safety
 public class StatsPathListener extends AbstractPathListener {
 
     public static final HashMap<Class<? extends StrongholdGenerator.Piece>, Integer> FEINBERG_AVG_ROOM_TIMES = new HashMap<>();
@@ -79,7 +78,7 @@ public class StatsPathListener extends AbstractPathListener {
             wastedTickCounter += history.get(j).getTicksSpentInPiece().get();
             j++;
         }
-        LOGGER.debug("Loss for " + entry.toString() + ": " + (wastedTickCounter) * (maxWeight - chosenWeight));
+        LOGGER.debug("Loss for " + entry + ": " + (wastedTickCounter) * (maxWeight - chosenWeight));
         return (wastedTickCounter) * (maxWeight - chosenWeight);
     }
 

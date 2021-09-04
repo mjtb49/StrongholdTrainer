@@ -387,7 +387,6 @@ public class StrongholdModel {
     }
 
     public Tensor getMLInputFromStrongholdPath(StrongholdPath strongholdPath) {
-        //TODO looks like start is null here sometimes
         int[][] input = new int[this.batchInput ? strongholdPath.getHistory().size() : 1][];
 //        this.roomVectorMap.forEach((key, value) -> System.out.println(key + Arrays.toString(value)));
         StrongholdTreeAccessor castStart = (StrongholdTreeAccessor) strongholdPath.getStart();
@@ -417,7 +416,6 @@ public class StrongholdModel {
     }
 
     private Tensor getMLInputDirectly(StrongholdTreeAccessor castStart, StrongholdGenerator.Piece piece) {
-        //TODO looks like start is null here sometimes
         int[][] input = new int[1][];
         input[0] = getInputForRooms(piece, castStart);
         Tensor inputTensor;

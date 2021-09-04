@@ -4,7 +4,6 @@ import net.minecraft.client.render.debug.DebugRenderer;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class TextRenderer {
     private static final List<Entry> TEXTS = Collections.synchronizedList(new ArrayList<>());

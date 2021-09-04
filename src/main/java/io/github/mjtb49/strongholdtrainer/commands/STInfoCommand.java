@@ -77,7 +77,6 @@ public class STInfoCommand {
             "of the input file used when generating it.  This code is not\n" +
             "standalone and requires a support library to be linked with it.  This\n" +
             "support library is itself covered by the above license.\n");
-    // TODO: is it ok to group TF and NDArray like this?
     private final static Text TENSORFLOW_LICENSE = new LiteralText("\n======= TENSORFLOW =======\nThis mod includes the TensorFlow Core API, TensorFlow Core API Platform and NDArray Libraries (© 2021 The TensorFlow Authors) which is licensed under the Apache 2.0 license. Links:\n")
             .append(createLink("http://www.apache.org/licenses/LICENSE-2.0", "Go to the Apache 2.0 license."))
             .append("\nCore API and Core API Platform - ")

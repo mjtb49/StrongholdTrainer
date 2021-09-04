@@ -49,7 +49,6 @@ public class PlayerPathData {
     private final int wormholeCount;
     @Expose
     private final int roomsReviewed;
-    // TODO: Should this be serialized?
     @Expose
     private final int ticksLostAgainstFeinberg;
 

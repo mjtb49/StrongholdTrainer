@@ -19,7 +19,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// TODO: Thread safety, cleanup, optimization
 public class StrongholdPath {
 
     private final StrongholdGenerator.Start start;

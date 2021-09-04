@@ -31,7 +31,7 @@ public abstract class MixinStrongholdFeatureStart extends StructureStart impleme
     private StrongholdGenerator.Start start;
 
     public MixinStrongholdFeatureStart(StructureFeature<DefaultFeatureConfig> feature, int chunkX, int chunkZ, BlockBox box, int references, long seed, long field_24559) {
-        super(feature, chunkX, chunkZ, box, references, seed);
+       super(feature, chunkX, chunkZ, box, references, seed);
     }
 
     /**
@@ -53,11 +53,11 @@ public abstract class MixinStrongholdFeatureStart extends StructureStart impleme
 
             this.children.add(start);
             start.placeJigsaw(start, this.children, this.random);
-            List list = start.field_15282;
+            List<StructurePiece> list = start.field_15282;
 
             while(!list.isEmpty()) {
                 int l = this.random.nextInt(list.size());
-                StructurePiece structurePiece = (StructurePiece)list.remove(l);
+                StructurePiece structurePiece = list.remove(l);
                 ((StrongholdTreeAccessor) start).registerPiece(structurePiece);
                 structurePiece.placeJigsaw(start, this.children, this.random);
             }
@@ -73,10 +73,8 @@ public abstract class MixinStrongholdFeatureStart extends StructureStart impleme
 
             int m = l - this.boundingBox.maxY;
             this.boundingBox.offset(0, m, 0);
-            Iterator iterator = this.children.iterator();
 
-            while(iterator.hasNext()) {
-                StructurePiece structurePiece = (StructurePiece) iterator.next();
+            for (StructurePiece structurePiece : (Iterable<StructurePiece>) this.children) {
                 structurePiece.translate(0, m, 0);
             }
 
