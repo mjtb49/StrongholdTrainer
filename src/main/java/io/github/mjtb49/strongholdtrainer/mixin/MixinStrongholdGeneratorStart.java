@@ -15,9 +15,10 @@ public class MixinStrongholdGeneratorStart implements StrongholdTreeAccessor {
     Map<StructurePiece, StructurePiece> parents = new HashMap<>();
 
     public void addPiece(StructurePiece piece) {
-        tree.get(pieces.get(pieces.size() - 1)).add(piece);
-        parents.put(piece, pieces.get(pieces.size() - 1));
-
+        if (pieces.size() != 0) {
+            tree.get(pieces.get(pieces.size() - 1)).add(piece);
+            parents.put(piece, pieces.get(pieces.size() - 1));
+        }
     }
 
     public void registerPiece(StructurePiece piece) {
@@ -26,6 +27,9 @@ public class MixinStrongholdGeneratorStart implements StrongholdTreeAccessor {
     }
 
     public void correctOrder5Way() {
+        if (pieces.size() == 0) {
+            return;
+        }
         StructurePiece piece = pieces.get(pieces.size() - 1);
         List<StructurePiece> list = tree.get(piece);
         if (list.size() == 5 && piece instanceof StrongholdGenerator.FiveWayCrossing) {
@@ -53,6 +57,9 @@ public class MixinStrongholdGeneratorStart implements StrongholdTreeAccessor {
     }
 
     public void correctOrderSquareAndCorridor() {
+        if (pieces.size() == 0) {
+            return;
+        }
         StructurePiece piece = pieces.get(pieces.size() - 1);
         List<StructurePiece> list = tree.get(piece);
         if (list.size() == 3 && (piece instanceof StrongholdGenerator.SquareRoom || piece instanceof StrongholdGenerator.Corridor)) {
