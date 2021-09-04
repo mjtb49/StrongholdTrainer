@@ -61,22 +61,24 @@ public class NewStrongholdCommand {
 
                     if (start.isPresent() && strongholdStart != null) {
                         double yFinal = strongholdStart.getBoundingBox().getCenter().getY() - 4;
-
                         float yaw = 0;
-                        switch (Objects.requireNonNull((strongholdStart.getFacing()))) {
-                            case NORTH:
-                                yaw = 180;
-                                break;
-                            case SOUTH:
-                                yaw = 0;
-                                break;
-                            case WEST:
-                                yaw = 90;
-                                break;
-                            case EAST:
-                                yaw = -90;
-                                break;
+                        if (strongholdStart.getFacing() != null){
+                            switch ((strongholdStart.getFacing())) {
+                                case NORTH:
+                                    yaw = 180;
+                                    break;
+                                case SOUTH:
+                                    yaw = 0;
+                                    break;
+                                case WEST:
+                                    yaw = 90;
+                                    break;
+                                case EAST:
+                                    yaw = -90;
+                                    break;
+                            }
                         }
+
                         c.getSource().getPlayer().teleport(c.getSource().getWorld(), blockX, yFinal, blockZ, yaw, 0);
                         if (!c.getSource().getPlayer().getServerWorld().getBlockState(new BlockPos(blockX, yFinal - 1, blockZ)).getMaterial().blocksMovement()) {
                             c.getSource().getPlayer().getServerWorld().setBlockState(new BlockPos(blockX, yFinal - 1, blockZ), Blocks.BARRIER.getDefaultState());
