@@ -42,7 +42,7 @@ public class STInfoCommand {
     private final static Text[] ABOUT_INFO = new Text[]{
             new LiteralText("\nStrongholdTrainer " + container.getMetadata().getVersion().getFriendlyString()).formatted(Formatting.BOLD, Formatting.YELLOW),
             new LiteralText("This mod is designed to help speedrunners navigate strongholds efficiently. It also has a machine learning component to help the community research stronghold navigation, as well as for fun!"),
-            new LiteralText("This is a beta testing version of the mod. Please report bugs by opening an issue on the GitHub repository. ").append(GITHUB_LINK).formatted(Formatting.RED)
+            new LiteralText("Please report bugs by opening an issue on the GitHub repository. ").append(GITHUB_LINK).formatted(Formatting.ITALIC)
     };
 
     private final static Text PROTOBUF_LICENSE = new LiteralText("\n====== PROTOBUF ======\nCopyright 2008 Google Inc.  All rights reserved.\n" +
