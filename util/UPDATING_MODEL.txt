@@ -1,8 +1,0 @@
-Updating the model:
-    1. Get the .keras version of the model from the alpha-stronghold generator.
-    2. Run keras2savedmodel.py, first argument is keras model, second is output **directory**,
-    which should be src/main/resources/model/.
-    3. Ensure that the saved model exported properly. There should be a .pb file, an assets directory,
-    and a variables directory.
-    4. Update the input and output node names in StrongholdRoomClassifier. To know those names, you can use this call
-    bundle.metaGraphDef().getSignatureDefMap().get("serving_default") (via https://stackoverflow.com/questions/62241546/java-tensorflow-keras-equivalent-of-model-predict)

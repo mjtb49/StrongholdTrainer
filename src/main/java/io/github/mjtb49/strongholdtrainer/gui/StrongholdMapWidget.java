@@ -178,9 +178,7 @@ public class StrongholdMapWidget extends AbstractButtonWidget implements Drawabl
                 });
             }
             textureManager.bindTexture(EYE_ICON);
-            strongholdToIconPosMap.keySet().forEach(pos -> {
-                drawTexture(matrices, pos.getLeft(), pos.getRight(), 32, 0, 16, 16, 16, 16);
-            });
+            strongholdToIconPosMap.keySet().forEach(pos -> drawTexture(matrices, pos.getLeft(), pos.getRight(), 32, 0, 16, 16, 16, 16));
         }
         if ((mouseX >= this.x) && (mouseY >= this.y) && (mouseY <= this.y + this.height) && (mouseX <= this.x + this.width)) {
             this.renderToolTip(matrices, mouseX, mouseY);

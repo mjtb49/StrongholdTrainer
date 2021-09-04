@@ -12,12 +12,13 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// TODO: Thread safety, cleanup, optimization
 public class StrongholdPath {
 
     private final StrongholdGenerator.Start start;
@@ -26,6 +27,8 @@ public class StrongholdPath {
     private final ServerPlayerEntity playerEntity;
     private final AtomicInteger ticksOutside;
     private final List<StrongholdPathListener> listeners;
+    private static final Logger LOGGER = LogManager.getLogger();
+
     private boolean finished = false;
     private final Map<Class<? extends StrongholdGenerator.Piece>, Boolean> winConditions;
     private final StrongholdTreeAccessor treeAccessor;
@@ -169,7 +172,7 @@ public class StrongholdPath {
 
     public void notifyListeners(PathEvent event) {
         if (this.listeners.size() == 0) {
-            System.out.println("No listeners listening to " + this.getClass().getSimpleName() + "@" + Integer.toHexString(this.hashCode()));
+            LOGGER.warn("No listeners listening to " + this.getClass().getSimpleName() + "@" + Integer.toHexString(this.hashCode()) + "!");
             return;
         }
         listeners.forEach(listener1 -> listener1.update(event));

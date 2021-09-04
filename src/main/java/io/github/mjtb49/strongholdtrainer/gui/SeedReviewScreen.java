@@ -7,6 +7,8 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.toast.SystemToast;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.structure.StrongholdGenerator;
+import net.minecraft.structure.StructurePiece;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -19,6 +21,8 @@ import net.minecraft.world.gen.ChunkRandom;
 import net.minecraft.world.gen.GeneratorOptions;
 import net.minecraft.world.level.LevelInfo;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class SeedReviewScreen extends Screen {
@@ -36,10 +40,32 @@ public class SeedReviewScreen extends Screen {
         this.parent = parent;
     }
 
-    private static long chunkSeed(long world, ChunkPos pos) {
+    private static long calculateSeed(long world, ChunkPos pos) {
         return new ChunkRandom().setCarverSeed(world, pos.x, pos.z);
     }
 
+    private static long calculateSeedWithAdjustment(long seed, ChunkPos pos) {
+        ChunkRandom random = new ChunkRandom();
+        long ret;
+        int var7 = 0;
+        List<StructurePiece> children = new ArrayList<>();
+        net.minecraft.structure.StrongholdGenerator.Start start;
+        do {
+            children.clear();
+            ret = random.setCarverSeed(seed + (var7++), pos.x, pos.z);
+            StrongholdGenerator.init();
+            start = new net.minecraft.structure.StrongholdGenerator.Start(random, (pos.x << 4) + 2, (pos.z << 4) + 2);
+            children.add(start);
+            start.placeJigsaw(start, children, random);
+            List list = start.field_15282;
+            while (!list.isEmpty()) {
+                int l = random.nextInt(list.size());
+                StructurePiece structurePiece = (StructurePiece) list.remove(l);
+                structurePiece.placeJigsaw(start, children, random);
+            }
+        } while (children.isEmpty() || start.field_15283 == null);
+        return ret;
+    }
     @Override
     protected void init() {
         super.init();
@@ -71,7 +97,7 @@ public class SeedReviewScreen extends Screen {
         this.renderBackground(matrices);
         this.drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 20, -1);
         String ind = mapWidget.getSelected() == null ? "Select a stronghold!" : "Coords: " + (mapWidget.getSelected().getStartX() + 4) + ", " + (mapWidget.getSelected().getStartZ() + 4);
-        String se = mapWidget.getSelected() == null ? "" : "Chunk seed: " + chunkSeed(this.seed, mapWidget.getSelected());
+        String se = mapWidget.getSelected() == null ? "" : "Chunk seed: " + calculateSeedWithAdjustment(this.seed, mapWidget.getSelected());
         this.drawCenteredString(matrices, this.textRenderer, ind, (2 * this.width) / 3, height / 2 + 30, -1);
         this.drawCenteredString(matrices, this.textRenderer, se, (2 * this.width) / 3, height / 2 + 40, -1);
         super.render(matrices, mouseX, mouseY, delta);
@@ -85,7 +111,7 @@ public class SeedReviewScreen extends Screen {
             GeneratorOptions options = ((CreateWorldScreen) parent).moreOptionsDialog.getGeneratorOptions(false);
             if (this.mapWidget.getSelected() != null) {
                 String name = "rev-" + UUID.randomUUID().toString().split("-")[0];
-                GeneratorOptions newOptions = new GeneratorOptions(chunkSeed(seed, mapWidget.getSelected()), true, false, options.getDimensionMap());
+                GeneratorOptions newOptions = new GeneratorOptions(calculateSeedWithAdjustment(seed, mapWidget.getSelected()), true, false, options.getDimensionMap());
                 this.levelInfo = new LevelInfo(name, GameMode.SPECTATOR, false, Difficulty.EASY, false, new GameRules(), this.levelInfo.method_29558());
                 client.method_29607(name, this.levelInfo, ((CreateWorldScreen) parent).moreOptionsDialog.method_29700(), newOptions);
             } else {

@@ -3,7 +3,6 @@ package io.github.mjtb49.strongholdtrainer.mixin;
 import io.github.mjtb49.strongholdtrainer.api.StartAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
 import net.minecraft.structure.StructureStart;
 import net.minecraft.text.LiteralText;
@@ -24,8 +23,6 @@ public abstract class MixinClientPlayNetworkHandler {
     @Shadow
     private MinecraftClient client;
 
-    @Shadow
-    private ClientWorld world;
 
     @Inject(method = "onGameJoin", at = @At(value = "TAIL"))
     public void onGameJoin(GameJoinS2CPacket packet, CallbackInfo ci) {

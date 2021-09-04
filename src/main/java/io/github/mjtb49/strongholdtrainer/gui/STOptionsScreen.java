@@ -27,7 +27,6 @@ public class STOptionsScreen extends Screen {
     }
 
     private static final HashMap<Boolean, Text> ON_OFF_MAP = new HashMap<>();
-    // TODO: do side-by-side buttons to prevent overflow
     @Override
     protected void init() {
         int y = this.height / 6 + 18;
@@ -62,9 +61,7 @@ public class STOptionsScreen extends Screen {
                             OptionTracker.setOption(option, new JsonPrimitive(!OptionTracker.getBoolean(option)));
                             buttonWidget.setMessage(new LiteralText(option.label + ": ").append(ON_OFF_MAP.get(OptionTracker.getBoolean(option))));
 
-                        }, ((button, matrices, mouseX, mouseY) -> {
-                    this.renderTooltip(matrices, textRenderer.wrapLines(new LiteralText(option.tooltip), 128), mouseX, mouseY);
-                }));
+                        }, ((button, matrices, mouseX, mouseY) -> this.renderTooltip(matrices, textRenderer.wrapLines(new LiteralText(option.tooltip), 128), mouseX, mouseY)));
                 this.addButton(widget);
                 row = !row;
             }

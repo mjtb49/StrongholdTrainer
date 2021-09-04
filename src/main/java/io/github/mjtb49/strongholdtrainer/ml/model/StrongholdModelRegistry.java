@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * A class that can store and load StrongholdModels. The models are registered with their identifiers and stored in
- * a Hashtable if everything checks out. The registry has an "active model" TODO: move the active model out of the registry.
+ * a Hashtable if everything checks out. The registry has an "active model"
  */
 public class StrongholdModelRegistry{
 

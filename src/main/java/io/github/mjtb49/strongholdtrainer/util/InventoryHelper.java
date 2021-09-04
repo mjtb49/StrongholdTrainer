@@ -9,7 +9,7 @@ import java.io.*;
 
 public class InventoryHelper {
 
-    public static void saveInventoryToFile(File file, PlayerEntity playerEntity) throws IOException {
+    public static void saveInventoryToFile(File file, PlayerEntity playerEntity) {
         try {
             ListTag tags = new ListTag();
             playerEntity.inventory.serialize(tags);

@@ -14,6 +14,8 @@ import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -21,13 +23,13 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-// TODO: Cleanup, optimization, thread-safety
 public class StatsPathListener extends AbstractPathListener {
 
     public static final HashMap<Class<? extends StrongholdGenerator.Piece>, Integer> FEINBERG_AVG_ROOM_TIMES = new HashMap<>();
     private static final int BLUNDER_THRESHOLD = 20 * 10;
     private static final int MISTAKE_THRESHOLD = 20 * 5;
     private static final int INACCURACY_THRESHOLD = 20 * 2;
+    private static final Logger LOGGER = LogManager.getLogger();
 
     static {
         FEINBERG_AVG_ROOM_TIMES.put(StrongholdGenerator.ChestCorridor.class, 25);
@@ -76,7 +78,7 @@ public class StatsPathListener extends AbstractPathListener {
             wastedTickCounter += history.get(j).getTicksSpentInPiece().get();
             j++;
         }
-        System.out.println("Loss for " + entry + ": " + (wastedTickCounter) * (maxWeight - chosenWeight));
+        LOGGER.debug("Loss for " + entry + ": " + (wastedTickCounter) * (maxWeight - chosenWeight));
         return (wastedTickCounter) * (maxWeight - chosenWeight);
     }
 

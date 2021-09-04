@@ -4,6 +4,8 @@ import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.util.math.Direction;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 
 import java.util.*;
@@ -13,11 +15,13 @@ public class MixinStrongholdGeneratorStart implements StrongholdTreeAccessor {
     private Map<StructurePiece, List<StructurePiece>> tree = new HashMap<>();
     private ArrayList<StructurePiece> pieces = new ArrayList<>();
     Map<StructurePiece, StructurePiece> parents = new HashMap<>();
+    private static Logger LOGGER = LogManager.getLogger();
 
     public void addPiece(StructurePiece piece) {
-        tree.get(pieces.get(pieces.size() - 1)).add(piece);
-        parents.put(piece, pieces.get(pieces.size() - 1));
-
+        if (pieces.size() != 0) {
+            tree.get(pieces.get(pieces.size() - 1)).add(piece);
+            parents.put(piece, pieces.get(pieces.size() - 1));
+        }
     }
 
     public void registerPiece(StructurePiece piece) {
@@ -26,6 +30,9 @@ public class MixinStrongholdGeneratorStart implements StrongholdTreeAccessor {
     }
 
     public void correctOrder5Way() {
+        if (pieces.size() == 0) {
+            return;
+        }
         StructurePiece piece = pieces.get(pieces.size() - 1);
         List<StructurePiece> list = tree.get(piece);
         if (list.size() == 5 && piece instanceof StrongholdGenerator.FiveWayCrossing) {
@@ -53,6 +60,9 @@ public class MixinStrongholdGeneratorStart implements StrongholdTreeAccessor {
     }
 
     public void correctOrderSquareAndCorridor() {
+        if (pieces.size() == 0) {
+            return;
+        }
         StructurePiece piece = pieces.get(pieces.size() - 1);
         List<StructurePiece> list = tree.get(piece);
         if (list.size() == 3 && (piece instanceof StrongholdGenerator.SquareRoom || piece instanceof StrongholdGenerator.Corridor)) {
@@ -104,7 +114,7 @@ public class MixinStrongholdGeneratorStart implements StrongholdTreeAccessor {
                     result += " " + index.get(piece);
                 }
             }
-            System.out.println(result);
+            LOGGER.debug(result);
         }
     }
 }

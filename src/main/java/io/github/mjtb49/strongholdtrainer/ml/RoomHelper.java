@@ -11,7 +11,6 @@ import org.tensorflow.ndarray.NdArrays;
 import org.tensorflow.ndarray.Shape;
 import org.tensorflow.types.TInt64;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +53,7 @@ public class RoomHelper {
      * @param piece The current room.
      * @return A [-1,103] int64 Tensor.
      */
+    @Deprecated
     public static Tensor getMLInputFromRoom(StrongholdGenerator.Start start, StrongholdGenerator.Piece piece) {
         //TODO looks like start is null here sometimes
         Map<StructurePiece, StructurePiece> parents = ((StrongholdTreeAccessor) start).getParents();
@@ -71,15 +71,14 @@ public class RoomHelper {
             if (i < children.size()) {
                 data[0] = ArrayUtils.addAll(data[0], getArrayFromPiece(children.get(i)));
             } else {
-//                System.out.println(Arrays.deepToString(data));
                 data[0] = ArrayUtils.addAll(data[0], getArrayFromPiece(null));
             }
         }
         data[0] = ArrayUtils.addAll(data[0], DIR_TO_VECTOR.get(direction));
-        System.out.println(Arrays.deepToString(data));
         return intArrayToInputTensor(data);
     }
 
+    @Deprecated
     protected static Tensor getMLInputFromRoomNoDir(StrongholdGenerator.Start start, StrongholdGenerator.Piece piece) {
 
         Map<StructurePiece, StructurePiece> parents = ((StrongholdTreeAccessor) start).getParents();

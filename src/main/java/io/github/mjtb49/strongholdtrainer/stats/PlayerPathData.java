@@ -49,7 +49,6 @@ public class PlayerPathData {
     private final int wormholeCount;
     @Expose
     private final int roomsReviewed;
-    // TODO: Should this be serialized?
     @Expose
     private final int ticksLostAgainstFeinberg;
 
@@ -132,16 +131,6 @@ public class PlayerPathData {
         int index = (times.size() - 1) / 2;
         int index2 = times.size() / 2;
         return (times.get(index) + times.get(index2)) / 2;
-    }
-
-    /**
-     * @deprecated in favor of sendSplits() or using getHistory().forEach(System::println) in StrongholdPath
-     */
-    @Deprecated
-    private void printTheTravel() {
-        for (Pair<StrongholdGenerator.Piece, Integer> pair : rooms) {
-            System.out.println(pair.getLeft().getClass().getSimpleName() + " " + pair.getRight());
-        }
     }
 
     public static void loadAllPriorPaths(Path path) {

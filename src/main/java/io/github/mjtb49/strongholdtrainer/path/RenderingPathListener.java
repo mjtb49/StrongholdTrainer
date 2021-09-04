@@ -17,6 +17,8 @@ import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructureStart;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.Box;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ import java.util.Map;
 public class RenderingPathListener extends AbstractPathListener {
 
     private static final DecimalFormat df = new DecimalFormat("0.00");
+    private static final Logger LOGGER = LogManager.getLogger();
     private final Map<StructurePiece, Double> percents;
     private StructurePiece mlChosen;
     private boolean loadedModelSupportsBacktracking;
@@ -44,8 +47,7 @@ public class RenderingPathListener extends AbstractPathListener {
                 drawRoomsAndDoors(strongholdPath.getStructureStart(), strongholdPath.getStart(), strongholdPath.getLatest().getCurrentPiece());
             }
         } catch (Exception e) {
-            System.out.println("Failed to update " + this.toString() + ": " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("Failed to update " + this + ": ", e);
         }
     }
 

@@ -12,7 +12,6 @@ import java.io.File;
 import java.io.IOException;
 
 import static net.minecraft.server.command.CommandManager.literal;
-// TODO: should this be an OptionCommand?
 public class CustomInventoryCommand {
     private static final File SAVED_INVENTORY = new File(FabricLoader.getInstance().getGameDir().resolve("saved_inventory.nbt").toString());
 
@@ -30,14 +29,9 @@ public class CustomInventoryCommand {
                             return 0;
                 })).then(
                         literal("save").executes(context -> {
-                            try {
-                                InventoryHelper.saveInventoryToFile(SAVED_INVENTORY, context.getSource().getPlayer());
-                                return 0;
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                                return -1;
-                            }
-                })).then(
+                            InventoryHelper.saveInventoryToFile(SAVED_INVENTORY, context.getSource().getPlayer());
+                            return 0;
+                        })).then(
                         literal("load").executes(context -> {
                             try {
                                 InventoryHelper.loadInventoryFromFile(SAVED_INVENTORY, context.getSource().getPlayer());

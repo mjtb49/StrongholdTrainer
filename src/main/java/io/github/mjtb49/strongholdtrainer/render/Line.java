@@ -37,7 +37,7 @@ public class Line extends Renderer {
 
         //This is how thick the line is.
         GlStateManager.lineWidth(2.0f);
-        //TODO unhardcode this 1
+        //TODO unhardcode this 1 (does this need to be done?)
         buffer.begin(1, VertexFormats.POSITION_COLOR);
 
         //Put the start and end vertices in the buffer.
