@@ -58,7 +58,7 @@ public class StrongholdModelRegistry{
     }
 
     public String getDefaultModelIdentifier(){
-        return this.modelRegistry.keySet().stream().findFirst().orElse("");
+        return this.modelRegistry.keySet().stream().findFirst().orElse("basic-classifier-nobacktracking");
     }
 
     /**
