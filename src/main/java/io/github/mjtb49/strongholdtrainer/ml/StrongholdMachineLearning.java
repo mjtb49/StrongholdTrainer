@@ -14,27 +14,28 @@ import java.util.Arrays;
 // TODO: rename better
 public class StrongholdMachineLearning {
     public static final StrongholdModelRegistry MODEL_REGISTRY = new StrongholdModelRegistry();
-    public static boolean verboseOutput = false;
     private static final Text ERROR_MSG = new LiteralText("An error occurred querying the ML. See logs for more").formatted(Formatting.BOLD, Formatting.RED);
+    private static final double[] ERROR_POLICY = new double[]{0xFFD, 0xFFD, 0xFFD, 0xFFD, 0xFFD, 0xFFD};
+    public static boolean verboseOutput = false;
+
     public static void init(String... internalModels) {
-        if(!StrongholdTrainer.ML_DISABLED){
-            for(String path : internalModels){
+        if (!StrongholdTrainer.ML_DISABLED) {
+            for (String path : internalModels) {
                 MODEL_REGISTRY.createAndRegisterInternal(path);
             }
             MODEL_REGISTRY.setActiveModel("basic-classifier-nobacktracking");
         }
         // Register default included models.
     }
-    private static final double[] ERROR_POLICY = new double[]{0xFFD, 0xFFD, 0xFFD, 0xFFD, 0xFFD, 0xFFD};
 
     public static double[] getPredictions(StrongholdPath path) {
         //hack fix since the model hasn't been trained on rooms where the portal room is adjacent
-        try{
-            if((!StrongholdTrainer.ML_DISABLED) || (MODEL_REGISTRY.getActiveModel() != null)){
+        try {
+            if ((!StrongholdTrainer.ML_DISABLED) || (MODEL_REGISTRY.getActiveModel() != null)) {
                 double[] predictions = MODEL_REGISTRY.getActiveModel().getPredictions(path);
-                if(verboseOutput){
+                if (verboseOutput) {
                     PlayerEntity playerEntity = MinecraftClient.getInstance().player;
-                    if(playerEntity != null){
+                    if (playerEntity != null) {
                         playerEntity.sendMessage(new LiteralText(Arrays.toString(predictions)), false);
                     }
                 }
@@ -42,8 +43,8 @@ public class StrongholdMachineLearning {
             } else {
                 return ERROR_POLICY;
             }
-        } catch (Exception e){
-            if(MinecraftClient.getInstance().player != null){
+        } catch (Exception e) {
+            if (MinecraftClient.getInstance().player != null) {
                 MinecraftClient.getInstance().player.sendMessage(ERROR_MSG, false);
             }
             e.printStackTrace();
@@ -51,7 +52,6 @@ public class StrongholdMachineLearning {
         }
 
     }
-
 
 
 }
