@@ -34,6 +34,9 @@ public class StrongholdTrainer implements ModInitializer  {
 
     @Override
     public void onInitialize() {
+        System.setProperty("org.bytedeco.javacpp.maxphysicalbytes", "0");
+        System.setProperty("org.bytedeco.javacpp.maxbytes", "0");
+
         OptionTracker.init();
         StrongholdTrainerStats.register();
 
