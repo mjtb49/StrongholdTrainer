@@ -505,7 +505,7 @@ public class StrongholdModel {
     }
 
     private void parseSTMeta() throws IOException {
-        File metadataFile = new File(this.path + "/model.stmeta");
+        File metadataFile = new File(this.path + "/docs/example.stmeta");
         if (!metadataFile.exists()) {
             throw new FileNotFoundException("No stmeta file at " + metadataFile.getPath() + ", using default init.");
         }
