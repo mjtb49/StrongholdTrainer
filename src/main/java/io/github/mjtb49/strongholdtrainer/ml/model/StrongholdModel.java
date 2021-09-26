@@ -246,10 +246,6 @@ public class StrongholdModel {
         SignatureDef signatureMap = this.modelBundle.metaGraphDef().getSignatureDefMap().get("serving_default");
         Map<String, TensorInfo> inputMap = signatureMap.getInputsMap();
         Map<String, TensorInfo> outputMap = signatureMap.getOutputsMap();
-        // TODO: add stmeta param for this instead of hard-coding it
-        if (this.identifier.contains("rnn")) {
-            this.batchInput = true;
-        }
         // Force models to have one input and output
         if (inputMap.size() == 1) {
             TensorInfo info = inputMap.values().toArray()[0] instanceof TensorInfo ? ((TensorInfo) inputMap.values().toArray()[0]) : null;
@@ -583,6 +579,9 @@ public class StrongholdModel {
                         } else if (args[0].equals("input_type")) {
                             this.input_type = typeMap.get(args[1]);
                             flags |= 1 << 6;
+                        } else if (args[0].equals("input_batching")) {
+                            this.batchInput = Boolean.parseBoolean(args[1]);
+                            flags |= 1 << 7;
                         }
                     }
                 }
@@ -625,7 +624,10 @@ public class StrongholdModel {
             warn("Input type not defined, defaulting to Int64/Float32!", 0);
             this.input_type = this.inputShape.numDimensions() == 3 ? TFloat32.class : TInt64.class;
         }
-
+        if (((flags >> 7) & 1) != 1){
+            warn("Input batching not defined, defaulting to " + this.identifier.contains("rnn") + "!", 0);
+            this.batchInput = this.identifier.contains("rnn");
+        }
     }
 
     private List<RoomData> parseVecOrder(String commaDelimitedVecOrder, int line) throws STMetaSyntaxException {
