@@ -44,6 +44,7 @@ defines the identifier with which the model is registered.
 formatted as `[size_1, size_2, ... size_n]`. All sizes must be valid 64-bit integer literals. At some point, shapes will be validated against the 
 auto-detected shape of the model's signature definition. __Currently, only `[1,6]` and `[1,5]` are supported as output shapes__, anything else will cause an error.
   
+- _Input Batching_: `input_batching=<true|false>` Whether the model receives input batched by stronghold. Defaults to the presence of `"rnn"` in the identifier.
 - _Encoding Configuration:_ ``redefine(map_id):TOKEN_1,TOKEN_2,...TOKEN_n`` where `map_id` is a valid
 re-assignable one-hot encoding map and the `TOKEN`s are valid tokens associated with the map.
     - Currently the only `map_id`s supported are `ROOM_TO_VECTOR` and `DIR_TO_VECTOR`. This redefines how the mod
