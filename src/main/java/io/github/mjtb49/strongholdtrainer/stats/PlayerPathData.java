@@ -8,11 +8,9 @@ import io.github.mjtb49.strongholdtrainer.util.RoomFormatter;
 import io.github.mjtb49.strongholdtrainer.util.TimerHelper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.stat.Stats;
-import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
@@ -28,7 +26,7 @@ public class PlayerPathData {
     private static Path STATS_PATH;
 
     private static final DecimalFormat DF = new DecimalFormat("0.00");
-    private final ArrayList<Pair<StrongholdGenerator.Piece, Integer>> rooms;
+    private final ArrayList<PlayerPathEntry> path;
     @Expose
     private final HashMap<String, ArrayList<Integer>> roomsToWriteToFile;
     @Expose
@@ -53,7 +51,7 @@ public class PlayerPathData {
     private final int ticksLostAgainstFeinberg;
 
 
-    public PlayerPathData(ArrayList<Pair<StrongholdGenerator.Piece, Integer>> rooms,
+    public PlayerPathData(ArrayList<PlayerPathEntry> rooms,
                           int ticksInStronghold,
                           double difficulty,
                           int wastedTime,
@@ -64,7 +62,7 @@ public class PlayerPathData {
                           int wormholeCount,
                           int roomsReviewed,
                           int tickLossAgainstFeinberg) {
-        this.rooms = rooms;
+        this.path = rooms;
         this.ticksInStronghold = ticksInStronghold;
         this.difficulty = difficulty;
         this.wastedTime = wastedTime;
@@ -77,10 +75,10 @@ public class PlayerPathData {
         this.blunderCount = blunderCount;
 
         roomsToWriteToFile = new HashMap<>();
-        for (Pair<StrongholdGenerator.Piece, Integer> pair : rooms) {
-            ArrayList<Integer> list = roomsToWriteToFile.getOrDefault(RoomFormatter.ROOM_TO_STRING.get(pair.getLeft().getClass()), new ArrayList<>());
-            list.add(pair.getRight());
-            roomsToWriteToFile.put(RoomFormatter.ROOM_TO_STRING.get(pair.getLeft().getClass()), list);
+        for (PlayerPathEntry entry : path) {
+            ArrayList<Integer> list = roomsToWriteToFile.getOrDefault(RoomFormatter.ROOM_TO_STRING.get(entry.piece.getClass()), new ArrayList<>());
+            list.add(entry.ticks);
+            roomsToWriteToFile.put(RoomFormatter.ROOM_TO_STRING.get(entry.piece.getClass()), list);
         }
 
         allPlayerPathData.add(this);
@@ -117,8 +115,8 @@ public class PlayerPathData {
     }
 
     private void updateRoomStats(ServerPlayerEntity playerEntity) {
-        for (Pair<StrongholdGenerator.Piece, Integer> room : rooms) {
-            RoomStats.updateRoomStats(playerEntity, room.getLeft().getClass(), room.getRight());
+        for (PlayerPathEntry entry : path) {
+            RoomStats.updateRoomStats(playerEntity, entry.piece.getClass(), entry.ticks, entry.entrance, entry.exit);
         }
     }
 

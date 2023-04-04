@@ -24,6 +24,23 @@ public class RoomFormatter {
         put(null, "None");
     }};
 
+    public static final Map<Class<? extends StructurePiece>, Integer> ROOM_TO_NUM_EXITS = new HashMap<Class<? extends StructurePiece>, Integer>() {{
+        put(StrongholdGenerator.Corridor.class, 3);
+        put(StrongholdGenerator.PrisonHall.class, 1);
+        put(StrongholdGenerator.LeftTurn.class, 1);
+        put(StrongholdGenerator.RightTurn.class, 1);
+        put(StrongholdGenerator.SquareRoom.class, 3);
+        put(StrongholdGenerator.Stairs.class, 1);
+        put(StrongholdGenerator.SpiralStaircase.class, 1);
+        put(StrongholdGenerator.FiveWayCrossing.class, 5);
+        put(StrongholdGenerator.ChestCorridor.class, 1);
+        put(StrongholdGenerator.Library.class, 0);
+        put(StrongholdGenerator.PortalRoom.class, 0);
+        put(StrongholdGenerator.SmallCorridor.class, 0);
+        put(StrongholdGenerator.Start.class, 1);
+        put(null, 0);
+    }};
+
     public static String getStrongholdPieceAsString(Class<? extends StructurePiece> piece) {
         return ROOM_TO_STRING.get(piece);
     }
