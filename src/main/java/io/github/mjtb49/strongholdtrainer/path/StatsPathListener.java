@@ -178,27 +178,21 @@ public class StatsPathListener extends AbstractPathListener {
         this.blunders = losses.stream().filter(pair -> pair.getRight() >= BLUNDER_THRESHOLD).map(Pair::getLeft).map(StrongholdPathEntry::getCurrentPiece).collect(Collectors.toList());
         inaccuracies.removeAll(this.mistakes);
         mistakes.removeAll(this.blunders);
-        ArrayList<PlayerPathEntry> rooms = new ArrayList<>();
+        ArrayList<PlayerPathEntry> playerPath = new ArrayList<>();
         for (int i = 0; i < history.size() - 1; i++) {
             StrongholdPathEntry currentEntry = history.get(i);
             StrongholdGenerator.Piece currentPiece = currentEntry.getCurrentPiece();
             StrongholdGenerator.Piece previousPiece = currentEntry.getPreviousPiece();
             StrongholdGenerator.Piece nextPiece = history.get(i+1).getCurrentPiece();
 
-            int entrance = getExitToRoom(currentPiece, previousPiece);
-            int exit = getExitToRoom(currentPiece, nextPiece);
+            int entrance = getDoorToRoom(currentPiece, previousPiece);
+            int exit = getDoorToRoom(currentPiece, nextPiece);
 
-            rooms.add(new PlayerPathEntry(currentPiece, currentEntry.getTicksSpentInPiece().get(), entrance, exit));
+            playerPath.add(new PlayerPathEntry(currentPiece, currentEntry.getTicksSpentInPiece().get(), entrance, exit));
         }
-        /*
-        history.forEach(pathEntry -> {
-            Pair<StrongholdGenerator.Piece, Integer> pair = new Pair<>(pathEntry.getCurrentPiece(), pathEntry.getTicksSpentInPiece().get());
-            rooms.add(pair);
-        });
-        // */
 
         return new PlayerPathData(
-                rooms,
+                playerPath,
                 strongholdPath.getTotalTime(),
                 computeDifficulty(solution),
                 history.stream()
@@ -251,7 +245,14 @@ public class StatsPathListener extends AbstractPathListener {
         return -1;
     }
 
-    private int getExitToRoom(StrongholdGenerator.Piece current, StrongholdGenerator.Piece target) {
+    /** 
+     * This function has very specific behavior tailored for use in RoomStats.java. It will:
+     * - return 0 if the target is the parent of the current room
+     * - return 0 if the target is `null` and current is the starter staircase
+     * - return the exit index of the target from the current room, ONE-INDEXED!!
+     * - return num_exits(current) PLUS ONE!! if the target room is not adjacent to the current room.
+    */
+    private int getDoorToRoom(StrongholdGenerator.Piece current, StrongholdGenerator.Piece target) {
         StrongholdTreeAccessor treeAccessor = (StrongholdTreeAccessor) this.strongholdPath.getStart();
         if ((current.getClass() != StrongholdGenerator.Start.class && treeAccessor.getParents().get(current).equals(target)) || current.getClass() == StrongholdGenerator.Start.class && target == null) {
             return 0;
