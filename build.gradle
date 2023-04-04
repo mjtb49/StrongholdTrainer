@@ -31,8 +31,8 @@ dependencies {
     mappings "net.fabricmc:yarn:1.16.1+build.21:v2"
     modImplementation "net.fabricmc:fabric-loader:0.11.3"
 
-    implementation group: 'org.tensorflow', name: 'tensorflow-core-api', version: '0.3.1'
-    implementation group: 'org.tensorflow', name: 'tensorflow-core-platform', version: '0.3.1'
+    compile group: 'org.tensorflow', name: 'tensorflow-core-api', version: '0.3.1'
+    compile group: 'org.tensorflow', name: 'tensorflow-core-platform', version: '0.3.1'
 
     modRuntime ("com.github.SuperCoder7979:databreaker:0.2.5") {
         exclude module: "fabric-loader"
@@ -75,7 +75,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 // Configures shadowJar to use compile dependencies. Edits remapJar to use the shadow jar as its input
 shadowJar {
     classifier "shadow"
-    //configurations = [project.configurations.compile]
+    configurations = [project.configurations.compile]
     remapJar {
         dependsOn shadowJar
         input.set shadowJar.archiveFile.get()
