@@ -87,7 +87,7 @@ public class PlayerPathData {
     public void updateAndPrintAllStats(ServerPlayerEntity playerEntity, @Nullable String realtime, boolean invalidRun) {
         if(!invalidRun){
             StrongholdTrainerStats.updateStrongholdTimeStats(playerEntity, ticksInStronghold);
-            updateRoomStats();
+            RoomStats.updateRoomStats(path);
 
             playerEntity.increaseStat(StrongholdTrainerStats.NUM_REVIEWED_ROOMS, roomsReviewed);
             playerEntity.increaseStat(StrongholdTrainerStats.NUM_BEST_ROOMS, bestMoveCount);
@@ -112,12 +112,6 @@ public class PlayerPathData {
         playerEntity.sendMessage(new LiteralText("\u2048 Mistakes " + mistakeCount).formatted(Formatting.RED), false);
         playerEntity.sendMessage(new LiteralText("\u2047 Blunders " + blunderCount).formatted(Formatting.DARK_RED), false);
         playerEntity.sendMessage(new LiteralText("\u2194 Wormholes " + wormholeCount).formatted(Formatting.DARK_PURPLE), false);
-    }
-
-    private void updateRoomStats() {
-        for (PlayerPathEntry entry : path) {
-            RoomStats.updateRoomStats(entry.piece.getClass(), entry.ticks, entry.entrance, entry.exit);
-        }
     }
 
     private int computeMedianTimeTaken() {
