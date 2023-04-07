@@ -87,7 +87,7 @@ public class PlayerPathData {
     public void updateAndPrintAllStats(ServerPlayerEntity playerEntity, @Nullable String realtime, boolean invalidRun) {
         if(!invalidRun){
             StrongholdTrainerStats.updateStrongholdTimeStats(playerEntity, ticksInStronghold);
-            updateRoomStats(playerEntity);
+            updateRoomStats();
 
             playerEntity.increaseStat(StrongholdTrainerStats.NUM_REVIEWED_ROOMS, roomsReviewed);
             playerEntity.increaseStat(StrongholdTrainerStats.NUM_BEST_ROOMS, bestMoveCount);
@@ -114,9 +114,9 @@ public class PlayerPathData {
         playerEntity.sendMessage(new LiteralText("\u2194 Wormholes " + wormholeCount).formatted(Formatting.DARK_PURPLE), false);
     }
 
-    private void updateRoomStats(ServerPlayerEntity playerEntity) {
+    private void updateRoomStats() {
         for (PlayerPathEntry entry : path) {
-            RoomStats.updateRoomStats(playerEntity, entry.piece.getClass(), entry.ticks, entry.entrance, entry.exit);
+            RoomStats.updateRoomStats(entry.piece.getClass(), entry.ticks, entry.entrance, entry.exit);
         }
     }
 
@@ -132,6 +132,7 @@ public class PlayerPathData {
     }
 
     public static void loadAllPriorPaths(Path path) {
+        RoomStats.init(path);
         STATS_PATH = path.resolve("stats.json");
         Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
@@ -152,6 +153,7 @@ public class PlayerPathData {
     }
 
     public static void writeAllPaths() {
+        RoomStats.writeStatsToFile();
         Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
                 .create();

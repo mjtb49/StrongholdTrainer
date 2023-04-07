@@ -20,8 +20,6 @@ public class StrongholdTrainerStats {
     public static final Identifier MEDIAN_TIME = new Identifier(MODID, "med_time");
 
     public static void register() {
-        RoomStats.register();
-
         Registry.register(Registry.CUSTOM_STAT, "num_strongholds", NUM_STRONGHOLDS);
         Registry.register(Registry.CUSTOM_STAT, "num_reviewed_rooms", NUM_REVIEWED_ROOMS);
         Registry.register(Registry.CUSTOM_STAT, "num_best_rooms", NUM_BEST_ROOMS);
