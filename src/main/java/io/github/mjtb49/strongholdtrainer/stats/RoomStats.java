@@ -18,8 +18,15 @@ public class RoomStats {
 
     private static Path path;
 
-    private static String pieceToString(Class<? extends StructurePiece> pieceType) {
-        return RoomFormatter.ROOM_TO_STRING.get(pieceType);
+    private static String pieceToString(StructurePiece piece) {
+        return RoomFormatter.ROOM_TO_STRING.get(piece.getClass());
+    }
+
+    private static String doorToString(StructurePiece piece, int door) {
+        if (door > RoomFormatter.ROOM_TO_NUM_EXITS.get(piece.getClass())) {
+            return "worm";
+        }
+        return Integer.toString(door);
     }
 
     public static void init(Path path) {
@@ -36,7 +43,7 @@ public class RoomStats {
             for (ArrayList<PlayerPathEntry> path : roomTimeStats) {
                 writer.write(path.size() + "\n");
                 for (PlayerPathEntry entry : path) {
-                    writer.write(pieceToString(entry.piece.getClass()) + " " + entry.entrance + " " + entry.exit + " " + entry.ticks + "\n");
+                    writer.write(pieceToString(entry.piece) + " " + doorToString(entry.piece, entry.entrance) + " " + doorToString(entry.piece, entry.exit) + " " + entry.ticks + "\n");
                 }
             }
             writer.flush();
