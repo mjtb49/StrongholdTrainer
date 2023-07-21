@@ -11,15 +11,18 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(EndPortalBlock.class)
+@Mixin(value = EndPortalBlock.class, priority = 100)
 public class MixinEndPortalBlock {
     /**
      * @author fsharpseven
      * @reason custom portal
      */
-    @Overwrite
-    public void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
+    @Inject(method = "onEntityCollision", at = @At("HEAD"), cancellable = true)
+    public void strongholdtrainer$onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, CallbackInfo ci) {
         if (world instanceof ServerWorld &&
                 !entity.hasVehicle() &&
                 !entity.hasPassengers() &&
@@ -31,5 +34,6 @@ public class MixinEndPortalBlock {
             }
             world.getServer().getCommandManager().execute(entity.getCommandSource(), "newStronghold");
         }
+        ci.cancel();
     }
 }
