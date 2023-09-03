@@ -5,7 +5,9 @@ import io.github.mjtb49.strongholdtrainer.api.StrongholdTreeAccessor;
 import io.github.mjtb49.strongholdtrainer.commands.NextMistakeCommand;
 import io.github.mjtb49.strongholdtrainer.ml.StrongholdMachineLearning;
 import io.github.mjtb49.strongholdtrainer.stats.PlayerPathData;
+import io.github.mjtb49.strongholdtrainer.stats.PlayerPathEntry;
 import io.github.mjtb49.strongholdtrainer.util.OptionTracker;
+import io.github.mjtb49.strongholdtrainer.util.RoomFormatter;
 import io.github.mjtb49.strongholdtrainer.util.TimerHelper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.structure.StrongholdGenerator;
@@ -176,14 +178,21 @@ public class StatsPathListener extends AbstractPathListener {
         this.blunders = losses.stream().filter(pair -> pair.getRight() >= BLUNDER_THRESHOLD).map(Pair::getLeft).map(StrongholdPathEntry::getCurrentPiece).collect(Collectors.toList());
         inaccuracies.removeAll(this.mistakes);
         mistakes.removeAll(this.blunders);
-        ArrayList<Pair<StrongholdGenerator.Piece, Integer>> rooms = new ArrayList<>();
-        history.forEach(pathEntry -> {
-            Pair<StrongholdGenerator.Piece, Integer> pair = new Pair<>(pathEntry.getCurrentPiece(), pathEntry.getTicksSpentInPiece().get());
-            rooms.add(pair);
-        });
+        ArrayList<PlayerPathEntry> playerPath = new ArrayList<>();
+        for (int i = 0; i < history.size() - 1; i++) {
+            StrongholdPathEntry currentEntry = history.get(i);
+            StrongholdGenerator.Piece currentPiece = currentEntry.getCurrentPiece();
+            StrongholdGenerator.Piece previousPiece = currentEntry.getPreviousPiece();
+            StrongholdGenerator.Piece nextPiece = history.get(i+1).getCurrentPiece();
+
+            int entrance = getDoorToRoom(currentPiece, previousPiece);
+            int exit = getDoorToRoom(currentPiece, nextPiece);
+
+            playerPath.add(new PlayerPathEntry(currentPiece, currentEntry.getTicksSpentInPiece().get(), entrance, exit));
+        }
 
         return new PlayerPathData(
-                rooms,
+                playerPath,
                 strongholdPath.getTotalTime(),
                 computeDifficulty(solution),
                 history.stream()
@@ -234,6 +243,32 @@ public class StatsPathListener extends AbstractPathListener {
         }
         //should never run
         return -1;
+    }
+
+    /** 
+     * This function has very specific behavior tailored for use in RoomStats.java. It will:
+     * - return 0 if the target is the parent of the current room
+     * - return 0 if the target is `null` and current is the starter staircase
+     * - return the exit index of the target from the current room, ONE-INDEXED!!
+     * - return num_exits(current) PLUS ONE!! if the target room is not adjacent to the current room.
+    */
+    private int getDoorToRoom(StrongholdGenerator.Piece current, StrongholdGenerator.Piece target) {
+        StrongholdTreeAccessor treeAccessor = (StrongholdTreeAccessor) this.strongholdPath.getStart();
+        if ((current.getClass() != StrongholdGenerator.Start.class && treeAccessor.getParents().get(current).equals(target)) || current.getClass() == StrongholdGenerator.Start.class && target == null) {
+            return 0;
+        } else {
+            List<StructurePiece> exits = treeAccessor.getTree().get(current);
+            if (exits == null) {  // no exits? Must be a wormhole
+                return RoomFormatter.ROOM_TO_NUM_EXITS.get(current.getClass()) + 1;
+            }
+            int i = exits.indexOf(target);
+            if (i == -1) {  // target not in the exit list? Must be a wormhole
+                return RoomFormatter.ROOM_TO_NUM_EXITS.get(current.getClass()) + 1;
+            }
+            // This can never be a crash-causing value, which is nice.
+            return i + 1;
+        }
+
     }
 }
 

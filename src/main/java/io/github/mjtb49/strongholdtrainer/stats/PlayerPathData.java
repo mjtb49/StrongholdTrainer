@@ -8,11 +8,9 @@ import io.github.mjtb49.strongholdtrainer.util.RoomFormatter;
 import io.github.mjtb49.strongholdtrainer.util.TimerHelper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.stat.Stats;
-import net.minecraft.structure.StrongholdGenerator;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
@@ -28,7 +26,7 @@ public class PlayerPathData {
     private static Path STATS_PATH;
 
     private static final DecimalFormat DF = new DecimalFormat("0.00");
-    private final ArrayList<Pair<StrongholdGenerator.Piece, Integer>> rooms;
+    private final ArrayList<PlayerPathEntry> path;
     @Expose
     private final HashMap<String, ArrayList<Integer>> roomsToWriteToFile;
     @Expose
@@ -53,7 +51,7 @@ public class PlayerPathData {
     private final int ticksLostAgainstFeinberg;
 
 
-    public PlayerPathData(ArrayList<Pair<StrongholdGenerator.Piece, Integer>> rooms,
+    public PlayerPathData(ArrayList<PlayerPathEntry> rooms,
                           int ticksInStronghold,
                           double difficulty,
                           int wastedTime,
@@ -64,7 +62,7 @@ public class PlayerPathData {
                           int wormholeCount,
                           int roomsReviewed,
                           int tickLossAgainstFeinberg) {
-        this.rooms = rooms;
+        this.path = rooms;
         this.ticksInStronghold = ticksInStronghold;
         this.difficulty = difficulty;
         this.wastedTime = wastedTime;
@@ -77,10 +75,10 @@ public class PlayerPathData {
         this.blunderCount = blunderCount;
 
         roomsToWriteToFile = new HashMap<>();
-        for (Pair<StrongholdGenerator.Piece, Integer> pair : rooms) {
-            ArrayList<Integer> list = roomsToWriteToFile.getOrDefault(RoomFormatter.ROOM_TO_STRING.get(pair.getLeft().getClass()), new ArrayList<>());
-            list.add(pair.getRight());
-            roomsToWriteToFile.put(RoomFormatter.ROOM_TO_STRING.get(pair.getLeft().getClass()), list);
+        for (PlayerPathEntry entry : path) {
+            ArrayList<Integer> list = roomsToWriteToFile.getOrDefault(RoomFormatter.ROOM_TO_STRING.get(entry.piece.getClass()), new ArrayList<>());
+            list.add(entry.ticks);
+            roomsToWriteToFile.put(RoomFormatter.ROOM_TO_STRING.get(entry.piece.getClass()), list);
         }
 
         allPlayerPathData.add(this);
@@ -89,7 +87,7 @@ public class PlayerPathData {
     public void updateAndPrintAllStats(ServerPlayerEntity playerEntity, @Nullable String realtime, boolean invalidRun) {
         if(!invalidRun){
             StrongholdTrainerStats.updateStrongholdTimeStats(playerEntity, ticksInStronghold);
-            updateRoomStats(playerEntity);
+            RoomStats.updateRoomStats(path);
 
             playerEntity.increaseStat(StrongholdTrainerStats.NUM_REVIEWED_ROOMS, roomsReviewed);
             playerEntity.increaseStat(StrongholdTrainerStats.NUM_BEST_ROOMS, bestMoveCount);
@@ -116,12 +114,6 @@ public class PlayerPathData {
         playerEntity.sendMessage(new LiteralText("\u2194 Wormholes " + wormholeCount).formatted(Formatting.DARK_PURPLE), false);
     }
 
-    private void updateRoomStats(ServerPlayerEntity playerEntity) {
-        for (Pair<StrongholdGenerator.Piece, Integer> room : rooms) {
-            RoomStats.updateRoomStats(playerEntity, room.getLeft().getClass(), room.getRight());
-        }
-    }
-
     private int computeMedianTimeTaken() {
         ArrayList<Integer> times = new ArrayList<>();
         for (PlayerPathData playerPathData : allPlayerPathData) {
@@ -134,6 +126,7 @@ public class PlayerPathData {
     }
 
     public static void loadAllPriorPaths(Path path) {
+        RoomStats.init(path);
         STATS_PATH = path.resolve("stats.json");
         Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
@@ -154,6 +147,7 @@ public class PlayerPathData {
     }
 
     public static void writeAllPaths() {
+        RoomStats.writeStatsToFile();
         Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
                 .create();

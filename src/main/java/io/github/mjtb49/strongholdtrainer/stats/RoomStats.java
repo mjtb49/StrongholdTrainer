@@ -1,57 +1,58 @@
 package io.github.mjtb49.strongholdtrainer.stats;
 
 import io.github.mjtb49.strongholdtrainer.util.RoomFormatter;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.stat.StatFormatter;
-import net.minecraft.stat.Stats;
 import net.minecraft.structure.StructurePiece;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class RoomStats {
-    private static final Map<Class<? extends StructurePiece>, Identifier> roomCountStats = new HashMap<>();
-    private static final Map<Class<? extends StructurePiece>, Identifier> roomTimeStats = new HashMap<>();
-    private static final Map<Class<? extends StructurePiece>, Identifier> averageTimeStats = new HashMap<>();
+    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
 
-    private static boolean isValid(Class<? extends StructurePiece> pieceType) {
-        return ((!RoomFormatter.ROOM_TO_STRING.get(pieceType).equals("PortalRoom")) && (!RoomFormatter.ROOM_TO_STRING.get(pieceType).equals("None")));
+    private static final ArrayList<ArrayList<PlayerPathEntry>> roomTimeStats = new ArrayList<>();
+
+    private static Path path;
+
+    private static String pieceToString(StructurePiece piece) {
+        return RoomFormatter.ROOM_TO_STRING.get(piece.getClass());
     }
 
-    public static void register() {
-        for (Class<? extends StructurePiece> pieceType : RoomFormatter.ROOM_TO_STRING.keySet()) {
-            if (isValid(pieceType)) {
-                String countName = "piece_" + RoomFormatter.ROOM_TO_STRING.get(pieceType).toLowerCase().replace(" ", "_") + "_count";
-                String timeName = "piece_" + RoomFormatter.ROOM_TO_STRING.get(pieceType).toLowerCase().replace(" ", "_") + "_total";
-                String avgName = "piece_" + RoomFormatter.ROOM_TO_STRING.get(pieceType).toLowerCase().replace(" ", "_") + "_avg";
+    private static String doorToString(StructurePiece piece, int door) {
+        if (door > RoomFormatter.ROOM_TO_NUM_EXITS.get(piece.getClass())) {
+            return "worm";
+        }
+        return Integer.toString(door);
+    }
 
-                roomCountStats.put(pieceType, new Identifier(StrongholdTrainerStats.MODID, countName));
-                roomTimeStats.put(pieceType, new Identifier(StrongholdTrainerStats.MODID, timeName));
-                averageTimeStats.put(pieceType, new Identifier(StrongholdTrainerStats.MODID, avgName));
+    public static void init(Path path) {
+        RoomStats.path = path;
+    }
 
-                Registry.register(Registry.CUSTOM_STAT, countName, roomCountStats.get(pieceType));
-                Registry.register(Registry.CUSTOM_STAT, timeName, roomTimeStats.get(pieceType));
-                Registry.register(Registry.CUSTOM_STAT, avgName, averageTimeStats.get(pieceType));
-
-                Stats.CUSTOM.getOrCreateStat(roomCountStats.get(pieceType), StatFormatter.DEFAULT);
-                Stats.CUSTOM.getOrCreateStat(roomTimeStats.get(pieceType), StatFormatter.TIME);
-                Stats.CUSTOM.getOrCreateStat(averageTimeStats.get(pieceType), StatFormatter.TIME);
+    // ChatGPT wrote this function... I'm impressed
+    public static void writeStatsToFile() {
+        // Create file to write to
+        LocalDateTime timestamp = LocalDateTime.now();
+        String filename = timestamp.format(dateFormatter) + ".txt";
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(String.valueOf(path.resolve(filename))))) {
+            // Write to file
+            for (ArrayList<PlayerPathEntry> path : roomTimeStats) {
+                writer.write(path.size() + "\n");
+                for (PlayerPathEntry entry : path) {
+                    writer.write(pieceToString(entry.piece) + " " + doorToString(entry.piece, entry.entrance) + " " + doorToString(entry.piece, entry.exit) + " " + entry.ticks + "\n");
+                }
             }
+            writer.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    public static void updateRoomStats(ServerPlayerEntity playerEntity, Class<? extends StructurePiece> pieceType, int timeInTicks) {
-        //because of this increment count should never be 0
-        if (isValid(pieceType)) {
-            playerEntity.incrementStat(roomCountStats.get(pieceType));
-            playerEntity.increaseStat(roomTimeStats.get(pieceType), timeInTicks);
-            int count = playerEntity.getStatHandler().getStat(Stats.CUSTOM.getOrCreateStat(roomCountStats.get(pieceType)));
-            int time = playerEntity.getStatHandler().getStat(Stats.CUSTOM.getOrCreateStat(roomTimeStats.get(pieceType)));
-            int avg = time / count;
-            playerEntity.resetStat(Stats.CUSTOM.getOrCreateStat(averageTimeStats.get(pieceType)));
-            playerEntity.increaseStat(averageTimeStats.get(pieceType), avg);
-        }
+    public static void updateRoomStats(ArrayList<PlayerPathEntry> path) {
+        roomTimeStats.add(path);
     }
 }
